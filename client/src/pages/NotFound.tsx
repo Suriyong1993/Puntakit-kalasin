@@ -1,52 +1,117 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Home } from "lucide-react";
+import { Cross, Home } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
 
-  const handleGoHome = () => {
-    setLocation("/");
-  };
-
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-      <Card className="w-full max-w-lg mx-4 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-        <CardContent className="pt-8 pb-8 text-center">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-red-100 rounded-full animate-pulse" />
-              <AlertCircle className="relative h-16 w-16 text-red-500" />
-            </div>
-          </div>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f4f8fc",
+        padding: "20px",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: "24px",
+          boxShadow: "0 10px 40px rgba(23,59,112,.1)",
+          border: "1px solid #e4ecf4",
+          padding: "48px 40px",
+          maxWidth: "420px",
+          width: "100%",
+          textAlign: "center",
+        }}
+      >
+        {/* Brand mark */}
+        <div
+          style={{
+            width: "68px",
+            height: "68px",
+            borderRadius: "20px",
+            background: "linear-gradient(135deg,#2f6fcc,#173b70)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 24px",
+            color: "#fff",
+            boxShadow: "0 8px 20px rgba(47,111,204,.3)",
+          }}
+        >
+          <Cross size={32} strokeWidth={3} />
+        </div>
 
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">404</h1>
+        {/* 404 */}
+        <p
+          style={{
+            fontSize: "72px",
+            fontWeight: 800,
+            color: "#173b70",
+            lineHeight: 1,
+            margin: "0 0 8px",
+            letterSpacing: "-3px",
+          }}
+        >
+          404
+        </p>
 
-          <h2 className="text-xl font-semibold text-slate-700 mb-4">
-            Page Not Found
-          </h2>
+        <h1
+          style={{
+            fontSize: "20px",
+            color: "#17324d",
+            margin: "0 0 10px",
+            fontWeight: 700,
+          }}
+        >
+          ไม่พบหน้าที่ต้องการ
+        </h1>
 
-          <p className="text-slate-600 mb-8 leading-relaxed">
-            Sorry, the page you are looking for doesn't exist.
-            <br />
-            It may have been moved or deleted.
-          </p>
+        <p
+          style={{
+            fontSize: "13px",
+            color: "#6b7c93",
+            lineHeight: 1.7,
+            margin: "0 0 32px",
+          }}
+        >
+          หน้าที่คุณกำลังมองหาอาจถูกย้ายหรือลบออกแล้ว
+          <br />
+          กรุณากลับสู่หน้าหลัก
+        </p>
 
-          <div
-            id="not-found-button-group"
-            className="flex flex-col sm:flex-row gap-3 justify-center"
-          >
-            <Button
-              onClick={handleGoHome}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Go Home
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        <button
+          onClick={() => setLocation("/")}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "#2f6fcc",
+            color: "#fff",
+            borderRadius: "12px",
+            padding: "11px 20px",
+            fontSize: "13px",
+            fontWeight: 600,
+            border: 0,
+            cursor: "pointer",
+            boxShadow: "0 7px 18px rgba(47,111,204,.25)",
+            transition: ".2s",
+            fontFamily: "inherit",
+          }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.background = "#235cb0")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.background = "#2f6fcc")
+          }
+        >
+          <Home size={16} />
+          กลับหน้าหลัก
+        </button>
+      </div>
     </div>
   );
 }
