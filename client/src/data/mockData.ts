@@ -22,12 +22,12 @@ export const dashboardSnapshot: DashboardSnapshot = {
     { id: "new-believers", label: "รับเชื่อใหม่", value: 28, suffix: "คน", trend: "↑ +6", detail: "ในปีนี้", tone: "purple", icon: Heart, href: "/ministries" },
   ],
   journey: [
-    { id: "meet", number: "01", title: "พบคน", detail: "สร้างความสัมพันธ์", description: "เริ่มจากการมองเห็น ฟัง และอยู่เคียงข้างผู้คน", tone: "mint", icon: Users, count: 132 },
-    { id: "share", number: "02", title: "ประกาศ", detail: "ข่าวประเสริฐ", description: "แบ่งปันความหวังด้วยภาษาที่จริงใจและเข้าใจง่าย", tone: "sky", icon: Megaphone, count: 84 },
-    { id: "follow-up", number: "03", title: "นำมารับเชื่อ", detail: "และติดตาม", description: "มีคนเดินไปด้วยกันในช่วงเริ่มต้นของความเชื่อ", tone: "lilac", icon: Heart, count: 28 },
-    { id: "church", number: "04", title: "มาคริสตจักร", detail: "คริสตจักร", description: "เชื่อมต่อกับครอบครัวใหญ่ของคริสตจักร", tone: "peach", icon: Church, count: 178 },
-    { id: "house", number: "05", title: "เข้าสู่พันธกิจบ้าน", detail: "พบปะ / กลุ่ม", description: "เติบโตผ่านวงสนทนาเล็ก ๆ ที่ปลอดภัย", tone: "rose", icon: Building2, count: 210 },
-    { id: "grow", number: "06", title: "เติบโต", detail: "เป็นสาวกและนำคนต่อไป", description: "ส่งต่อชีวิตและความหวังให้กับคนข้าง ๆ", tone: "mint", icon: Sparkles, count: 96 },
+    { id: "meet", number: "01", title: "พบคน", detail: "สร้างความสัมพันธ์", description: "เริ่มจากการมองเห็น ฟัง และอยู่เคียงข้างผู้คน", tone: "mint", icon: Users, count: 132, image: "/manus-storage/puntakit-group_ac4e9c50.jpg", imagePosition: "center" },
+    { id: "share", number: "02", title: "ประกาศ", detail: "ข่าวประเสริฐ", description: "แบ่งปันความหวังด้วยภาษาที่จริงใจและเข้าใจง่าย", tone: "sky", icon: Megaphone, count: 84, image: "/manus-storage/puntakit-hero_22958e7d.jpg", imagePosition: "72% center" },
+    { id: "follow-up", number: "03", title: "นำมารับเชื่อ", detail: "และติดตาม", description: "มีคนเดินไปด้วยกันในช่วงเริ่มต้นของความเชื่อ", tone: "lilac", icon: Heart, count: 28, image: "/manus-storage/puntakit-mission_49f2fd20.jpg", imagePosition: "center" },
+    { id: "church", number: "04", title: "มาคริสตจักร", detail: "คริสตจักร", description: "เชื่อมต่อกับครอบครัวใหญ่ของคริสตจักร", tone: "peach", icon: Church, count: 178, image: "/manus-storage/puntakit-hero_22958e7d.jpg", imagePosition: "88% center" },
+    { id: "house", number: "05", title: "เข้าสู่พันธกิจบ้าน", detail: "พบปะ / กลุ่ม", description: "เติบโตผ่านวงสนทนาเล็ก ๆ ที่ปลอดภัย", tone: "rose", icon: Building2, count: 210, image: "/manus-storage/puntakit-group_ac4e9c50.jpg", imagePosition: "35% center" },
+    { id: "grow", number: "06", title: "เติบโต", detail: "เป็นสาวกและนำคนต่อไป", description: "ส่งต่อชีวิตและความหวังให้กับคนข้าง ๆ", tone: "mint", icon: Sparkles, count: 96, image: "/manus-storage/puntakit-mission_49f2fd20.jpg", imagePosition: "72% center" },
   ],
   activities: [
     { id: "a1", title: "กลุ่มบ้าน เมือง 1", meta: "มีผู้เข้าร่วม 12 คน", time: "2 ชม. ที่แล้ว", tone: "blue", icon: Users, detail: "วงสนทนาเรื่องการใช้ชีวิตด้วยความหวัง" },

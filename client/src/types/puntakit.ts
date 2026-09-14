@@ -5,7 +5,7 @@ export type JourneyTone = "mint" | "sky" | "lilac" | "peach" | "rose";
 
 export interface NavItem { label: string; href: string; icon: LucideIcon }
 export interface StatMetric { id: string; label: string; value: number; suffix: string; trend: string; detail: string; tone: AccentTone; icon: LucideIcon; href: string }
-export interface JourneyStage { id: string; number: string; title: string; detail: string; description: string; tone: JourneyTone; icon: LucideIcon; count: number }
+export interface JourneyStage { id: string; number: string; title: string; detail: string; description: string; tone: JourneyTone; icon: LucideIcon; count: number; image: string; imagePosition?: string }
 export interface ChurchActivity { id: string; title: string; meta: string; time: string; tone: AccentTone; icon: LucideIcon; detail: string }
 export interface DistributionPoint { label: string; value: number; tone: AccentTone }
 export interface ChurchStatusMetric { label: string; value: number; target: number; tone: AccentTone; icon: LucideIcon }
