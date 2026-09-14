@@ -281,7 +281,7 @@ export default function Members() {
                     </div>
                   </td>
                   <td>
-                    <span className="role-chip">{member.role}</span>
+                    <span className={`role-chip ${member.tone}`}>{member.role}</span>
                   </td>
                   <td>{member.area}</td>
                   <td>{member.group}</td>
