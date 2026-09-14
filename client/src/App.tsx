@@ -4,13 +4,15 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home, { SectionPage } from "./pages/Home";
+import Home from "./pages/Home";
+import Members from "./pages/Members";
+import SectionPage from "./pages/SectionPage";
 import { BarChart3, Building2, FileText, Heart, Megaphone, Music2, Settings, Users } from "lucide-react";
 
 function Router() {
   return <Switch>
     <Route path="/" component={Home} />
-    <Route path="/members"><SectionPage title="สมาชิก" subtitle="เห็นผู้คน เข้าใจเรื่องราว และดูแลกันได้ดีขึ้น" icon={Users} /></Route>
+    <Route path="/members" component={Members} />
     <Route path="/groups"><SectionPage title="กลุ่มบ้าน" subtitle="พื้นที่เล็ก ๆ ที่ทำให้การเติบโตเกิดขึ้นจริง" icon={Heart} /></Route>
     <Route path="/announcements"><SectionPage title="การประกาศ" subtitle="สื่อสารข่าวสารสำคัญให้ทุกคนรับรู้พร้อมกัน" icon={Megaphone} /></Route>
     <Route path="/worship"><SectionPage title="การนมัสการ" subtitle="เตรียมทีมและดูแลประสบการณ์การนมัสการ" icon={Music2} /></Route>
