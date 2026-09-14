@@ -18,7 +18,7 @@ export default function NotFound() {
       <div
         style={{
           background: "#fff",
-          borderRadius: "24px",
+          borderRadius: "var(--radius-card)",
           boxShadow: "0 10px 40px rgba(23,59,112,.1)",
           border: "1px solid #e4ecf4",
           padding: "48px 40px",
@@ -32,7 +32,7 @@ export default function NotFound() {
           style={{
             width: "68px",
             height: "68px",
-            borderRadius: "20px",
+            borderRadius: "var(--radius-panel)",
             background: "linear-gradient(135deg,#2f6fcc,#173b70)",
             display: "flex",
             alignItems: "center",
