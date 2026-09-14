@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ICON_SIZE } from "@/lib/icon-sizes";
 
 // ---------------------------------------------------------------------------
 // Data
@@ -137,7 +138,7 @@ export default function Members() {
           <p>จัดการข้อมูลสมาชิกและติดตามการเติบโตของคนในคริสตจักร</p>
         </div>
         <button className="primary-action">
-          <UserPlus size={16} /> เพิ่มสมาชิก
+          <UserPlus size={ICON_SIZE.sm} /> เพิ่มสมาชิก
         </button>
       </div>
 
@@ -145,7 +146,7 @@ export default function Members() {
       <div className="member-summary">
         <div className="summary-card blue">
           <span className="summary-icon">
-            <Users />
+            <Users size={ICON_SIZE.lg} />
           </span>
           <div>
             <small>สมาชิกทั้งหมด</small>
@@ -155,7 +156,7 @@ export default function Members() {
         </div>
         <div className="summary-card green">
           <span className="summary-icon">
-            <Heart />
+            <Heart size={ICON_SIZE.lg} />
           </span>
           <div>
             <small>เข้าร่วมกลุ่ม</small>
@@ -165,7 +166,7 @@ export default function Members() {
         </div>
         <div className="summary-card orange">
           <span className="summary-icon">
-            <CalendarDays />
+            <CalendarDays size={ICON_SIZE.lg} />
           </span>
           <div>
             <small>เพิ่มในเดือนนี้</small>
@@ -175,7 +176,7 @@ export default function Members() {
         </div>
         <div className="summary-card purple">
           <span className="summary-icon">
-            <MapPin />
+            <MapPin size={ICON_SIZE.lg} />
           </span>
           <div>
             <small>พื้นที่ทั้งหมด</small>
@@ -190,7 +191,7 @@ export default function Members() {
         {/* Toolbar */}
         <div className="member-toolbar">
           <label className="member-search">
-            <Search size={18} />
+            <Search size={ICON_SIZE.md} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -199,13 +200,13 @@ export default function Members() {
             />
             {query && (
               <button onClick={() => setQuery("")} aria-label="ล้างการค้นหา">
-                <X size={15} />
+                <X size={ICON_SIZE.xs} />
               </button>
             )}
           </label>
 
           <div className="filter-label">
-            <SlidersHorizontal size={16} /> ตัวกรอง
+            <SlidersHorizontal size={ICON_SIZE.sm} /> ตัวกรอง
           </div>
 
           <select
@@ -300,7 +301,7 @@ export default function Members() {
                       className="row-menu"
                       aria-label={`เมนู ${member.name}`}
                     >
-                      <MoreHorizontal size={18} />
+                      <MoreHorizontal size={ICON_SIZE.md} />
                     </button>
                   </td>
                 </tr>
@@ -310,7 +311,7 @@ export default function Members() {
 
           {filtered.length === 0 && (
             <div className="empty-members">
-              <Users size={28} />
+              <Users size={ICON_SIZE["2xl"]} />
               <h3>ไม่พบสมาชิก</h3>
               <p>ลองเปลี่ยนคำค้นหาหรือตัวกรองดูอีกครั้ง</p>
             </div>

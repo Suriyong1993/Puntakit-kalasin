@@ -1,5 +1,6 @@
 import { Cross, Home } from "lucide-react";
 import { useLocation } from "wouter";
+import { ICON_SIZE } from "@/lib/icon-sizes";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
@@ -42,7 +43,7 @@ export default function NotFound() {
             boxShadow: "0 8px 20px rgba(47,111,204,.3)",
           }}
         >
-          <Cross size={32} strokeWidth={3} />
+          <Cross size={29} strokeWidth={3.4} />
         </div>
 
         {/* 404 */}
@@ -108,7 +109,7 @@ export default function NotFound() {
             ((e.currentTarget as HTMLButtonElement).style.background = "#2f6fcc")
           }
         >
-          <Home size={16} />
+          <Home size={ICON_SIZE.sm} />
           กลับหน้าหลัก
         </button>
       </div>
