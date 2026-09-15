@@ -1,5 +1,6 @@
 import { Bell, ChevronDown, Menu, Search, X } from "lucide-react";
 import { useState } from "react";
+import { ICON_SIZE } from "@/lib/icon-sizes";
 
 interface TopbarProps {
   onMenu: () => void;
@@ -11,11 +12,11 @@ export function Topbar({ onMenu }: TopbarProps) {
   return (
     <header className="topbar">
       <button className="menu-trigger" onClick={onMenu} aria-label="เปิดเมนู">
-        <Menu />
+        <Menu size={ICON_SIZE.lg} />
       </button>
 
       <label className="searchbox">
-        <Search size={20} />
+        <Search size={ICON_SIZE.md} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -24,14 +25,14 @@ export function Topbar({ onMenu }: TopbarProps) {
         />
         {query && (
           <button onClick={() => setQuery("")} aria-label="ล้างการค้นหา">
-            <X size={16} />
+            <X size={ICON_SIZE.xs} />
           </button>
         )}
       </label>
 
       <div className="topbar-right">
         <button className="icon-button notification" aria-label="การแจ้งเตือน">
-          <Bell size={20} />
+          <Bell size={ICON_SIZE.lg} />
           <b>3</b>
         </button>
         <div className="profile">
@@ -40,7 +41,7 @@ export function Topbar({ onMenu }: TopbarProps) {
             <small>ยินดีต้อนรับ</small>
             <strong>ทีมพันธกิจ</strong>
           </div>
-          <ChevronDown size={15} />
+          <ChevronDown size={ICON_SIZE.xs} />
         </div>
       </div>
     </header>

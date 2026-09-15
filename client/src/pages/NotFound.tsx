@@ -1,5 +1,6 @@
 import { Cross, Home } from "lucide-react";
 import { useLocation } from "wouter";
+import { ICON_SIZE } from "@/lib/icon-sizes";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
@@ -18,7 +19,7 @@ export default function NotFound() {
       <div
         style={{
           background: "#fff",
-          borderRadius: "24px",
+          borderRadius: "var(--radius-card)",
           boxShadow: "0 10px 40px rgba(23,59,112,.1)",
           border: "1px solid #e4ecf4",
           padding: "48px 40px",
@@ -32,7 +33,7 @@ export default function NotFound() {
           style={{
             width: "68px",
             height: "68px",
-            borderRadius: "20px",
+            borderRadius: "var(--radius-panel)",
             background: "linear-gradient(135deg,#2f6fcc,#173b70)",
             display: "flex",
             alignItems: "center",
@@ -42,7 +43,7 @@ export default function NotFound() {
             boxShadow: "0 8px 20px rgba(47,111,204,.3)",
           }}
         >
-          <Cross size={32} strokeWidth={3} />
+          <Cross size={29} strokeWidth={3.4} />
         </div>
 
         {/* 404 */}
@@ -108,7 +109,7 @@ export default function NotFound() {
             ((e.currentTarget as HTMLButtonElement).style.background = "#2f6fcc")
           }
         >
-          <Home size={16} />
+          <Home size={ICON_SIZE.sm} />
           กลับหน้าหลัก
         </button>
       </div>

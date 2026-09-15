@@ -1,5 +1,6 @@
 import { Home as HomeIcon, Sparkles, Users, X } from "lucide-react";
 import { useLocation } from "wouter";
+import { ICON_SIZE } from "@/lib/icon-sizes";
 import { Logo } from "./Logo";
 
 export const navItems = [
@@ -20,7 +21,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <div className="sidebar-top">
         <Logo />
         <button className="mobile-close" onClick={onClose} aria-label="ปิดเมนู">
-          <X />
+          <X size={ICON_SIZE.lg} />
         </button>
       </div>
 
@@ -36,7 +37,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 navigate(path);
               }}
             >
-              <Icon size={21} />
+              <Icon size={ICON_SIZE.lg} />
               <span>{label}</span>
               {active && <span className="nav-dot" />}
             </button>
@@ -45,7 +46,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       </nav>
 
       <div className="sidebar-message">
-        <Sparkles size={17} />
+        <Sparkles size={ICON_SIZE.sm} />
         <p>"รักพระเจ้า<br />รักผู้คน<br />เปลี่ยนแปลงชุมชน"</p>
         <div className="sidebar-hill">
           <span>✦</span>

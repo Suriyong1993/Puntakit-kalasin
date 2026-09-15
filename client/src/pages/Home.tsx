@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ICON_SIZE } from "@/lib/icon-sizes";
 
 // ---------------------------------------------------------------------------
 // Data
@@ -137,7 +138,7 @@ function Hero() {
           ให้เติบโตในพระเจ้า
         </strong>
         <button aria-label="เริ่มต้นวันนี้">
-          เริ่มต้นวันนี้ <ArrowRight size={15} />
+          เริ่มต้นวันนี้ <ArrowRight size={ICON_SIZE.xs} />
         </button>
       </div>
     </section>
@@ -159,7 +160,7 @@ function MetricCard({
       aria-label={`ดูรายละเอียด ${item.label}`}
     >
       <div className="metric-icon">
-        <Icon size={25} />
+        <Icon size={ICON_SIZE.xl} />
       </div>
       <div className="metric-content">
         <span>{item.label}</span>
@@ -169,7 +170,7 @@ function MetricCard({
         </div>
         <small className={item.trend.includes("↑") ? "up" : ""}>{item.trend}</small>
       </div>
-      <ChevronRight className="metric-arrow" size={20} />
+      <ChevronRight className="metric-arrow" size={ICON_SIZE.lg} />
     </button>
   );
 }
@@ -180,12 +181,12 @@ function Journey() {
       <div className="section-heading">
         <div>
           <span className="mini-icon">
-            <Sparkles size={16} />
+            <Sparkles size={ICON_SIZE.sm} />
           </span>
           <h2>6 ขั้นตอนสู่การสร้างสาวก</h2>
         </div>
         <button className="text-button">
-          ดูรายละเอียด <ArrowRight size={15} />
+          ดูรายละเอียด <ArrowRight size={ICON_SIZE.xs} />
         </button>
       </div>
       <div className="journey-track">
@@ -202,7 +203,7 @@ function Journey() {
                 <small>{step.detail}</small>
               </button>
               {i < journey.length - 1 && (
-                <ChevronRight className="journey-arrow" size={20} />
+                <ChevronRight className="journey-arrow" size={ICON_SIZE.lg} />
               )}
             </div>
           );
@@ -218,7 +219,7 @@ function GoalCard() {
       <div className="section-heading">
         <div>
           <span className="mini-icon pink">
-            <Target size={16} />
+            <Target size={ICON_SIZE.sm} />
           </span>
           <h2>เป้าหมาย 2026</h2>
         </div>
@@ -263,12 +264,12 @@ function Activities() {
       <div className="section-heading">
         <div>
           <span className="mini-icon blue">
-            <Users size={16} />
+            <Users size={ICON_SIZE.sm} />
           </span>
           <h2>กิจกรรมล่าสุด</h2>
         </div>
         <button className="text-button">
-          ดูทั้งหมด <ArrowRight size={15} />
+          ดูทั้งหมด <ArrowRight size={ICON_SIZE.xs} />
         </button>
       </div>
       <div>
@@ -277,7 +278,7 @@ function Activities() {
           return (
             <button className="activity-item" key={item.title}>
               <span className={`activity-icon ${item.tone}`}>
-                <Icon size={18} />
+                <Icon size={ICON_SIZE.md} />
               </span>
               <span className="activity-copy">
                 <strong>{item.title}</strong>
@@ -298,7 +299,7 @@ function ChurchStatus() {
       <div className="section-heading">
         <div>
           <span className="mini-icon blue">
-            <Building2 size={16} />
+            <Building2 size={ICON_SIZE.sm} />
           </span>
           <h2>สรุปสถานะปัจจุบัน</h2>
           <small>(13 ก.ย. 2026)</small>
@@ -306,7 +307,7 @@ function ChurchStatus() {
       </div>
       <div className="status-grid">
         <div className="status-tile blue-tile">
-          <Building2 />
+          <Building2 size={ICON_SIZE.xl} />
           <span>มาคริสตจักร</span>
           <strong>
             300 <small>คน</small>
@@ -314,7 +315,7 @@ function ChurchStatus() {
           <em>เป้าหมาย 1,350 คน</em>
         </div>
         <div className="status-tile green-tile">
-          <HomeIcon />
+          <HomeIcon size={ICON_SIZE.xl} />
           <span>พันธกิจบ้าน</span>
           <strong>
             1,050 <small>คน</small>
@@ -338,12 +339,12 @@ function Analytics() {
       <div className="section-heading">
         <div>
           <span className="mini-icon purple">
-            <BarChart3 size={16} />
+            <BarChart3 size={ICON_SIZE.sm} />
           </span>
           <h2>สมาชิกตามพื้นที่</h2>
         </div>
         <button className="select-button">
-          ทั้งหมด <ChevronDown size={14} />
+          ทั้งหมด <ChevronDown size={ICON_SIZE.xs} />
         </button>
       </div>
       <div className="chart" aria-label="กราฟสมาชิกตามพื้นที่">
@@ -446,7 +447,7 @@ function Modal({
         <div className="modal-heading">
           <h2>{title}</h2>
           <button onClick={onClose} aria-label="ปิด">
-            <X size={19} />
+            <X size={ICON_SIZE.md} />
           </button>
         </div>
         {children}
@@ -463,7 +464,7 @@ function CreateActivityModal({ onClose }: { onClose: () => void }) {
       <Modal title="สร้างกิจกรรมใหม่" onClose={onClose}>
         <div className="success-state">
           <div>
-            <Sparkles />
+            <Sparkles size={ICON_SIZE["2xl"]} />
           </div>
           <h3>บันทึกกิจกรรมแล้ว</h3>
           <p>กิจกรรมใหม่ถูกเพิ่มลงในรายการกิจกรรมล่าสุดเรียบร้อย</p>
@@ -512,7 +513,7 @@ function CreateActivityModal({ onClose }: { onClose: () => void }) {
           ยกเลิก
         </button>
         <button className="blue-button" onClick={() => setSaved(true)}>
-          <Plus size={15} /> สร้างกิจกรรม
+          <Plus size={ICON_SIZE.xs} /> สร้างกิจกรรม
         </button>
       </div>
     </Modal>
@@ -531,7 +532,7 @@ function MetricDetailModal({
     <Modal title={item.label} onClose={onClose}>
       <div className={`detail-hero ${item.tone}`}>
         <div className="detail-icon">
-          <Icon size={25} />
+          <Icon size={ICON_SIZE.xl} />
         </div>
         <div>
           <strong>
@@ -574,7 +575,7 @@ export default function Home() {
           </h2>
         </div>
         <button className="primary-action" onClick={() => setActivityOpen(true)}>
-          <Sparkles size={16} /> สร้างกิจกรรมใหม่
+          <Sparkles size={ICON_SIZE.sm} /> สร้างกิจกรรมใหม่
         </button>
       </div>
 
@@ -612,7 +613,7 @@ export default function Home() {
               เติบโต และรับใช้
             </p>
             <button className="blue-button">
-              อ่านเพิ่มเติม <ArrowRight size={15} />
+              อ่านเพิ่มเติม <ArrowRight size={ICON_SIZE.xs} />
             </button>
           </section>
           <GoalCard />
