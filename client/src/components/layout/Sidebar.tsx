@@ -1,40 +1,19 @@
-import {
-  BarChart3,
-  Building2,
-  Folder,
-  Heart,
-  Home as HomeIcon,
-  Megaphone,
-  Music2,
-  Settings,
-  Sparkles,
-  Users,
-  X,
-} from "lucide-react";
+import { Home as HomeIcon, Sparkles, Users, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { Logo } from "./Logo";
 
 export const navItems = [
-  { label: "หน้าหลัก", icon: HomeIcon },
-  { label: "สมาชิก", icon: Users },
-  { label: "การประกาศ", icon: Megaphone },
-  { label: "การนมัสการ", icon: Music2 },
-  { label: "คริสตจักร", icon: Building2 },
-  { label: "พันธกิจ", icon: Heart },
-  { label: "รายงาน", icon: BarChart3 },
-  { label: "สื่อ / เอกสาร", icon: Folder },
-  { label: "ตั้งค่า", icon: Settings },
+  { label: "หน้าหลัก", path: "/", icon: HomeIcon },
+  { label: "สมาชิก", path: "/members", icon: Users },
 ];
 
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
-  active: string;
-  setActive: (label: string) => void;
 }
 
-export function Sidebar({ open, onClose, active, setActive }: SidebarProps) {
-  const [, navigate] = useLocation();
+export function Sidebar({ open, onClose }: SidebarProps) {
+  const [location, navigate] = useLocation();
 
   return (
     <aside className={`sidebar ${open ? "is-open" : ""}`}>
@@ -46,22 +25,23 @@ export function Sidebar({ open, onClose, active, setActive }: SidebarProps) {
       </div>
 
       <nav className="nav-list" aria-label="เมนูหลัก">
-        {navItems.map(({ label, icon: Icon }) => (
-          <button
-            key={label}
-            className={`nav-item ${active === label ? "active" : ""}`}
-            onClick={() => {
-              setActive(label);
-              onClose();
-              if (label === "สมาชิก") navigate("/members");
-              else if (label === "หน้าหลัก") navigate("/");
-            }}
-          >
-            <Icon size={21} />
-            <span>{label}</span>
-            {active === label && <span className="nav-dot" />}
-          </button>
-        ))}
+        {navItems.map(({ label, path, icon: Icon }) => {
+          const active = location === path;
+          return (
+            <button
+              key={label}
+              className={`nav-item ${active ? "active" : ""}`}
+              onClick={() => {
+                onClose();
+                navigate(path);
+              }}
+            >
+              <Icon size={21} />
+              <span>{label}</span>
+              {active && <span className="nav-dot" />}
+            </button>
+          );
+        })}
       </nav>
 
       <div className="sidebar-message">

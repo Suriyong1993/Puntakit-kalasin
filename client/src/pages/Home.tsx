@@ -565,7 +565,7 @@ export default function Home() {
   const [metric, setMetric] = useState<(typeof metrics)[number] | null>(null);
 
   return (
-    <AppLayout activeNav="หน้าหลัก">
+    <AppLayout>
       <div className="welcome-row">
         <div>
           <span className="eyebrow blue-eyebrow">วันจันทร์ที่ 14 กันยายน 2026</span>

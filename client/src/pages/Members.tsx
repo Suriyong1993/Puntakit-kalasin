@@ -128,7 +128,7 @@ export default function Members() {
   };
 
   return (
-    <AppLayout activeNav="สมาชิก">
+    <AppLayout>
       {/* Page heading */}
       <div className="page-heading">
         <div>
