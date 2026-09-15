@@ -1,4 +1,4 @@
-import { Home as HomeIcon, Sparkles, Users, X } from "lucide-react";
+import { Home as HomeIcon, Sparkles, UserRound, Users, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { Logo } from "./Logo";
@@ -6,6 +6,7 @@ import { Logo } from "./Logo";
 export const navItems = [
   { label: "หน้าหลัก", path: "/", icon: HomeIcon },
   { label: "สมาชิก", path: "/members", icon: Users },
+  { label: "โปรไฟล์", path: "/profile", icon: UserRound },
 ];
 
 interface SidebarProps {

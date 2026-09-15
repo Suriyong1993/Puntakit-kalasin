@@ -1,5 +1,6 @@
 import { Bell, ChevronDown, Menu, Search, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "wouter";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 
 interface TopbarProps {
@@ -35,14 +36,14 @@ export function Topbar({ onMenu }: TopbarProps) {
           <Bell size={ICON_SIZE.lg} />
           <b>3</b>
         </button>
-        <div className="profile">
+        <Link href="/profile" className="profile" aria-label="เปิดโปรไฟล์ส่วนตัว">
           <div className="avatar">น</div>
           <div>
             <small>ยินดีต้อนรับ</small>
             <strong>ทีมพันธกิจ</strong>
           </div>
           <ChevronDown size={ICON_SIZE.xs} />
-        </div>
+        </Link>
       </div>
     </header>
   );
