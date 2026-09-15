@@ -1,4 +1,4 @@
-import { Home as HomeIcon, Sparkles, UserRound, Users, X } from "lucide-react";
+import { BarChart3, BookOpen, Building2, Church, Home as HomeIcon, Megaphone, Settings, Sparkles, UserRound, Users, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { Logo } from "./Logo";
@@ -6,6 +6,13 @@ import { Logo } from "./Logo";
 export const navItems = [
   { label: "หน้าหลัก", path: "/", icon: HomeIcon },
   { label: "สมาชิก", path: "/members", icon: Users },
+  { label: "การประกาศ", path: "/announcements", icon: Megaphone },
+  { label: "การนมัสการ", path: "/worship", icon: Church },
+  { label: "คริสตจักร", path: "/church", icon: Building2 },
+  { label: "พันธกิจ", path: "/ministries", icon: Sparkles },
+  { label: "รายงาน", path: "/reports", icon: BarChart3 },
+  { label: "สื่อ/เอกสาร", path: "/media", icon: BookOpen },
+  { label: "ตั้งค่า", path: "/settings", icon: Settings },
   { label: "โปรไฟล์", path: "/profile", icon: UserRound },
 ];
 
