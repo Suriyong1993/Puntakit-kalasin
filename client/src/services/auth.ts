@@ -21,6 +21,19 @@ export const authService = {
 
     return { ...data, userId: userData.user.id };
   },
+
+  async sendMagicLink(email: string): Promise<void> {
+    const { error } = await getSupabaseClient().auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    });
+    if (error) throw new Error(error.message);
+  },
+
+  async signOut(): Promise<void> {
+    const { error } = await getSupabaseClient().auth.signOut();
+    if (error) throw new Error(error.message);
+  },
 };
 
 export function canManageMembers(role: SignedInProfile["role"] | undefined): boolean {

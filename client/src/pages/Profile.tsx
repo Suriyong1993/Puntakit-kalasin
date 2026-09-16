@@ -1,42 +1,25 @@
-import { Award, CalendarDays, CheckCircle2, ChevronRight, Edit3, LogOut, Mail, MapPin, ShieldCheck, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Award, CheckCircle2, Loader2, LogIn, LogOut, Mail, ShieldAlert, ShieldCheck, UserRound } from "lucide-react";
+import { toast } from "sonner";
 import { Link } from "wouter";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { authService, type SignedInProfile } from "@/services/auth";
+import { isSupabaseConfigured } from "@/services/supabase";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 
-const details = [
-  { label: "อีเมล", value: "admin@puntakit.org", icon: Mail },
-  { label: "บทบาท", value: "ผู้ดูแลระบบ", icon: ShieldCheck },
-  { label: "กลุ่ม / พื้นที่", value: "คริสตจักรกาฬสินธุ์", icon: MapPin },
-  { label: "เข้าร่วมเมื่อ", value: "1 มกราคม 2024", icon: CalendarDays },
-];
+const roleLabels: Record<SignedInProfile["role"], string> = { super_admin: "ผู้ดูแลสูงสุด", admin: "ผู้ดูแลระบบ", area_leader: "ผู้นำพื้นที่", ministry_leader: "ผู้นำพันธกิจ", group_leader: "ผู้นำกลุ่ม", member: "สมาชิก", viewer: "ผู้ดูข้อมูล" };
 
-const stats = [
-  { label: "สมาชิกที่ดูแล", value: "24", icon: Users, tone: "blue" },
-  { label: "กิจกรรมที่เข้าร่วม", value: "18", icon: CalendarDays, tone: "orange" },
-  { label: "ความก้าวหน้า", value: "86%", icon: Award, tone: "green" },
-];
+function AuthCard() {
+ const [email, setEmail] = useState(""); const [sending, setSending] = useState(false); const [sent, setSent] = useState(false);
+ const submit = async (event: React.FormEvent) => { event.preventDefault(); if (!email.trim()) return; setSending(true); try { await authService.sendMagicLink(email); setSent(true); } catch (reason) { toast.error(reason instanceof Error ? reason.message : "ไม่สามารถส่งลิงก์เข้าสู่ระบบได้"); } finally { setSending(false); } };
+ return <section className="auth-card card-surface"><div className="auth-card-icon"><LogIn size={28}/></div><h2>เข้าสู่ระบบ Puntakit</h2>{sent ? <><p>ส่งลิงก์เข้าสู่ระบบไปที่ <strong>{email}</strong> แล้ว กรุณาตรวจสอบอีเมลของคุณ</p><button className="cancel-button" onClick={() => setSent(false)}>ใช้ที่อยู่อีเมลอื่น</button></> : <form onSubmit={submit}><label className="member-field"><span>อีเมลของคุณ</span><input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" /></label><button className="blue-button" type="submit" disabled={sending}>{sending ? <Loader2 className="spin" size={15}/> : <Mail size={15}/>} ส่งลิงก์เข้าสู่ระบบ</button></form>}</section>;
+}
 
 export default function Profile() {
-  return (
-    <AppLayout>
-      <div className="profile-page">
-        <div className="page-heading">
-          <div><span className="eyebrow">ACCOUNT CENTER</span><h1>โปรไฟล์ส่วนตัว</h1><p>จัดการข้อมูลและติดตามการมีส่วนร่วมของคุณในชุมชน</p></div>
-          <button className="primary-action" type="button"><Edit3 size={ICON_SIZE.sm} />แก้ไขข้อมูล</button>
-        </div>
-        <section className="profile-hero card-surface">
-          <div className="profile-avatar">น</div>
-          <div className="profile-identity"><div className="profile-name-row"><h2>นรินทร์ พันธกิจ</h2><span className="status-chip good"><CheckCircle2 size={12} /> ใช้งานอยู่</span></div><p>ผู้ดูแลระบบ · ทีมพันธกิจ</p><small>ดูแลการเติบโตของสมาชิกและชุมชนคริสตจักร</small></div>
-          <div className="profile-hero-mark"><ShieldCheck size={34} /></div>
-        </section>
-        <div className="profile-grid">
-          <section className="profile-panel card-surface"><div className="section-heading"><div><span className="mini-icon"><Users size={ICON_SIZE.sm} /></span><h2>ข้อมูลส่วนตัว</h2></div></div><div className="profile-details">{details.map(({ label, value, icon: Icon }) => <div className="profile-detail" key={label}><span className="profile-detail-icon"><Icon size={ICON_SIZE.sm} /></span><div><small>{label}</small><strong>{value}</strong></div></div>)}</div><button className="profile-link-button" type="button">แก้ไขข้อมูลส่วนตัว <ChevronRight size={ICON_SIZE.sm} /></button></section>
-          <section className="profile-panel card-surface"><div className="section-heading"><div><span className="mini-icon green"><Award size={ICON_SIZE.sm} /></span><h2>การมีส่วนร่วม</h2></div><span className="profile-period">ปี 2026</span></div><div className="profile-stats">{stats.map(({ label, value, icon: Icon, tone }) => <div className={`profile-stat ${tone}`} key={label}><span><Icon size={ICON_SIZE.sm} /></span><strong>{value}</strong><small>{label}</small></div>)}</div><div className="profile-progress-label"><span>เป้าหมายการดูแลสมาชิก</span><strong>86%</strong></div><div className="profile-progress"><span style={{ width: "86%" }} /></div></section>
-        </div>
-        <section className="profile-footer card-surface"><div><span className="profile-footer-icon"><ShieldCheck size={ICON_SIZE.md} /></span><div><strong>บัญชีของคุณปลอดภัย</strong><small>ระบบปกป้องข้อมูลและสิทธิ์การเข้าถึงของคุณ</small></div></div><Link href="/" className="profile-logout"><LogOut size={ICON_SIZE.sm} /> ออกจากระบบ</Link></section>
-      </div>
-    </AppLayout>
-  );
+ const [profile, setProfile] = useState<SignedInProfile | null | undefined>(undefined); const [error, setError] = useState<string | null>(null); const [signingOut, setSigningOut] = useState(false);
+ useEffect(() => { if (!isSupabaseConfigured) { setProfile(null); return; } void authService.currentProfile().then(setProfile).catch((reason) => { setError(reason instanceof Error ? reason.message : "ไม่สามารถโหลดข้อมูลบัญชีได้"); setProfile(null); }); }, []);
+ const signOut = async () => { setSigningOut(true); try { await authService.signOut(); setProfile(null); toast.success("ออกจากระบบแล้ว"); } catch (reason) { toast.error(reason instanceof Error ? reason.message : "ไม่สามารถออกจากระบบได้"); } finally { setSigningOut(false); } };
+ return <AppLayout><div className="profile-page"><div className="page-heading"><div><span className="eyebrow">ACCOUNT CENTER</span><h1>โปรไฟล์ส่วนตัว</h1><p>ข้อมูลบัญชีและสิทธิ์การเข้าถึงจากฐานข้อมูลจริง</p></div></div>{!isSupabaseConfigured ? <section className="data-state-card card-surface"><ShieldAlert size={32}/><h2>ยังไม่พร้อมใช้งาน</h2><p>ตั้งค่า Supabase ก่อนเข้าสู่ระบบและจัดการโปรไฟล์</p></section> : error ? <section className="data-state-card card-surface"><ShieldAlert size={32}/><h2>ไม่สามารถโหลดบัญชีได้</h2><p>{error}</p></section> : profile === undefined ? <section className="data-state-card card-surface"><Loader2 className="spin" size={30}/><p>กำลังตรวจสอบบัญชี…</p></section> : !profile ? <AuthCard/> : <><section className="profile-hero card-surface"><div className="profile-avatar">{profile.display_name.slice(0, 1)}</div><div className="profile-identity"><div className="profile-name-row"><h2>{profile.display_name}</h2><span className="status-chip good"><CheckCircle2 size={12}/> ใช้งานอยู่</span></div><p>{roleLabels[profile.role]}</p><small>{profile.email || "ไม่มีอีเมล"}</small></div><div className="profile-hero-mark"><ShieldCheck size={34}/></div></section><div className="profile-grid"><section className="profile-panel card-surface"><div className="section-heading"><div><span className="mini-icon"><UserRound size={ICON_SIZE.sm}/></span><h2>ข้อมูลบัญชี</h2></div></div><div className="profile-details"><div className="profile-detail"><span className="profile-detail-icon"><Mail size={ICON_SIZE.sm}/></span><div><small>อีเมล</small><strong>{profile.email || "—"}</strong></div></div><div className="profile-detail"><span className="profile-detail-icon"><ShieldCheck size={ICON_SIZE.sm}/></span><div><small>บทบาท</small><strong>{roleLabels[profile.role]}</strong></div></div><div className="profile-detail"><span className="profile-detail-icon"><Award size={ICON_SIZE.sm}/></span><div><small>สถานะบัญชี</small><strong>ยืนยันและใช้งานอยู่</strong></div></div></div></section><section className="profile-panel card-surface"><div className="section-heading"><div><span className="mini-icon green"><ShieldCheck size={ICON_SIZE.sm}/></span><h2>สิทธิ์การเข้าถึง</h2></div></div><p className="profile-permission-copy">สิทธิ์การจัดการข้อมูลถูกตรวจสอบซ้ำที่ฐานข้อมูลด้วย Row Level Security ไม่ได้อาศัยการซ่อนปุ่มในหน้าเว็บเพียงอย่างเดียว</p><div className="profile-progress-label"><span>ระดับสิทธิ์</span><strong>{roleLabels[profile.role]}</strong></div></section></div><section className="profile-footer card-surface"><div><span className="profile-footer-icon"><ShieldCheck size={ICON_SIZE.md}/></span><div><strong>บัญชีของคุณปลอดภัย</strong><small>การเข้าถึงข้อมูลสำคัญถูกควบคุมด้วยสิทธิ์ฐานข้อมูล</small></div></div><button className="profile-logout" onClick={() => void signOut()} disabled={signingOut}>{signingOut ? <Loader2 className="spin" size={ICON_SIZE.sm}/> : <LogOut size={ICON_SIZE.sm}/>} ออกจากระบบ</button></section></>}</div></AppLayout>;
 }
 
 export { Profile };

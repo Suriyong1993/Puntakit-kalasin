@@ -8,9 +8,9 @@ import Members from "./pages/Members";
 import Profile from "./pages/Profile";
 import Groups from "./pages/Groups";
 import Reports from "./pages/Reports";
-import ComingSoon from "./pages/ComingSoon";
+import Workspace from "./pages/Workspace";
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/members" component={Members} /><Route path="/groups" component={Groups} /><Route path="/profile" component={Profile} /><Route path="/announcements" component={ComingSoon} /><Route path="/worship" component={ComingSoon} /><Route path="/church" component={ComingSoon} /><Route path="/ministries" component={ComingSoon} /><Route path="/reports" component={Reports} /><Route path="/media" component={ComingSoon} /><Route path="/settings" component={ComingSoon} /><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/members" component={Members} /><Route path="/groups" component={Groups} /><Route path="/profile" component={Profile} /><Route path="/announcements" component={Workspace} /><Route path="/worship" component={Workspace} /><Route path="/church" component={Workspace} /><Route path="/ministries" component={Workspace} /><Route path="/reports" component={Reports} /><Route path="/media" component={Workspace} /><Route path="/settings" component={Workspace} /><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
