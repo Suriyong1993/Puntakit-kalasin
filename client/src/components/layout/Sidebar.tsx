@@ -6,6 +6,7 @@ import { Logo } from "./Logo";
 export const navItems = [
   { label: "หน้าหลัก", path: "/", icon: HomeIcon },
   { label: "สมาชิก", path: "/members", icon: Users },
+  { label: "กลุ่มพันธกิจ", path: "/groups", icon: Sparkles },
   { label: "การประกาศ", path: "/announcements", icon: Megaphone },
   { label: "การนมัสการ", path: "/worship", icon: Church },
   { label: "คริสตจักร", path: "/church", icon: Building2 },

@@ -34,7 +34,6 @@ export function Topbar({ onMenu }: TopbarProps) {
       <div className="topbar-right">
         <button className="icon-button notification" aria-label="การแจ้งเตือน">
           <Bell size={ICON_SIZE.lg} />
-          <b>3</b>
         </button>
         <Link href="/profile" className="profile" aria-label="เปิดโปรไฟล์ส่วนตัว">
           <div className="avatar">น</div>
