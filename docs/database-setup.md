@@ -15,6 +15,10 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-public-anon-key
 ```
 
+For a deployment that supplies Next.js-style names, map `NEXT_PUBLIC_SUPABASE_URL` to
+`VITE_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to
+`VITE_SUPABASE_ANON_KEY` for this Vite client.
+
 The anon key is safe to expose to the browser only because every business table is protected by Row Level Security. Do not put a Supabase service-role key in the Vite environment or client bundle.
 
 ## Authentication and role assignment
