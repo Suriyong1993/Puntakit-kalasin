@@ -1,5 +1,6 @@
-import { Bell, ChevronDown, LogOut, Menu, Search, X } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Menu, Search, UserRound, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "wouter";
 import { toast } from "sonner";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,7 +47,7 @@ export function Topbar({ onMenu }: TopbarProps) {
           <b>3</b>
         </button>
         <div className="profile" style={{ position: "relative", cursor: "pointer" }} onClick={() => setMenuOpen((v) => !v)}>
-          <div className="avatar">{user?.name?.slice(0, 1) ?? "?"}</div>
+          <div className="avatar">{user?.name?.slice(0, 1) ?? "น"}</div>
           <div>
             <small>ยินดีต้อนรับ</small>
             <strong>{user?.name ?? "ผู้ใช้งาน"}</strong>
@@ -65,6 +66,14 @@ export function Topbar({ onMenu }: TopbarProps) {
               }}
             >
               <p style={{ fontSize: 11, color: "var(--muted)", margin: "0 0 8px", wordBreak: "break-all" }}>{user?.email}</p>
+              <Link
+                href="/profile"
+                className="cancel-button"
+                style={{ width: "100%", justifyContent: "center", textDecoration: "none", marginBottom: 6 }}
+                onClick={() => setMenuOpen(false)}
+              >
+                <UserRound size={ICON_SIZE.sm} /> โปรไฟล์ส่วนตัว
+              </Link>
               <button className="cancel-button" style={{ width: "100%", justifyContent: "center" }} onClick={handleLogout}>
                 <LogOut size={ICON_SIZE.sm} /> ออกจากระบบ
               </button>

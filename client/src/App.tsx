@@ -12,6 +12,8 @@ import Events from "./pages/Events";
 import Church from "./pages/Church";
 import Ministries from "./pages/Ministries";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import ComingSoon from "./pages/ComingSoon";
 
 function Router() {
   return (
@@ -27,12 +29,22 @@ function Router() {
           <Members />
         </ProtectedRoute>
       </Route>
+      <Route path="/profile">
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      </Route>
       <Route path="/announcements">
         <ProtectedRoute>
           <Announcements />
         </ProtectedRoute>
       </Route>
       <Route path="/events">
+        <ProtectedRoute>
+          <Events />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/worship">
         <ProtectedRoute>
           <Events />
         </ProtectedRoute>
@@ -45,6 +57,21 @@ function Router() {
       <Route path="/ministries">
         <ProtectedRoute>
           <Ministries />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/reports">
+        <ProtectedRoute>
+          <ComingSoon />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/media">
+        <ProtectedRoute>
+          <ComingSoon />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/settings">
+        <ProtectedRoute>
+          <ComingSoon />
         </ProtectedRoute>
       </Route>
       <Route path="/404" component={NotFound} />
