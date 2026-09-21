@@ -1,4 +1,4 @@
-import { Home as HomeIcon, Sparkles, Users, X } from "lucide-react";
+import { Building2, CalendarDays, HeartHandshake, Home as HomeIcon, Megaphone, Sparkles, Users, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { Logo } from "./Logo";
@@ -6,6 +6,10 @@ import { Logo } from "./Logo";
 export const navItems = [
   { label: "หน้าหลัก", path: "/", icon: HomeIcon },
   { label: "สมาชิก", path: "/members", icon: Users },
+  { label: "การประกาศ", path: "/announcements", icon: Megaphone },
+  { label: "การนมัสการ", path: "/events", icon: CalendarDays },
+  { label: "คริสตจักร", path: "/church", icon: Building2 },
+  { label: "พันธกิจ", path: "/ministries", icon: HeartHandshake },
 ];
 
 interface SidebarProps {

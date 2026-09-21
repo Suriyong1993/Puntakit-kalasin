@@ -1,6 +1,8 @@
-import { Bell, ChevronDown, Menu, Search, X } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Menu, Search, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { ICON_SIZE } from "@/lib/icon-sizes";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TopbarProps {
   onMenu: () => void;
@@ -8,6 +10,14 @@ interface TopbarProps {
 
 export function Topbar({ onMenu }: TopbarProps) {
   const [query, setQuery] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success("ออกจากระบบแล้ว");
+    setMenuOpen(false);
+  };
 
   return (
     <header className="topbar">
@@ -35,13 +45,31 @@ export function Topbar({ onMenu }: TopbarProps) {
           <Bell size={ICON_SIZE.lg} />
           <b>3</b>
         </button>
-        <div className="profile">
-          <div className="avatar">น</div>
+        <div className="profile" style={{ position: "relative", cursor: "pointer" }} onClick={() => setMenuOpen((v) => !v)}>
+          <div className="avatar">{user?.name?.slice(0, 1) ?? "?"}</div>
           <div>
             <small>ยินดีต้อนรับ</small>
-            <strong>ทีมพันธกิจ</strong>
+            <strong>{user?.name ?? "ผู้ใช้งาน"}</strong>
           </div>
           <ChevronDown size={ICON_SIZE.xs} />
+          {menuOpen && (
+            <div
+              className="modal-card"
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                width: 200,
+                padding: 10,
+                zIndex: 70,
+              }}
+            >
+              <p style={{ fontSize: 11, color: "var(--muted)", margin: "0 0 8px", wordBreak: "break-all" }}>{user?.email}</p>
+              <button className="cancel-button" style={{ width: "100%", justifyContent: "center" }} onClick={handleLogout}>
+                <LogOut size={ICON_SIZE.sm} /> ออกจากระบบ
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
