@@ -16,6 +16,7 @@
     "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "db:migrate": "dotenv -e .env.local -- tsx server/scripts/migrate.ts",
+    "db:migrate:env": "tsx server/scripts/migrate.ts",
     "db:seed-admin": "dotenv -e .env.local -- tsx server/scripts/seed-admin.ts"
   },
   "dependencies": {
