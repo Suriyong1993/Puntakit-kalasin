@@ -5,9 +5,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Eye,
   Heart,
   Pencil,
   Search,
+  ShieldCheck,
   Trash2,
   UserPlus,
   Users,
@@ -111,6 +113,7 @@ export default function Members() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Member | null>(null);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
@@ -433,6 +436,14 @@ export default function Members() {
                         </td>
                         <td>{formatDate(m.joinedAt)}</td>
                         <td style={{ textAlign: "right" }}>
+                          <button
+                            className="row-menu"
+                            onClick={() => setSelectedMember(m)}
+                            title="ดูข้อมูลละเอียด"
+                            aria-label="ดูข้อมูลละเอียด"
+                          >
+                            <Eye size={ICON_SIZE.sm} />
+                          </button>
                           {canManage && (
                             <button
                               className="row-menu"
@@ -713,6 +724,102 @@ export default function Members() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Member Detailed Profile View */}
+      {selectedMember && (
+        <div className="modal-backdrop" onClick={() => setSelectedMember(null)}>
+          <div className="modal-card modal-wide" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-heading">
+              <h2>ข้อมูลสมาชิกโดยละเอียด</h2>
+              <button onClick={() => setSelectedMember(null)}>
+                <X size={ICON_SIZE.sm} />
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                padding: "16px",
+                background: "#f4f8fc",
+                borderRadius: 14,
+                marginBottom: 16,
+              }}
+            >
+              <div
+                className={`member-avatar ${toneFor(selectedMember.name)}`}
+                style={{ width: 56, height: 56, fontSize: 24, borderRadius: 16 }}
+              >
+                {selectedMember.name.slice(0, 1)}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: "0 0 4px", fontSize: 18, color: "var(--ink)" }}>
+                  {selectedMember.name} {selectedMember.nickname ? `(${selectedMember.nickname})` : ""}
+                </h3>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                  <span className="role-chip blue">{selectedMember.role}</span>
+                  <span className="role-chip green">
+                    {MEMBERSHIP_STATUS_LABELS[selectedMember.membershipStatus]?.label || selectedMember.membershipStatus}
+                  </span>
+                  <span className={`status-chip ${selectedMember.status === "ติดตามแล้ว" ? "good" : "attention"}`}>
+                    {selectedMember.status}
+                  </span>
+                  {selectedMember.consentGiven && (
+                    <span style={{ fontSize: 10, color: "#1e9b68", display: "flex", alignItems: "center", gap: 3 }}>
+                      <ShieldCheck size={12} /> ยินยอม PDPA แล้ว
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, fontSize: 12 }}>
+              <div style={{ background: "#fff", border: "1px solid #edf2f6", borderRadius: 12, padding: 12 }}>
+                <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8 }}>ข้อมูลการติดต่อ</strong>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>เบอร์โทร: <b>{selectedMember.phone || "ไม่มีข้อมูล"}</b></p>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>อีเมล: <b>{selectedMember.email || "ไม่มีข้อมูล"}</b></p>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>LINE ID: <b>{selectedMember.lineId || "ไม่มีข้อมูล"}</b></p>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>ที่อยู่: <b>{selectedMember.address || "ไม่มีข้อมูล"}</b></p>
+              </div>
+
+              <div style={{ background: "#fff", border: "1px solid #edf2f6", borderRadius: 12, padding: 12 }}>
+                <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8 }}>ข้อมูลคริสตจักร & ฉุกเฉิน</strong>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>พื้นที่: <b>{selectedMember.area || "-"}</b></p>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>กลุ่มย่อย: <b>{selectedMember.group || "ยังไม่มีกลุ่ม"}</b></p>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>วันที่เข้าร่วม: <b>{formatDate(selectedMember.joinedAt)}</b></p>
+                <p style={{ margin: "4px 0", color: "#60758c" }}>ผู้ติดต่อฉุกเฉิน: <b>{selectedMember.emergencyContactName ? `${selectedMember.emergencyContactName} (${selectedMember.emergencyContactPhone || "-"})` : "ไม่มีข้อมูล"}</b></p>
+              </div>
+            </div>
+
+            {selectedMember.notes && (
+              <div style={{ marginTop: 14, background: "#fdfbf7", border: "1px solid #f0e6d2", borderRadius: 12, padding: 12 }}>
+                <strong style={{ display: "block", color: "#9a6a16", marginBottom: 4, fontSize: 11 }}>บันทึกฝ่ายอภิบาล (Pastoral Care Notes)</strong>
+                <p style={{ margin: 0, fontSize: 12, color: "#594827", lineHeight: 1.5 }}>{selectedMember.notes}</p>
+              </div>
+            )}
+
+            <div className="modal-actions" style={{ marginTop: 20 }}>
+              <button type="button" className="cancel-button" onClick={() => setSelectedMember(null)}>
+                ปิดหน้าต่าง
+              </button>
+              {canManage && (
+                <button
+                  type="button"
+                  className="primary-action"
+                  onClick={() => {
+                    const target = selectedMember;
+                    setSelectedMember(null);
+                    openEdit(target);
+                  }}
+                >
+                  <Pencil size={ICON_SIZE.sm} /> แก้ไขข้อมูลนี้
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

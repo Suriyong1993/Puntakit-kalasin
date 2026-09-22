@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ICON_SIZE } from "@/lib/icon-sizes";
+import { api } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
 // Data
@@ -561,9 +562,67 @@ function MetricDetailModal({
 // Page
 // ---------------------------------------------------------------------------
 
+interface DashboardSummary {
+  totalMembers: number;
+  newThisMonth: number;
+  needFollowUp: number;
+  followedUp: number;
+  activeMembers: number;
+}
+
 export default function Home() {
   const [activityOpen, setActivityOpen] = useState(false);
   const [metric, setMetric] = useState<(typeof metrics)[number] | null>(null);
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+
+  useEffect(() => {
+    api
+      .get<DashboardSummary>("/api/dashboard/summary")
+      .then(setSummary)
+      .catch(() => {});
+  }, []);
+
+  const activeMetrics = useMemo(() => {
+    if (!summary) return metrics;
+    return [
+      {
+        ...metrics[0],
+        value: String(summary.totalMembers),
+        rows: [
+          ["สมาชิกใหม่เดือนนี้", `${summary.newThisMonth} คน`],
+          ["สมาชิกที่ติดตามอยู่", `${summary.followedUp} คน`],
+          ["รอติดตาม", `${summary.needFollowUp} คน`],
+        ],
+      },
+      {
+        ...metrics[1],
+        value: String(summary.activeMembers),
+        rows: [
+          ["สมาชิกประจำ", `${summary.activeMembers} คน`],
+          ["สมาชิกทั้งหมด", `${summary.totalMembers} คน`],
+          ["ติดตามแล้ว", `${summary.followedUp} คน`],
+        ],
+      },
+      {
+        ...metrics[2],
+        value: String(summary.followedUp),
+        rows: [
+          ["ติดตามแล้ว", `${summary.followedUp} คน`],
+          ["ต้องติดตาม", `${summary.needFollowUp} คน`],
+          ["สมาชิกใหม่", `${summary.newThisMonth} คน`],
+        ],
+      },
+      {
+        ...metrics[3],
+        value: String(summary.needFollowUp),
+        rows: [
+          ["ต้องการการดูแล", `${summary.needFollowUp} คน`],
+          ["ดูแลแล้ว", `${summary.followedUp} คน`],
+          ["มาใหม่เดือนนี้", `${summary.newThisMonth} คน`],
+        ],
+      },
+    ];
+  }, [summary]);
 
   return (
     <AppLayout>
@@ -584,7 +643,7 @@ export default function Home() {
         <div className="primary-column">
           <Hero />
           <div className="metrics-grid">
-            {metrics.map((item) => (
+            {activeMetrics.map((item) => (
               <MetricCard
                 item={item}
                 key={item.label}
