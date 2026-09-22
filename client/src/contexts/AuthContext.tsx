@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
+import type { UserRole } from "@shared/schema";
 
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: "admin" | "user";
+  role: UserRole;
 }
 
 interface AuthContextValue {

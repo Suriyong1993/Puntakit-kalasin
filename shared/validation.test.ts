@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   announcementInputSchema,
+  changePasswordInputSchema,
+  checkDuplicateMemberSchema,
   churchProfileInputSchema,
   eventInputSchema,
   loginInputSchema,
   memberInputSchema,
+  memberQuerySchema,
   ministryInputSchema,
   registerInputSchema,
 } from "./validation";
@@ -12,6 +15,27 @@ import {
 describe("memberInputSchema", () => {
   it("accepts a minimal valid member", () => {
     const result = memberInputSchema.safeParse({ name: "สมชาย ใจดี" });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a full valid member with new fields", () => {
+    const result = memberInputSchema.safeParse({
+      name: "สมหญิง งามยิ่ง",
+      nickname: "หญิง",
+      gender: "female",
+      birthDate: "1995-04-12",
+      phone: "081-234-5678",
+      email: "somying@example.com",
+      lineId: "somying_line",
+      address: "123 ต.ในเมือง อ.เมือง จ.กาฬสินธุ์",
+      membershipStatus: "active",
+      status: "ติดตามแล้ว",
+      emergencyContactName: "นายสมศักดิ์ งามยิ่ง",
+      emergencyContactPhone: "089-876-5432",
+      emergencyContactRelation: "บิดา",
+      consentGiven: true,
+      notes: "สนใจเข้าร่วมทีมดนตรีนมัสการ",
+    });
     expect(result.success).toBe(true);
   });
 
@@ -30,9 +54,46 @@ describe("memberInputSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("defaults status when omitted", () => {
+  it("defaults status and membershipStatus when omitted", () => {
     const result = memberInputSchema.parse({ name: "สมชาย" });
     expect(result.status).toBe("ต้องติดตาม");
+    expect(result.membershipStatus).toBe("visitor");
+  });
+});
+
+describe("memberQuerySchema", () => {
+  it("provides defaults for pagination and sorting", () => {
+    const result = memberQuerySchema.parse({});
+    expect(result.page).toBe(1);
+    expect(result.limit).toBe(20);
+    expect(result.sortBy).toBe("createdAt");
+    expect(result.sortOrder).toBe("desc");
+  });
+
+  it("transforms includeDeleted string correctly", () => {
+    const res1 = memberQuerySchema.parse({ includeDeleted: "true" });
+    expect(res1.includeDeleted).toBe(true);
+
+    const res2 = memberQuerySchema.parse({ includeDeleted: "false" });
+    expect(res2.includeDeleted).toBe(false);
+  });
+});
+
+describe("checkDuplicateMemberSchema", () => {
+  it("accepts valid phone or email query", () => {
+    const result = checkDuplicateMemberSchema.safeParse({ phone: "0812345678" });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("changePasswordInputSchema", () => {
+  it("requires current and 8+ char new password", () => {
+    expect(
+      changePasswordInputSchema.safeParse({ currentPassword: "old", newPassword: "short" }).success
+    ).toBe(false);
+    expect(
+      changePasswordInputSchema.safeParse({ currentPassword: "old", newPassword: "longenough123" }).success
+    ).toBe(true);
   });
 });
 

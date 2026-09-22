@@ -1,18 +1,28 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { createHash } from "node:crypto";
+import type { UserRole } from "../../shared/schema";
 
 export const AUTH_COOKIE_NAME = "puntakit_session";
 
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: "admin" | "user";
+  role: UserRole;
+  sessionId?: string;
+}
+
+export function hashToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
 }
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error("JWT_SECRET is not set. Add it to your environment before starting the server.");
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("JWT_SECRET is not set. Add it to your environment before starting the server.");
+    }
+    return "puntakit-dev-jwt-secret-do-not-use-in-production-123456789";
   }
   return secret;
 }

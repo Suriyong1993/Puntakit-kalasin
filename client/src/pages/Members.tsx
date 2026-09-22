@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Download,
   Heart,
-  MapPin,
   Pencil,
   Search,
-  SlidersHorizontal,
   Trash2,
   UserPlus,
   Users,
@@ -17,18 +18,30 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
-import { useResource } from "@/hooks/useResource";
-import { ApiError } from "@/lib/api";
+import { api, ApiError, type ApiMeta } from "@/lib/api";
+import type { Gender, MembershipStatus } from "@shared/schema";
 
 interface Member {
   id: string;
   name: string;
+  nickname: string | null;
+  avatarUrl: string | null;
+  gender: Gender | null;
+  birthDate: string | null;
   phone: string | null;
   email: string | null;
+  lineId: string | null;
+  address: string | null;
   role: string;
   area: string | null;
   group: string | null;
+  membershipStatus: MembershipStatus;
   status: "ติดตามแล้ว" | "ต้องติดตาม";
+  assignedLeaderId: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  emergencyContactRelation: string | null;
+  consentGiven: boolean;
   joinedAt: string;
   notes: string | null;
   createdAt: string;
@@ -37,12 +50,22 @@ interface Member {
 
 const EMPTY_FORM = {
   name: "",
+  nickname: "",
+  gender: "" as Gender | "",
+  birthDate: "",
   phone: "",
   email: "",
+  lineId: "",
+  address: "",
   role: "สมาชิก",
   area: "",
   group: "",
+  membershipStatus: "visitor" as MembershipStatus,
   status: "ต้องติดตาม" as Member["status"],
+  emergencyContactName: "",
+  emergencyContactPhone: "",
+  emergencyContactRelation: "",
+  consentGiven: false,
   notes: "",
 };
 
@@ -53,62 +76,115 @@ function toneFor(name: string) {
   return tones[sum % tones.length];
 }
 
-function formatDate(iso: string) {
+function formatDate(iso: string | null) {
+  if (!iso) return "-";
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
 }
 
+const MEMBERSHIP_STATUS_LABELS: Record<MembershipStatus, { label: string; tone: string }> = {
+  active: { label: "สมาชิกประจำ", tone: "green" },
+  visitor: { label: "ผู้สนใจ/เยี่ยมเยียน", tone: "blue" },
+  candidate: { label: "ผู้เตรียมรับเชื่อ", tone: "orange" },
+  transferred: { label: "ย้ายคริสตจักร", tone: "purple" },
+  inactive: { label: "ขาดการติดต่อ", tone: "pink" },
+};
+
 export default function Members() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
-  const { items: members, isLoading, error, reload, create, update, remove } = useResource<Member>("/api/members");
+  const canManage =
+    user?.role === "super_admin" ||
+    user?.role === "admin" ||
+    user?.role === "staff" ||
+    user?.role === "ministry_leader" ||
+    user?.role === "group_leader";
+  const canDelete = user?.role === "super_admin" || user?.role === "admin";
+
+  const [members, setMembers] = useState<Member[]>([]);
+  const [meta, setMeta] = useState<ApiMeta>({ page: 1, limit: 15, total: 0, totalPages: 1 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
   const [area, setArea] = useState("ทั้งหมด");
   const [status, setStatus] = useState("ทั้งหมด");
-  const [role, setRole] = useState("ทั้งหมด");
+  const [membershipStatus, setMembershipStatus] = useState("ทั้งหมด");
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Member | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+
   const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const filtered = useMemo(
-    () =>
-      members.filter((m) => {
-        const hay = `${m.name} ${m.role} ${m.area ?? ""} ${m.group ?? ""}`.toLowerCase();
-        return (
-          (!query || hay.includes(query.toLowerCase())) &&
-          (area === "ทั้งหมด" || m.area === area) &&
-          (status === "ทั้งหมด" || m.status === status) &&
-          (role === "ทั้งหมด" || m.role === role)
-        );
-      }),
-    [members, query, area, status, role]
+  const loadMembers = useCallback(
+    async (pageToLoad: number = 1) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        params.set("page", String(pageToLoad));
+        params.set("limit", "15");
+        if (query.trim()) params.set("search", query.trim());
+        if (area !== "ทั้งหมด") params.set("area", area);
+        if (status !== "ทั้งหมด") params.set("status", status);
+        if (membershipStatus !== "ทั้งหมด") params.set("membershipStatus", membershipStatus);
+
+        const res = await api.getWithMeta<Member[]>(`/api/members?${params.toString()}`);
+        setMembers(res.data || []);
+        if (res.meta) setMeta(res.meta);
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : "โหลดข้อมูลสมาชิกไม่สำเร็จ");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [query, area, status, membershipStatus]
   );
 
-  const uniqueAreas = Array.from(new Set(members.map((m) => m.area).filter(Boolean))) as string[];
-  const uniqueRoles = Array.from(new Set(members.map((m) => m.role)));
+  useEffect(() => {
+    loadMembers(1);
+  }, [loadMembers]);
 
-  const hasFilter = query || area !== "ทั้งหมด" || status !== "ทั้งหมด" || role !== "ทั้งหมด";
-  const clearFilters = () => {
-    setQuery("");
-    setArea("ทั้งหมด");
-    setStatus("ทั้งหมด");
-    setRole("ทั้งหมด");
-  };
+  // Check duplicate phone or email as user types
+  useEffect(() => {
+    if (!formOpen) return;
+    const checkTimer = setTimeout(async () => {
+      const phone = form.phone.trim();
+      const email = form.email.trim();
+      if (!phone && !email) {
+        setDuplicateWarning(null);
+        return;
+      }
+      try {
+        const params = new URLSearchParams();
+        if (phone) params.set("phone", phone);
+        if (email) params.set("email", email);
+        if (editing) params.set("excludeId", editing.id);
+        const res = await api.get<{
+          isDuplicate: boolean;
+          conflictField?: string;
+          existingMemberName?: string;
+        }>(`/api/members/check-duplicate?${params.toString()}`);
+        if (res.isDuplicate) {
+          const fieldLabel = res.conflictField === "phone" ? "เบอร์โทรศัพท์" : "อีเมล";
+          setDuplicateWarning(`คำเตือน: ${fieldLabel}นี้ตรงกับ "${res.existingMemberName}"`);
+        } else {
+          setDuplicateWarning(null);
+        }
+      } catch {
+        // ignore duplicate check errors
+      }
+    }, 400);
 
-  const followedUp = members.filter((m) => m.status === "ติดตามแล้ว").length;
-  const addedThisMonth = members.filter((m) => {
-    const d = new Date(m.joinedAt);
-    const now = new Date();
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  }).length;
+    return () => clearTimeout(checkTimer);
+  }, [form.phone, form.email, formOpen, editing]);
 
   const openCreate = () => {
     setEditing(null);
     setForm(EMPTY_FORM);
+    setDuplicateWarning(null);
     setFormOpen(true);
   };
 
@@ -116,14 +192,25 @@ export default function Members() {
     setEditing(m);
     setForm({
       name: m.name,
+      nickname: m.nickname ?? "",
+      gender: m.gender ?? "",
+      birthDate: m.birthDate ? m.birthDate.split("T")[0] : "",
       phone: m.phone ?? "",
       email: m.email ?? "",
+      lineId: m.lineId ?? "",
+      address: m.address ?? "",
       role: m.role,
       area: m.area ?? "",
       group: m.group ?? "",
+      membershipStatus: m.membershipStatus ?? "visitor",
       status: m.status,
+      emergencyContactName: m.emergencyContactName ?? "",
+      emergencyContactPhone: m.emergencyContactPhone ?? "",
+      emergencyContactRelation: m.emergencyContactRelation ?? "",
+      consentGiven: m.consentGiven ?? false,
       notes: m.notes ?? "",
     });
+    setDuplicateWarning(null);
     setFormOpen(true);
   };
 
@@ -131,14 +218,21 @@ export default function Members() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const payload = {
+        ...form,
+        gender: form.gender ? form.gender : null,
+        birthDate: form.birthDate ? new Date(form.birthDate).toISOString() : null,
+      };
+
       if (editing) {
-        await update(editing.id, form);
+        await api.put(`/api/members/${editing.id}`, payload);
         toast.success("บันทึกการแก้ไขสมาชิกแล้ว");
       } else {
-        await create(form);
-        toast.success("เพิ่มสมาชิกแล้ว");
+        await api.post("/api/members", payload);
+        toast.success("เพิ่มสมาชิกใหม่เรียบร้อยแล้ว");
       }
       setFormOpen(false);
+      loadMembers(meta.page);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "บันทึกไม่สำเร็จ");
     } finally {
@@ -150,9 +244,10 @@ export default function Members() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await remove(deleteTarget.id);
-      toast.success("ลบสมาชิกแล้ว");
+      await api.delete(`/api/members/${deleteTarget.id}`);
+      toast.success("ลบสมาชิกแล้ว (สามารถกู้คืนได้)");
       setDeleteTarget(null);
+      loadMembers(meta.page);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "ลบไม่สำเร็จ");
     } finally {
@@ -160,200 +255,213 @@ export default function Members() {
     }
   };
 
+  const handleExportCsv = () => {
+    window.open("/api/members/export/csv", "_blank");
+    toast.info("กำลังเริ่มดาวน์โหลดไฟล์ CSV...");
+  };
+
+  const followedUpCount = members.filter((m) => m.status === "ติดตามแล้ว").length;
+  const needFollowUpCount = members.filter((m) => m.status === "ต้องติดตาม").length;
+
   return (
     <AppLayout>
       <div className="page-heading">
         <div>
-          <span className="eyebrow blue-eyebrow">PEOPLE &amp; COMMUNITY</span>
-          <h1>สมาชิก</h1>
-          <p>จัดการข้อมูลสมาชิกและติดตามการเติบโตของคนในคริสตจักร</p>
+          <span className="eyebrow">CHURCH MEMBERS</span>
+          <h1>จัดการสมาชิก</h1>
+          <p>ข้อมูลสมาชิก การจัดกลุ่มย่อย และกระบวนการติดตามความเชื่อ</p>
         </div>
-        {isAdmin && (
-          <button className="primary-action" onClick={openCreate}>
-            <UserPlus size={ICON_SIZE.sm} /> เพิ่มสมาชิก
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="cancel-button" type="button" onClick={handleExportCsv}>
+            <Download size={ICON_SIZE.sm} /> Export CSV
           </button>
-        )}
+          {canManage && (
+            <button className="primary-action" type="button" onClick={openCreate}>
+              <UserPlus size={ICON_SIZE.sm} /> เพิ่มสมาชิก
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="member-summary">
         <div className="summary-card blue">
-          <span className="summary-icon">
+          <div className="summary-icon">
             <Users size={ICON_SIZE.lg} />
-          </span>
+          </div>
           <div>
-            <small>สมาชิกทั้งหมด</small>
-            <strong>{members.length}</strong>
+            <small>สมาชิกในระบบ</small>
+            <strong>{meta.total}</strong>
             <span>คน</span>
           </div>
         </div>
         <div className="summary-card green">
-          <span className="summary-icon">
+          <div className="summary-icon">
             <Heart size={ICON_SIZE.lg} />
-          </span>
+          </div>
           <div>
             <small>ติดตามแล้ว</small>
-            <strong>{followedUp}</strong>
-            <span>คน</span>
+            <strong>{followedUpCount}</strong>
+            <span>คนในหน้านี้</span>
           </div>
         </div>
         <div className="summary-card orange">
-          <span className="summary-icon">
-            <CalendarDays size={ICON_SIZE.lg} />
-          </span>
+          <div className="summary-icon">
+            <AlertCircle size={ICON_SIZE.lg} />
+          </div>
           <div>
-            <small>เพิ่มในเดือนนี้</small>
-            <strong>{addedThisMonth}</strong>
-            <span>คน</span>
+            <small>ต้องติดตาม</small>
+            <strong>{needFollowUpCount}</strong>
+            <span>คนในหน้านี้</span>
           </div>
         </div>
         <div className="summary-card purple">
-          <span className="summary-icon">
-            <MapPin size={ICON_SIZE.lg} />
-          </span>
+          <div className="summary-icon">
+            <CalendarDays size={ICON_SIZE.lg} />
+          </div>
           <div>
-            <small>พื้นที่ทั้งหมด</small>
-            <strong>{uniqueAreas.length}</strong>
-            <span>พื้นที่</span>
+            <small>หน้าปัจจุบัน</small>
+            <strong>{meta.page}</strong>
+            <span>จาก {meta.totalPages} หน้า</span>
           </div>
         </div>
       </div>
 
       <section className="member-panel card-surface">
-        {isLoading ? (
-          <div className="state-panel">
-            <div className="spinner" style={{ margin: "0 auto 12px" }} />
-            <p>กำลังโหลดข้อมูลสมาชิก...</p>
-          </div>
-        ) : error ? (
+        <div className="member-toolbar">
+          <label className="member-search">
+            <Search size={ICON_SIZE.md} />
+            <input
+              placeholder="ค้นหาชื่อ, ชื่อเล่น, เบอร์โทร หรืออีเมล..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            {query && (
+              <button onClick={() => setQuery("")}>
+                <X size={ICON_SIZE.xs} />
+              </button>
+            )}
+          </label>
+
+          <span className="filter-label">สถานะ:</span>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="ทั้งหมด">ทั้งหมด</option>
+            <option value="ติดตามแล้ว">ติดตามแล้ว</option>
+            <option value="ต้องติดตาม">ต้องติดตาม</option>
+          </select>
+
+          <span className="filter-label">ประเภทสมาชิก:</span>
+          <select value={membershipStatus} onChange={(e) => setMembershipStatus(e.target.value)}>
+            <option value="ทั้งหมด">ทั้งหมด</option>
+            <option value="active">สมาชิกประจำ</option>
+            <option value="visitor">ผู้สนใจ/เยี่ยมเยียน</option>
+            <option value="candidate">ผู้เตรียมรับเชื่อ</option>
+            <option value="transferred">ย้ายคริสตจักร</option>
+            <option value="inactive">ขาดการติดต่อ</option>
+          </select>
+        </div>
+
+        {error && (
           <div className="state-panel error-panel">
-            <AlertCircle size={ICON_SIZE["2xl"]} />
-            <h3>โหลดข้อมูลไม่สำเร็จ</h3>
+            <AlertCircle size={ICON_SIZE.xl} />
+            <h3>เกิดข้อผิดพลาด</h3>
             <p>{error}</p>
-            <button className="retry-button" onClick={reload}>
-              ลองใหม่
+            <button className="retry-button" onClick={() => loadMembers(meta.page)}>
+              ลองใหม่อีกครั้ง
             </button>
           </div>
-        ) : members.length === 0 ? (
+        )}
+
+        {isLoading && !error && (
           <div className="state-panel">
-            <Users size={ICON_SIZE["2xl"]} />
-            <h3>ยังไม่มีข้อมูลสมาชิก</h3>
-            <p>{isAdmin ? "เริ่มเพิ่มสมาชิกคนแรกของคุณ" : "รอผู้ดูแลระบบเพิ่มข้อมูลสมาชิก"}</p>
+            <div className="spinner" style={{ margin: "0 auto 12px" }} />
+            <p>กำลังโหลดรายชื่อสมาชิก...</p>
           </div>
-        ) : (
+        )}
+
+        {!isLoading && !error && (
           <>
-            <div className="member-toolbar">
-              <label className="member-search">
-                <Search size={ICON_SIZE.md} />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="ค้นหาชื่อสมาชิก กลุ่ม หรือพื้นที่..."
-                  aria-label="ค้นหาสมาชิก"
-                />
-                {query && (
-                  <button onClick={() => setQuery("")} aria-label="ล้างการค้นหา">
-                    <X size={ICON_SIZE.xs} />
-                  </button>
-                )}
-              </label>
-
-              <div className="filter-label">
-                <SlidersHorizontal size={ICON_SIZE.sm} /> ตัวกรอง
-              </div>
-
-              <select value={area} onChange={(e) => setArea(e.target.value)} aria-label="กรองพื้นที่">
-                <option value="ทั้งหมด">ทุกพื้นที่</option>
-                {uniqueAreas.map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-
-              <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="กรองสถานะ">
-                <option value="ทั้งหมด">ทุกสถานะ</option>
-                <option>ติดตามแล้ว</option>
-                <option>ต้องติดตาม</option>
-              </select>
-
-              <select value={role} onChange={(e) => setRole(e.target.value)} aria-label="กรองบทบาท">
-                <option value="ทั้งหมด">ทุกบทบาท</option>
-                {uniqueRoles.map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="active-filter-row">
-              <span>
-                แสดง {filtered.length} จาก {members.length} รายการ
-              </span>
-              {hasFilter && <button onClick={clearFilters}>ล้างตัวกรองทั้งหมด</button>}
-            </div>
-
             <div className="member-table-wrap">
               <table className="member-table">
                 <thead>
                   <tr>
                     <th>สมาชิก</th>
-                    <th>บทบาท</th>
-                    <th>พื้นที่</th>
-                    <th>กลุ่ม</th>
-                    <th>สถานะ</th>
-                    <th>เข้าร่วมเมื่อ</th>
-                    {isAdmin && <th />}
+                    <th>เพศ / วันเกิด</th>
+                    <th>เบอร์โทร</th>
+                    <th>สถานะสมาชิก</th>
+                    <th>พื้นที่ / กลุ่ม</th>
+                    <th>การติดตาม</th>
+                    <th>วันที่เริ่ม</th>
+                    <th style={{ textAlign: "right" }}>จัดการ</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((member) => {
-                    const tone = toneFor(member.name);
+                  {members.map((m) => {
+                    const tone = toneFor(m.name);
+                    const memInfo = MEMBERSHIP_STATUS_LABELS[m.membershipStatus] || {
+                      label: m.membershipStatus,
+                      tone: "blue",
+                    };
                     return (
-                      <tr key={member.id}>
+                      <tr key={m.id}>
                         <td>
                           <div className="member-name">
-                            <span className={`member-avatar ${tone}`}>{member.name.slice(0, 1)}</span>
+                            <span className={`member-avatar ${tone}`}>{m.name.slice(0, 1)}</span>
                             <div>
-                              <strong>{member.name}</strong>
-                              <small>{member.role}</small>
+                              <strong>
+                                {m.name} {m.nickname ? `(${m.nickname})` : ""}
+                              </strong>
+                              <small>{m.email || m.role}</small>
                             </div>
                           </div>
                         </td>
                         <td>
-                          <span className={`role-chip ${tone}`}>{member.role}</span>
+                          <span>{m.gender === "male" ? "ชาย" : m.gender === "female" ? "หญิง" : "-"}</span>
+                          <small style={{ display: "block", color: "#8b9aa9" }}>{formatDate(m.birthDate)}</small>
                         </td>
-                        <td>{member.area ?? "-"}</td>
-                        <td>{member.group ?? "-"}</td>
+                        <td>{m.phone || "-"}</td>
                         <td>
-                          <span className={`status-chip ${member.status === "ติดตามแล้ว" ? "good" : "attention"}`}>
-                            {member.status}
+                          <span className={`role-chip ${memInfo.tone}`}>{memInfo.label}</span>
+                        </td>
+                        <td>
+                          <div>{m.area || "-"}</div>
+                          <small style={{ color: "#8b9aa9" }}>{m.group || "ยังไม่มีกลุ่ม"}</small>
+                        </td>
+                        <td>
+                          <span className={`status-chip ${m.status === "ติดตามแล้ว" ? "good" : "attention"}`}>
+                            {m.status}
                           </span>
                         </td>
-                        <td>{formatDate(member.joinedAt)}</td>
-                        {isAdmin && (
-                          <td>
-                            <div style={{ display: "flex", gap: 4 }}>
-                              <button
-                                className="row-menu"
-                                aria-label={`แก้ไข ${member.name}`}
-                                onClick={() => openEdit(member)}
-                              >
-                                <Pencil size={ICON_SIZE.md} />
-                              </button>
-                              <button
-                                className="row-menu"
-                                aria-label={`ลบ ${member.name}`}
-                                onClick={() => setDeleteTarget(member)}
-                              >
-                                <Trash2 size={ICON_SIZE.md} />
-                              </button>
-                            </div>
-                          </td>
-                        )}
+                        <td>{formatDate(m.joinedAt)}</td>
+                        <td style={{ textAlign: "right" }}>
+                          {canManage && (
+                            <button
+                              className="row-menu"
+                              onClick={() => openEdit(m)}
+                              title="แก้ไขข้อมูล"
+                              aria-label="แก้ไขข้อมูล"
+                            >
+                              <Pencil size={ICON_SIZE.sm} />
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              className="row-menu"
+                              style={{ color: "#c23b4d" }}
+                              onClick={() => setDeleteTarget(m)}
+                              title="ลบสมาชิก"
+                              aria-label="ลบสมาชิก"
+                            >
+                              <Trash2 size={ICON_SIZE.sm} />
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
 
-              {filtered.length === 0 && (
+              {members.length === 0 && (
                 <div className="empty-members">
                   <Users size={ICON_SIZE["2xl"]} />
                   <h3>ไม่พบสมาชิก</h3>
@@ -361,56 +469,247 @@ export default function Members() {
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {meta.totalPages > 1 && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "16px 4px 10px",
+                  fontSize: 12,
+                  color: "var(--muted)",
+                }}
+              >
+                <span>
+                  แสดงผล {members.length} รายการ (จากทั้งหมด {meta.total} รายการ)
+                </span>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <button
+                    className="cancel-button"
+                    disabled={meta.page <= 1}
+                    onClick={() => loadMembers(meta.page - 1)}
+                  >
+                    <ChevronLeft size={ICON_SIZE.sm} /> ก่อนหน้า
+                  </button>
+                  <span style={{ padding: "0 8px" }}>
+                    หน้า {meta.page} / {meta.totalPages}
+                  </span>
+                  <button
+                    className="cancel-button"
+                    disabled={meta.page >= meta.totalPages}
+                    onClick={() => loadMembers(meta.page + 1)}
+                  >
+                    ถัดไป <ChevronRight size={ICON_SIZE.sm} />
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </section>
 
+      {/* Create / Edit Modal */}
       {formOpen && (
         <div className="modal-backdrop" onClick={() => setFormOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 14px" }}>{editing ? "แก้ไขสมาชิก" : "เพิ่มสมาชิก"}</h3>
+          <div className="modal-card modal-wide" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-heading">
+              <h2>{editing ? "แก้ไขข้อมูลสมาชิก" : "เพิ่มสมาชิกใหม่"}</h2>
+              <button onClick={() => setFormOpen(false)}>
+                <X size={ICON_SIZE.sm} />
+              </button>
+            </div>
+
+            {duplicateWarning && (
+              <div
+                style={{
+                  background: "#fff2d9",
+                  color: "#a05b10",
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  marginBottom: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <AlertCircle size={16} />
+                <span>{duplicateWarning}</span>
+              </div>
+            )}
+
             <form className="form-grid" onSubmit={handleSubmit}>
-              <label className="full-field">
-                ชื่อ-นามสกุล
-                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              {/* Section 1: ข้อมูลพื้นฐาน */}
+              <label>
+                ชื่อ-นามสกุล *
+                <input
+                  required
+                  placeholder="เช่น สมชาย สุขเกษม"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
               </label>
               <label>
-                เบอร์โทร
-                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                ชื่อเล่น
+                <input
+                  placeholder="เช่น ต้น"
+                  value={form.nickname}
+                  onChange={(e) => setForm({ ...form, nickname: e.target.value })}
+                />
               </label>
               <label>
-                อีเมล
-                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              </label>
-              <label>
-                บทบาท
-                <input required value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
-              </label>
-              <label>
-                สถานะ
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as Member["status"] })}>
-                  <option>ติดตามแล้ว</option>
-                  <option>ต้องติดตาม</option>
+                เพศ
+                <select
+                  value={form.gender}
+                  onChange={(e) => setForm({ ...form, gender: e.target.value as Gender })}
+                >
+                  <option value="">-- ไม่ระบุ --</option>
+                  <option value="male">ชาย</option>
+                  <option value="female">หญิง</option>
+                  <option value="other">อื่นๆ</option>
                 </select>
               </label>
               <label>
-                พื้นที่
-                <input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} />
+                วันเกิด
+                <input
+                  type="date"
+                  value={form.birthDate}
+                  onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                />
+              </label>
+
+              {/* Section 2: การติดต่อ */}
+              <label>
+                เบอร์โทรศัพท์
+                <input
+                  placeholder="081-234-5678"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
               </label>
               <label>
-                กลุ่ม
-                <input value={form.group} onChange={(e) => setForm({ ...form, group: e.target.value })} />
+                อีเมล
+                <input
+                  type="email"
+                  placeholder="member@email.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+              </label>
+              <label>
+                LINE ID
+                <input
+                  placeholder="ไอดีไลน์สำหรับติดต่อ"
+                  value={form.lineId}
+                  onChange={(e) => setForm({ ...form, lineId: e.target.value })}
+                />
+              </label>
+              <label>
+                สถานะสมาชิก
+                <select
+                  value={form.membershipStatus}
+                  onChange={(e) =>
+                    setForm({ ...form, membershipStatus: e.target.value as MembershipStatus })
+                  }
+                >
+                  <option value="visitor">ผู้สนใจ/เยี่ยมเยียน</option>
+                  <option value="active">สมาชิกประจำ</option>
+                  <option value="candidate">ผู้เตรียมรับเชื่อ</option>
+                  <option value="transferred">ย้ายคริสตจักร</option>
+                  <option value="inactive">ขาดการติดต่อ</option>
+                </select>
               </label>
               <label className="full-field">
-                หมายเหตุ
-                <textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                ที่อยู่ปัจจุบัน
+                <input
+                  placeholder="บ้านเลขที่ หมู่บ้าน ตำบล อำเภอ จังหวัด"
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                />
               </label>
+
+              {/* Section 3: พันธกิจ & กลุ่ม */}
+              <label>
+                พื้นที่ (Area)
+                <input
+                  placeholder="เช่น อ.เมืองกาฬสินธุ์"
+                  value={form.area}
+                  onChange={(e) => setForm({ ...form, area: e.target.value })}
+                />
+              </label>
+              <label>
+                กลุ่มย่อย (Cell Group)
+                <input
+                  placeholder="เช่น กลุ่มบ้านสันติสุข"
+                  value={form.group}
+                  onChange={(e) => setForm({ ...form, group: e.target.value })}
+                />
+              </label>
+              <label>
+                สถานะการดูแล
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value as Member["status"] })}
+                >
+                  <option value="ต้องติดตาม">ต้องติดตาม</option>
+                  <option value="ติดตามแล้ว">ติดตามแล้ว</option>
+                </select>
+              </label>
+              <label>
+                บทบาทในคริสตจักร
+                <input
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                />
+              </label>
+
+              {/* Section 4: ผู้ติดต่อฉุกเฉิน */}
+              <label>
+                ผู้ติดต่อฉุกเฉิน
+                <input
+                  placeholder="ชื่อ-นามสกุล"
+                  value={form.emergencyContactName}
+                  onChange={(e) => setForm({ ...form, emergencyContactName: e.target.value })}
+                />
+              </label>
+              <label>
+                เบอร์โทรฉุกเฉิน
+                <input
+                  placeholder="เบอร์โทรติดต่อฉุกเฉิน"
+                  value={form.emergencyContactPhone}
+                  onChange={(e) => setForm({ ...form, emergencyContactPhone: e.target.value })}
+                />
+              </label>
+
+              {/* Section 5: PDPA & หมายเหตุภายใน */}
+              <label className="full-field" style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <input
+                  type="checkbox"
+                  style={{ width: "auto" }}
+                  checked={form.consentGiven}
+                  onChange={(e) => setForm({ ...form, consentGiven: e.target.checked })}
+                />
+                <span>ยินยอมให้คริสตจักรเก็บรวบรวมและใช้ข้อมูลส่วนบุคคลตามนโยบายคุ้มครองข้อมูล (PDPA Consent)</span>
+              </label>
+
+              <label className="full-field">
+                บันทึกฝ่ายอภิบาล (Pastoral Notes - เฉพาะเจ้าหน้าที่)
+                <textarea
+                  rows={3}
+                  placeholder="ข้อมูลคำอธิษฐาน ความต้องการฝ่ายวิญญาณ หรือบันทึกการเยี่ยมเยียน..."
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                />
+              </label>
+
               <div className="modal-actions full-field">
                 <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
                   ยกเลิก
                 </button>
                 <button type="submit" className="primary-action" disabled={submitting}>
-                  {submitting ? "กำลังบันทึก..." : "บันทึก"}
+                  {submitting ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
                 </button>
               </div>
             </form>
@@ -418,10 +717,11 @@ export default function Members() {
         </div>
       )}
 
+      {/* Confirm Soft Delete */}
       {deleteTarget && (
         <ConfirmDialog
           title="ยืนยันการลบสมาชิก"
-          description={`ต้องการลบ "${deleteTarget.name}" ออกจากรายชื่อสมาชิกใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+          description={`ต้องการลบ "${deleteTarget.name}" ออกจากรายชื่อสมาชิกใช่หรือไม่? (ข้อมูลจะถูกย้ายไปถังขยะและสามารถกู้คืนได้)`}
           isSubmitting={deleting}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}

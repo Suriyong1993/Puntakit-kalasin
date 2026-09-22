@@ -34,7 +34,7 @@ announcementsRouter.post("/", requireAdmin, async (req, res) => {
   const db = getDb();
   const [created] = await db
     .insert(announcements)
-    .values({ ...parsed.data, createdBy: req.user!.sub })
+    .values({ ...parsed.data, createdBy: req.user!.id })
     .returning();
   res.status(201).json({ success: true, data: created });
 });
