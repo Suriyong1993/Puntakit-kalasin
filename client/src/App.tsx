@@ -17,10 +17,45 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import ComingSoon from "./pages/ComingSoon";
 
+// Member PWA Pages
+import MemberHome from "./pages/member/MemberHome";
+import MemberEvents from "./pages/member/MemberEvents";
+import MemberGroup from "./pages/member/MemberGroup";
+import MemberAttendance from "./pages/member/MemberAttendance";
+import MemberProfile from "./pages/member/MemberProfile";
+
 function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+
+      {/* Member PWA Routes */}
+      <Route path="/app">
+        <ProtectedRoute>
+          <MemberHome />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/app/events">
+        <ProtectedRoute>
+          <MemberEvents />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/app/group">
+        <ProtectedRoute>
+          <MemberGroup />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/app/attendance">
+        <ProtectedRoute>
+          <MemberAttendance />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/app/profile">
+        <ProtectedRoute>
+          <MemberProfile />
+        </ProtectedRoute>
+      </Route>
+
       <Route path="/">
         <ProtectedRoute>
           <Home />

@@ -101,6 +101,7 @@ export const members = pgTable(
       .notNull()
       .default("ต้องติดตาม"),
     assignedLeaderId: text("assigned_leader_id").references(() => users.id, { onDelete: "set null" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
     emergencyContactName: text("emergency_contact_name"),
     emergencyContactPhone: text("emergency_contact_phone"),
     emergencyContactRelation: text("emergency_contact_relation"),
@@ -119,6 +120,7 @@ export const members = pgTable(
     index("members_status_idx").on(table.status),
     index("members_phone_idx").on(table.phone),
     index("members_email_idx").on(table.email),
+    index("members_user_id_idx").on(table.userId),
     index("members_deleted_at_idx").on(table.deletedAt),
   ]
 );
@@ -267,6 +269,85 @@ export const attendanceRecords = pgTable(
   ]
 );
 
+export const PRAYER_CATEGORIES = [
+  "health",
+  "family",
+  "work",
+  "spiritual",
+  "thanksgiving",
+  "other",
+] as const;
+export type PrayerCategory = (typeof PRAYER_CATEGORIES)[number];
+
+export const PRAYER_STATUSES = ["pending", "praying", "answered"] as const;
+export type PrayerStatus = (typeof PRAYER_STATUSES)[number];
+
+export const EVENT_REGISTRATION_STATUSES = ["registered", "cancelled", "attended"] as const;
+export type EventRegistrationStatus = (typeof EVENT_REGISTRATION_STATUSES)[number];
+
+export const eventRegistrations = pgTable(
+  "event_registrations",
+  {
+    id: id(),
+    eventId: text("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    memberId: text("member_id").references(() => members.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    status: text("status", { enum: EVENT_REGISTRATION_STATUSES }).notNull().default("registered"),
+    registeredAt: timestamp("registered_at", { withTimezone: true }).notNull().defaultNow(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("event_registrations_event_user_uniq").on(table.eventId, table.userId),
+    index("event_registrations_event_id_idx").on(table.eventId),
+    index("event_registrations_user_id_idx").on(table.userId),
+    index("event_registrations_member_id_idx").on(table.memberId),
+  ]
+);
+
+export const prayerRequests = pgTable(
+  "prayer_requests",
+  {
+    id: id(),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    memberId: text("member_id").references(() => members.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+    category: text("category", { enum: PRAYER_CATEGORIES }).notNull().default("spiritual"),
+    isConfidential: boolean("is_confidential").notNull().default(false),
+    status: text("status", { enum: PRAYER_STATUSES }).notNull().default("pending"),
+    answeredNotes: text("answered_notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("prayer_requests_user_id_idx").on(table.userId),
+    index("prayer_requests_status_idx").on(table.status),
+    index("prayer_requests_category_idx").on(table.category),
+    index("prayer_requests_created_at_idx").on(table.createdAt),
+  ]
+);
+
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    endpoint: text("endpoint").notNull().unique(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("push_subscriptions_user_id_idx").on(table.userId),
+  ]
+);
+
 export type User = typeof users.$inferSelect;
 export type UserSession = typeof userSessions.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
@@ -278,3 +359,6 @@ export type ChurchProfile = typeof churchProfile.$inferSelect;
 export type Group = typeof groups.$inferSelect;
 export type GroupMember = typeof groupMembers.$inferSelect;
 export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
+export type EventRegistration = typeof eventRegistrations.$inferSelect;
+export type PrayerRequest = typeof prayerRequests.$inferSelect;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;

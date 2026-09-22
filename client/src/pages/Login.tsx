@@ -16,7 +16,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
 
   if (!isLoading && user) {
-    navigate("/");
+    navigate(user.role === "member" ? "/app" : "/");
     return null;
   }
 
@@ -27,7 +27,6 @@ export default function Login() {
     try {
       await login(email, password);
       toast.success("เข้าสู่ระบบสำเร็จ");
-      navigate("/");
     } catch (err) {
       const message = err instanceof ApiError ? err.message : "เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่";
       setError(message);

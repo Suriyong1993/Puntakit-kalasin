@@ -19,6 +19,8 @@ import {
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { api } from "@/lib/api";
+import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ---------------------------------------------------------------------------
 // Data
@@ -571,9 +573,17 @@ interface DashboardSummary {
 }
 
 export default function Home() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [activityOpen, setActivityOpen] = useState(false);
   const [metric, setMetric] = useState<(typeof metrics)[number] | null>(null);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+
+  useEffect(() => {
+    if (user?.role === "member") {
+      navigate("/app");
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     api

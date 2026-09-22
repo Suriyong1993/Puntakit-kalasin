@@ -6,6 +6,7 @@ import {
   GROUP_CATEGORIES,
   GROUP_MEMBER_ROLES,
   MEMBERSHIP_STATUSES,
+  PRAYER_CATEGORIES,
   SERVICE_TYPES,
   USER_ROLES,
 } from "./schema";
@@ -195,3 +196,38 @@ export const consecutiveAbsenceQuerySchema = z.object({
   groupId: z.string().optional(),
 });
 export type ConsecutiveAbsenceQuery = z.infer<typeof consecutiveAbsenceQuerySchema>;
+
+export const memberProfileUpdateSchema = z.object({
+  nickname: z.string().trim().max(100).optional().or(z.literal("")),
+  phone: z.string().trim().max(50).optional().or(z.literal("")),
+  lineId: z.string().trim().max(100).optional().or(z.literal("")),
+  address: z.string().trim().max(500).optional().or(z.literal("")),
+  avatarUrl: z.string().trim().max(500).optional().or(z.literal("")),
+  emergencyContactName: z.string().trim().max(200).optional().or(z.literal("")),
+  emergencyContactPhone: z.string().trim().max(50).optional().or(z.literal("")),
+  emergencyContactRelation: z.string().trim().max(100).optional().or(z.literal("")),
+  consentGiven: z.boolean().optional(),
+});
+export type MemberProfileUpdate = z.infer<typeof memberProfileUpdateSchema>;
+
+export const eventRegistrationSchema = z.object({
+  notes: z.string().trim().max(500).optional().or(z.literal("")),
+});
+export type EventRegistrationInput = z.infer<typeof eventRegistrationSchema>;
+
+export const prayerRequestInputSchema = z.object({
+  title: z.string().trim().min(1, "กรุณากรอกหัวข้อคำขออธิษฐาน").max(300),
+  content: z.string().trim().min(1, "กรุณากรอกรายละเอียด").max(5000),
+  category: z.enum(PRAYER_CATEGORIES).default("spiritual"),
+  isConfidential: z.boolean().default(false),
+});
+export type PrayerRequestInput = z.infer<typeof prayerRequestInputSchema>;
+
+export const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url("Endpoint ไม่ถูกต้อง"),
+  p256dh: z.string().min(1, "Missing p256dh key"),
+  auth: z.string().min(1, "Missing auth secret"),
+  userAgent: z.string().optional(),
+});
+export type PushSubscriptionInput = z.infer<typeof pushSubscriptionSchema>;
+

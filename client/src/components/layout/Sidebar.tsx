@@ -20,6 +20,7 @@ import { Logo } from "./Logo";
 
 export const navItems = [
   { label: "หน้าหลัก", path: "/", icon: HomeIcon },
+  { label: "แอพสมาชิก (PWA)", path: "/app", icon: Sparkles },
   { label: "สมาชิก", path: "/members", icon: Users },
   { label: "กลุ่มแคร์", path: "/groups", icon: UsersRound },
   { label: "เช็คชื่อ/เข้าร่วม", path: "/attendance", icon: UserCheck },
