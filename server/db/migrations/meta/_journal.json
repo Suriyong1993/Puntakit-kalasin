@@ -8,6 +8,13 @@
       "when": 1790035772593,
       "tag": "0000_jittery_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790037311579,
+      "tag": "0001_petite_monster_badoon",
+      "breakpoints": true
     }
   ]
 }

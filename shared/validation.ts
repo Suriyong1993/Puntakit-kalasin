@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { GENDERS, MEMBERSHIP_STATUSES, USER_ROLES } from "./schema";
+import {
+  ATTENDANCE_STATUSES,
+  CHECKIN_METHODS,
+  GENDERS,
+  GROUP_CATEGORIES,
+  GROUP_MEMBER_ROLES,
+  MEMBERSHIP_STATUSES,
+  SERVICE_TYPES,
+  USER_ROLES,
+} from "./schema";
 
 export const memberInputSchema = z.object({
   name: z.string().trim().min(1, "กรุณากรอกชื่อ").max(200),
@@ -103,3 +112,86 @@ export const changePasswordInputSchema = z.object({
   newPassword: z.string().min(8, "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร").max(200),
 });
 export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
+
+export const groupInputSchema = z.object({
+  name: z.string().trim().min(1, "กรุณากรอกชื่อกลุ่ม").max(200),
+  leaderId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  category: z.enum(GROUP_CATEGORIES).default("cell"),
+  meetingDay: z.string().trim().max(100).optional().or(z.literal("")),
+  meetingTime: z.string().trim().max(100).optional().or(z.literal("")),
+  meetingLocation: z.string().trim().max(300).optional().or(z.literal("")),
+  description: z.string().trim().max(3000).optional().or(z.literal("")),
+  status: z.enum(["active", "inactive"]).default("active"),
+});
+export type GroupInput = z.infer<typeof groupInputSchema>;
+
+export const groupQuerySchema = z.object({
+  search: z.string().trim().optional(),
+  category: z.enum(GROUP_CATEGORIES).optional(),
+  status: z.enum(["active", "inactive"]).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type GroupQuery = z.infer<typeof groupQuerySchema>;
+
+export const groupMemberInputSchema = z.object({
+  memberId: z.string().uuid("รหัสสมาชิกไม่ถูกต้อง"),
+  role: z.enum(GROUP_MEMBER_ROLES).default("member"),
+});
+export type GroupMemberInput = z.infer<typeof groupMemberInputSchema>;
+
+export const attendanceInputSchema = z.object({
+  date: z.coerce.date(),
+  serviceType: z.enum(SERVICE_TYPES).default("sunday_service"),
+  groupId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  eventId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  memberId: z.string().uuid("รหัสสมาชิกไม่ถูกต้อง"),
+  status: z.enum(ATTENDANCE_STATUSES).default("present"),
+  checkInMethod: z.enum(CHECKIN_METHODS).default("manual"),
+  notes: z.string().trim().max(500).optional().or(z.literal("")),
+});
+export type AttendanceInput = z.infer<typeof attendanceInputSchema>;
+
+export const bulkAttendanceItemSchema = z.object({
+  memberId: z.string().uuid("รหัสสมาชิกไม่ถูกต้อง"),
+  status: z.enum(ATTENDANCE_STATUSES).default("present"),
+  checkInMethod: z.enum(CHECKIN_METHODS).default("manual"),
+  notes: z.string().trim().max(500).optional().or(z.literal("")),
+});
+
+export const bulkAttendanceInputSchema = z.object({
+  date: z.coerce.date(),
+  serviceType: z.enum(SERVICE_TYPES).default("sunday_service"),
+  groupId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  eventId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  records: z.array(bulkAttendanceItemSchema).min(1, "กรุณาระบุข้อมูลการเช็คชื่ออย่างน้อย 1 รายการ"),
+});
+export type BulkAttendanceInput = z.infer<typeof bulkAttendanceInputSchema>;
+
+export const qrCheckInSchema = z.object({
+  token: z.string().trim().min(1, "รหัส QR ไม่ถูกต้อง"),
+  serviceType: z.enum(SERVICE_TYPES).default("sunday_service"),
+  groupId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  eventId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  date: z.coerce.date().optional(),
+});
+export type QrCheckInInput = z.infer<typeof qrCheckInSchema>;
+
+export const attendanceQuerySchema = z.object({
+  startDate: z.string().trim().optional(),
+  endDate: z.string().trim().optional(),
+  serviceType: z.enum(SERVICE_TYPES).optional(),
+  groupId: z.string().optional(),
+  memberId: z.string().optional(),
+  status: z.enum(ATTENDANCE_STATUSES).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+export type AttendanceQuery = z.infer<typeof attendanceQuerySchema>;
+
+export const consecutiveAbsenceQuerySchema = z.object({
+  threshold: z.coerce.number().int().min(1).max(20).default(3),
+  serviceType: z.enum(SERVICE_TYPES).default("sunday_service"),
+  groupId: z.string().optional(),
+});
+export type ConsecutiveAbsenceQuery = z.infer<typeof consecutiveAbsenceQuerySchema>;

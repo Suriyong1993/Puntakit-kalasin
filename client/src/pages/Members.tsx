@@ -8,6 +8,7 @@ import {
   Eye,
   Heart,
   Pencil,
+  QrCode,
   Search,
   ShieldCheck,
   Trash2,
@@ -16,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import QRCode from "qrcode";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ICON_SIZE } from "@/lib/icon-sizes";
@@ -114,12 +116,23 @@ export default function Members() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Member | null>(null);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (selectedMember) {
+      QRCode.toDataURL(`PK-MEM-${selectedMember.id}`, { width: 140, margin: 1, color: { dark: "#173b70", light: "#ffffff" } })
+        .then(setQrCodeDataUrl)
+        .catch(() => setQrCodeDataUrl(""));
+    } else {
+      setQrCodeDataUrl("");
+    }
+  }, [selectedMember]);
 
   const loadMembers = useCallback(
     async (pageToLoad: number = 1) => {
@@ -775,6 +788,13 @@ export default function Members() {
                   )}
                 </div>
               </div>
+
+              {qrCodeDataUrl && (
+                <div style={{ textAlign: "center", background: "#fff", padding: "8px", borderRadius: "12px", border: "1px solid #d9e6f3", flexShrink: 0 }}>
+                  <img src={qrCodeDataUrl} alt="Member QR Code" style={{ width: "80px", height: "80px", display: "block" }} />
+                  <div style={{ fontSize: "9px", color: "#6a7e93", marginTop: "3px", fontWeight: 600 }}>Personal QR</div>
+                </div>
+              )}
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, fontSize: 12 }}>

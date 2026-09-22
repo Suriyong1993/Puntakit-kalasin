@@ -7,6 +7,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Members from "./pages/Members";
+import Groups from "./pages/Groups";
+import Attendance from "./pages/Attendance";
 import Announcements from "./pages/Announcements";
 import Events from "./pages/Events";
 import Church from "./pages/Church";
@@ -27,6 +29,16 @@ function Router() {
       <Route path="/members">
         <ProtectedRoute>
           <Members />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/groups">
+        <ProtectedRoute>
+          <Groups />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/attendance">
+        <ProtectedRoute>
+          <Attendance />
         </ProtectedRoute>
       </Route>
       <Route path="/profile">

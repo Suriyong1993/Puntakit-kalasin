@@ -8,6 +8,8 @@ import { eventsRouter } from "./routes/events";
 import { ministriesRouter } from "./routes/ministries";
 import { churchProfileRouter } from "./routes/churchProfile";
 import { dashboardRouter } from "./routes/dashboard";
+import { groupsRouter } from "./routes/groups";
+import { attendanceRouter } from "./routes/attendance";
 import { requestIdMiddleware } from "./middleware/requestId";
 import { AppError } from "./lib/errors";
 import { getDb } from "./db/client";
@@ -23,6 +25,8 @@ export function createApp() {
   app.use("/api/auth", authRouter);
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/members", membersRouter);
+  app.use("/api/groups", groupsRouter);
+  app.use("/api/attendance", attendanceRouter);
   app.use("/api/announcements", announcementsRouter);
   app.use("/api/events", eventsRouter);
   app.use("/api/ministries", ministriesRouter);

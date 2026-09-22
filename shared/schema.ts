@@ -1,4 +1,4 @@
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { randomUUID } from "node:crypto";
 
 const id = () =>
@@ -174,6 +174,99 @@ export const churchProfile = pgTable("church_profile", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const GROUP_CATEGORIES = ["cell", "youth", "fellowship", "family", "general"] as const;
+export type GroupCategory = (typeof GROUP_CATEGORIES)[number];
+
+export const GROUP_MEMBER_ROLES = ["leader", "assistant_leader", "host", "member"] as const;
+export type GroupMemberRole = (typeof GROUP_MEMBER_ROLES)[number];
+
+export const SERVICE_TYPES = [
+  "sunday_service",
+  "care_group",
+  "prayer_meeting",
+  "youth_service",
+  "special_event",
+] as const;
+export type ServiceType = (typeof SERVICE_TYPES)[number];
+
+export const ATTENDANCE_STATUSES = ["present", "absent", "leave", "online"] as const;
+export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
+
+export const CHECKIN_METHODS = ["manual", "qr_scan", "self_qr", "kiosk"] as const;
+export type CheckInMethod = (typeof CHECKIN_METHODS)[number];
+
+export const groups = pgTable(
+  "groups",
+  {
+    id: id(),
+    name: text("name").notNull(),
+    leaderId: text("leader_id").references(() => users.id, { onDelete: "set null" }),
+    category: text("category", { enum: GROUP_CATEGORIES }).default("cell"),
+    meetingDay: text("meeting_day"),
+    meetingTime: text("meeting_time"),
+    meetingLocation: text("meeting_location"),
+    description: text("description"),
+    status: text("status", { enum: ["active", "inactive"] }).notNull().default("active"),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("groups_status_idx").on(table.status),
+    index("groups_leader_id_idx").on(table.leaderId),
+    index("groups_deleted_at_idx").on(table.deletedAt),
+  ]
+);
+
+export const groupMembers = pgTable(
+  "group_members",
+  {
+    id: id(),
+    groupId: text("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    role: text("role", { enum: GROUP_MEMBER_ROLES }).notNull().default("member"),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("group_members_group_member_uniq").on(table.groupId, table.memberId),
+    index("group_members_group_id_idx").on(table.groupId),
+    index("group_members_member_id_idx").on(table.memberId),
+  ]
+);
+
+export const attendanceRecords = pgTable(
+  "attendance_records",
+  {
+    id: id(),
+    date: timestamp("date", { withTimezone: true }).notNull(),
+    serviceType: text("service_type", { enum: SERVICE_TYPES }).notNull().default("sunday_service"),
+    groupId: text("group_id").references(() => groups.id, { onDelete: "set null" }),
+    eventId: text("event_id").references(() => events.id, { onDelete: "set null" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    status: text("status", { enum: ATTENDANCE_STATUSES }).notNull().default("present"),
+    checkInMethod: text("check_in_method", { enum: CHECKIN_METHODS }).notNull().default("manual"),
+    checkedInBy: text("checked_in_by").references(() => users.id, { onDelete: "set null" }),
+    checkedInAt: timestamp("checked_in_at", { withTimezone: true }).notNull().defaultNow(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("attendance_date_idx").on(table.date),
+    index("attendance_service_type_idx").on(table.serviceType),
+    index("attendance_group_id_idx").on(table.groupId),
+    index("attendance_member_id_idx").on(table.memberId),
+    index("attendance_status_idx").on(table.status),
+  ]
+);
+
 export type User = typeof users.$inferSelect;
 export type UserSession = typeof userSessions.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
@@ -182,3 +275,6 @@ export type Announcement = typeof announcements.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type Ministry = typeof ministries.$inferSelect;
 export type ChurchProfile = typeof churchProfile.$inferSelect;
+export type Group = typeof groups.$inferSelect;
+export type GroupMember = typeof groupMembers.$inferSelect;
+export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
