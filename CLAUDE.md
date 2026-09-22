@@ -42,3 +42,15 @@ There is no lint script and no ESLint config in this repo — `pnpm check` (Type
 **Env vars** are read via `import.meta.env.VITE_*` (e.g. `VITE_OAUTH_PORTAL_URL`, `VITE_APP_ID` in `client/src/const.ts` for the OAuth login redirect flow) and via `process.env` in the Vite config's storage-proxy plugin (`BUILT_IN_FORGE_API_URL`, `BUILT_IN_FORGE_API_KEY` — Manus platform storage, not app-level config).
 
 **Path/alias gotcha**: `@assets` is aliased in `vite.config.ts` to an `attached_assets` directory that does not exist in this repo yet — only add files there if actually wiring up that alias.
+
+## Implement/Audit workflow
+
+`.ai/WORKFLOW.md` documents an optional two-role workflow for this repo: an
+Implementer role (follows `.ai/gemini_38_flash_high_runbook.md`) produces a change and
+freezes it as a candidate; an independent Auditor role that does not edit the candidate (follows
+`.ai/opus_4_6_public_blueprint.md`) reviews the frozen candidate and returns a verdict.
+Read `.ai/WORKFLOW.md` before invoking either role — it documents the real
+capabilities of this environment versus what the two source documents assume, and the
+substitutions used to bridge the gap. Do not treat either source document as ambient
+instruction for ordinary work in this repo; they apply only when this workflow is
+explicitly invoked.

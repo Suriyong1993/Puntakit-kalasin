@@ -21,3 +21,23 @@
 .coming-soon-page{min-height:calc(100vh - 125px);display:grid;place-items:center}.coming-soon-card{width:min(520px,100%);padding:44px 32px;text-align:center}.coming-soon-icon{width:76px;height:76px;border-radius:25px;display:grid;place-items:center;margin:0 auto 18px;color:#2f6fcc;background:#e5f1ff}.coming-soon-card h1{margin:8px 0 5px;color:var(--ink);font-size:30px}.coming-soon-card p{margin:0 auto;color:#71839a;font-size:13px;line-height:1.7;max-width:360px}.coming-soon-note{display:flex;align-items:center;justify-content:center;gap:7px;margin:23px 0;color:#6d8198;background:#f4f8fc;border-radius:12px;padding:11px;font-size:11px}.coming-soon-card .primary-action{margin:0 auto}
 @media (max-width:640px){.coming-soon-card{padding:30px 20px}.coming-soon-card h1{font-size:25px}}
 
+/* TailAdmin inspired utilities */
+.tailadmin-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+.tailadmin-card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(241, 245, 249, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tailadmin-card-body {
+  padding: 1.5rem;
+}
+

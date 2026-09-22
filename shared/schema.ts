@@ -1,4 +1,4 @@
-import { boolean, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { randomUUID } from "node:crypto";
 
 const id = () =>
@@ -176,8 +176,32 @@ export const churchProfile = pgTable("church_profile", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const GROUP_CATEGORIES = ["cell", "youth", "fellowship", "family", "general"] as const;
+export const GROUP_CATEGORIES = [
+  "cell",
+  "bible_study",
+  "prayer",
+  "youth",
+  "kids",
+  "family",
+  "men",
+  "women",
+  "volunteer",
+  "online",
+  "ministry",
+  "fellowship",
+  "general",
+  "other",
+] as const;
 export type GroupCategory = (typeof GROUP_CATEGORIES)[number];
+
+export const GROUP_STATUSES = ["active", "paused", "closed"] as const;
+export type GroupStatus = (typeof GROUP_STATUSES)[number];
+
+export const GROUP_PRIVACIES = ["public", "private", "confidential"] as const;
+export type GroupPrivacy = (typeof GROUP_PRIVACIES)[number];
+
+export const GROUP_MEMBER_STATUSES = ["active", "inactive"] as const;
+export type GroupMemberStatus = (typeof GROUP_MEMBER_STATUSES)[number];
 
 export const GROUP_MEMBER_ROLES = ["leader", "assistant_leader", "host", "member"] as const;
 export type GroupMemberRole = (typeof GROUP_MEMBER_ROLES)[number];
@@ -203,12 +227,22 @@ export const groups = pgTable(
     id: id(),
     name: text("name").notNull(),
     leaderId: text("leader_id").references(() => users.id, { onDelete: "set null" }),
-    category: text("category", { enum: GROUP_CATEGORIES }).default("cell"),
+    coLeaderId: text("co_leader_id").references(() => users.id, { onDelete: "set null" }),
+    category: text("category", { enum: GROUP_CATEGORIES }).notNull().default("cell"),
+    privacy: text("privacy", { enum: GROUP_PRIVACIES }).notNull().default("public"),
+    status: text("status", { enum: GROUP_STATUSES }).notNull().default("active"),
+    area: text("area"),
     meetingDay: text("meeting_day"),
     meetingTime: text("meeting_time"),
     meetingLocation: text("meeting_location"),
+    latitude: text("latitude"),
+    longitude: text("longitude"),
+    maxMembers: integer("max_members"),
+    isOpen: boolean("is_open").notNull().default(true),
+    avatarUrl: text("avatar_url"),
+    coverUrl: text("cover_url"),
+    startDate: timestamp("start_date", { withTimezone: true }),
     description: text("description"),
-    status: text("status", { enum: ["active", "inactive"] }).notNull().default("active"),
     createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -216,7 +250,11 @@ export const groups = pgTable(
   },
   (table) => [
     index("groups_status_idx").on(table.status),
+    index("groups_privacy_idx").on(table.privacy),
+    index("groups_category_idx").on(table.category),
+    index("groups_area_idx").on(table.area),
     index("groups_leader_id_idx").on(table.leaderId),
+    index("groups_co_leader_id_idx").on(table.coLeaderId),
     index("groups_deleted_at_idx").on(table.deletedAt),
   ]
 );
@@ -232,13 +270,17 @@ export const groupMembers = pgTable(
       .notNull()
       .references(() => members.id, { onDelete: "cascade" }),
     role: text("role", { enum: GROUP_MEMBER_ROLES }).notNull().default("member"),
+    status: text("status", { enum: GROUP_MEMBER_STATUSES }).notNull().default("active"),
     joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+    leftAt: timestamp("left_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     uniqueIndex("group_members_group_member_uniq").on(table.groupId, table.memberId),
     index("group_members_group_id_idx").on(table.groupId),
     index("group_members_member_id_idx").on(table.memberId),
+    index("group_members_group_id_status_idx").on(table.groupId, table.status),
+    index("group_members_member_id_status_idx").on(table.memberId, table.status),
   ]
 );
 
@@ -266,6 +308,8 @@ export const attendanceRecords = pgTable(
     index("attendance_group_id_idx").on(table.groupId),
     index("attendance_member_id_idx").on(table.memberId),
     index("attendance_status_idx").on(table.status),
+    index("attendance_group_member_date_status_idx").on(table.groupId, table.memberId, table.date, table.status),
+    index("attendance_member_date_status_idx").on(table.memberId, table.date, table.status),
   ]
 );
 

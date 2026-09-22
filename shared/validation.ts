@@ -5,6 +5,9 @@ import {
   GENDERS,
   GROUP_CATEGORIES,
   GROUP_MEMBER_ROLES,
+  GROUP_MEMBER_STATUSES,
+  GROUP_PRIVACIES,
+  GROUP_STATUSES,
   MEMBERSHIP_STATUSES,
   PRAYER_CATEGORIES,
   SERVICE_TYPES,
@@ -117,19 +120,31 @@ export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
 export const groupInputSchema = z.object({
   name: z.string().trim().min(1, "กรุณากรอกชื่อกลุ่ม").max(200),
   leaderId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  coLeaderId: z.string().uuid().optional().or(z.literal("")).nullable(),
   category: z.enum(GROUP_CATEGORIES).default("cell"),
+  privacy: z.enum(GROUP_PRIVACIES).default("public"),
+  status: z.enum(GROUP_STATUSES).default("active"),
+  area: z.string().trim().max(100).optional().or(z.literal("")).nullable(),
   meetingDay: z.string().trim().max(100).optional().or(z.literal("")),
   meetingTime: z.string().trim().max(100).optional().or(z.literal("")),
   meetingLocation: z.string().trim().max(300).optional().or(z.literal("")),
+  latitude: z.string().trim().max(50).optional().or(z.literal("")).nullable(),
+  longitude: z.string().trim().max(50).optional().or(z.literal("")).nullable(),
+  maxMembers: z.coerce.number().int().min(1).max(500).optional().nullable(),
+  isOpen: z.boolean().default(true),
+  avatarUrl: z.string().trim().max(500).optional().or(z.literal("")).nullable(),
+  coverUrl: z.string().trim().max(500).optional().or(z.literal("")).nullable(),
+  startDate: z.coerce.date().optional().nullable(),
   description: z.string().trim().max(3000).optional().or(z.literal("")),
-  status: z.enum(["active", "inactive"]).default("active"),
 });
 export type GroupInput = z.infer<typeof groupInputSchema>;
 
 export const groupQuerySchema = z.object({
   search: z.string().trim().optional(),
   category: z.enum(GROUP_CATEGORIES).optional(),
-  status: z.enum(["active", "inactive"]).optional(),
+  status: z.enum(GROUP_STATUSES).optional(),
+  privacy: z.enum(GROUP_PRIVACIES).optional(),
+  area: z.string().trim().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
@@ -138,8 +153,15 @@ export type GroupQuery = z.infer<typeof groupQuerySchema>;
 export const groupMemberInputSchema = z.object({
   memberId: z.string().uuid("รหัสสมาชิกไม่ถูกต้อง"),
   role: z.enum(GROUP_MEMBER_ROLES).default("member"),
+  status: z.enum(GROUP_MEMBER_STATUSES).default("active"),
 });
 export type GroupMemberInput = z.infer<typeof groupMemberInputSchema>;
+
+export const groupMemberUpdateSchema = z.object({
+  role: z.enum(GROUP_MEMBER_ROLES).optional(),
+  status: z.enum(GROUP_MEMBER_STATUSES).optional(),
+});
+export type GroupMemberUpdate = z.infer<typeof groupMemberUpdateSchema>;
 
 export const attendanceInputSchema = z.object({
   date: z.coerce.date(),

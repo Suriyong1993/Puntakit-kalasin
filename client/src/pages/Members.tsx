@@ -281,136 +281,204 @@ export default function Members() {
 
   return (
     <AppLayout>
-      <div className="page-heading">
+      {/* Page Heading */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="eyebrow">CHURCH MEMBERS</span>
-          <h1>จัดการสมาชิก</h1>
-          <p>ข้อมูลสมาชิก การจัดกลุ่มย่อย และกระบวนการติดตามความเชื่อ</p>
+          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+            CHURCH MEMBERS • ทะเบียนสมาชิก
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+            จัดการสมาชิก
+          </h1>
+          <p className="text-xs text-slate-500">
+            ข้อมูลสมาชิก การจัดกลุ่มย่อย และกระบวนการติดตามความเชื่อ
+          </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button className="cancel-button" type="button" onClick={handleExportCsv}>
+        <div className="flex items-center gap-2">
+          <button
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+            type="button"
+            onClick={handleExportCsv}
+          >
             <Download size={ICON_SIZE.sm} /> Export CSV
           </button>
           {canManage && (
-            <button className="primary-action" type="button" onClick={openCreate}>
+            <button
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs"
+              type="button"
+              onClick={openCreate}
+            >
               <UserPlus size={ICON_SIZE.sm} /> เพิ่มสมาชิก
             </button>
           )}
         </div>
       </div>
 
-      <div className="member-summary">
-        <div className="summary-card blue">
-          <div className="summary-icon">
-            <Users size={ICON_SIZE.lg} />
+      {/* TailAdmin 4-Card Summary */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        <div className="tailadmin-card p-4 sm:p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              สมาชิกในระบบ
+            </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <Users size={ICON_SIZE.md} />
+            </div>
           </div>
-          <div>
-            <small>สมาชิกในระบบ</small>
-            <strong>{meta.total}</strong>
-            <span>คน</span>
-          </div>
-        </div>
-        <div className="summary-card green">
-          <div className="summary-icon">
-            <Heart size={ICON_SIZE.lg} />
-          </div>
-          <div>
-            <small>ติดตามแล้ว</small>
-            <strong>{followedUpCount}</strong>
-            <span>คนในหน้านี้</span>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
+              {meta.total}
+            </span>
+            <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
         </div>
-        <div className="summary-card orange">
-          <div className="summary-icon">
-            <AlertCircle size={ICON_SIZE.lg} />
+
+        <div className="tailadmin-card p-4 sm:p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              ติดตามแล้ว
+            </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <Heart size={ICON_SIZE.md} />
+            </div>
           </div>
-          <div>
-            <small>ต้องติดตาม</small>
-            <strong>{needFollowUpCount}</strong>
-            <span>คนในหน้านี้</span>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
+              {followedUpCount}
+            </span>
+            <span className="text-xs text-slate-500 font-medium">คนในหน้านี้</span>
           </div>
         </div>
-        <div className="summary-card purple">
-          <div className="summary-icon">
-            <CalendarDays size={ICON_SIZE.lg} />
+
+        <div className="tailadmin-card p-4 sm:p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              ต้องติดตาม
+            </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+              <AlertCircle size={ICON_SIZE.md} />
+            </div>
           </div>
-          <div>
-            <small>หน้าปัจจุบัน</small>
-            <strong>{meta.page}</strong>
-            <span>จาก {meta.totalPages} หน้า</span>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
+              {needFollowUpCount}
+            </span>
+            <span className="text-xs text-slate-500 font-medium">คนในหน้านี้</span>
+          </div>
+        </div>
+
+        <div className="tailadmin-card p-4 sm:p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              หน้าปัจจุบัน
+            </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+              <CalendarDays size={ICON_SIZE.md} />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
+              {meta.page}
+            </span>
+            <span className="text-xs text-slate-500 font-medium">จาก {meta.totalPages} หน้า</span>
           </div>
         </div>
       </div>
 
-      <section className="member-panel card-surface">
-        <div className="member-toolbar">
-          <label className="member-search">
-            <Search size={ICON_SIZE.md} />
+      {/* TailAdmin Table Card */}
+      <section className="tailadmin-card overflow-hidden">
+        {/* Toolbar */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[240px]">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+              <Search size={ICON_SIZE.sm} />
+            </span>
             <input
+              type="text"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-9 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
               placeholder="ค้นหาชื่อ, ชื่อเล่น, เบอร์โทร หรืออีเมล..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
             {query && (
-              <button onClick={() => setQuery("")}>
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
                 <X size={ICON_SIZE.xs} />
               </button>
             )}
-          </label>
+          </div>
 
-          <span className="filter-label">สถานะ:</span>
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="ทั้งหมด">ทั้งหมด</option>
-            <option value="ติดตามแล้ว">ติดตามแล้ว</option>
-            <option value="ต้องติดตาม">ต้องติดตาม</option>
-          </select>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-500">สถานะ:</span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+            >
+              <option value="ทั้งหมด">ทั้งหมด</option>
+              <option value="ติดตามแล้ว">ติดตามแล้ว</option>
+              <option value="ต้องติดตาม">ต้องติดตาม</option>
+            </select>
+          </div>
 
-          <span className="filter-label">ประเภทสมาชิก:</span>
-          <select value={membershipStatus} onChange={(e) => setMembershipStatus(e.target.value)}>
-            <option value="ทั้งหมด">ทั้งหมด</option>
-            <option value="active">สมาชิกประจำ</option>
-            <option value="visitor">ผู้สนใจ/เยี่ยมเยียน</option>
-            <option value="candidate">ผู้เตรียมรับเชื่อ</option>
-            <option value="transferred">ย้ายคริสตจักร</option>
-            <option value="inactive">ขาดการติดต่อ</option>
-          </select>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-500">ประเภทสมาชิก:</span>
+            <select
+              value={membershipStatus}
+              onChange={(e) => setMembershipStatus(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+            >
+              <option value="ทั้งหมด">ทั้งหมด</option>
+              <option value="active">สมาชิกประจำ</option>
+              <option value="visitor">ผู้สนใจ/เยี่ยมเยียน</option>
+              <option value="candidate">ผู้เตรียมรับเชื่อ</option>
+              <option value="transferred">ย้ายคริสตจักร</option>
+              <option value="inactive">ขาดการติดต่อ</option>
+            </select>
+          </div>
         </div>
 
         {error && (
-          <div className="state-panel error-panel">
-            <AlertCircle size={ICON_SIZE.xl} />
-            <h3>เกิดข้อผิดพลาด</h3>
-            <p>{error}</p>
-            <button className="retry-button" onClick={() => loadMembers(meta.page)}>
+          <div className="p-10 text-center text-rose-600">
+            <AlertCircle size={ICON_SIZE.xl} className="mx-auto mb-2 text-rose-500" />
+            <h3 className="font-bold text-sm">เกิดข้อผิดพลาด</h3>
+            <p className="text-xs text-slate-500 mt-1">{error}</p>
+            <button
+              className="mt-4 rounded-xl bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-100"
+              onClick={() => loadMembers(meta.page)}
+            >
               ลองใหม่อีกครั้ง
             </button>
           </div>
         )}
 
         {isLoading && !error && (
-          <div className="state-panel">
-            <div className="spinner" style={{ margin: "0 auto 12px" }} />
+          <div className="p-12 text-center text-slate-500 text-xs">
+            <div className="spinner mx-auto mb-3" />
             <p>กำลังโหลดรายชื่อสมาชิก...</p>
           </div>
         )}
 
         {!isLoading && !error && (
           <>
-            <div className="member-table-wrap">
-              <table className="member-table">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr>
-                    <th>สมาชิก</th>
-                    <th>เพศ / วันเกิด</th>
-                    <th>เบอร์โทร</th>
-                    <th>สถานะสมาชิก</th>
-                    <th>พื้นที่ / กลุ่ม</th>
-                    <th>การติดตาม</th>
-                    <th>วันที่เริ่ม</th>
-                    <th style={{ textAlign: "right" }}>จัดการ</th>
+                  <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    <th className="py-3.5 px-4">สมาชิก</th>
+                    <th className="py-3.5 px-4">เพศ / วันเกิด</th>
+                    <th className="py-3.5 px-4">เบอร์โทร</th>
+                    <th className="py-3.5 px-4">สถานะสมาชิก</th>
+                    <th className="py-3.5 px-4">พื้นที่ / กลุ่ม</th>
+                    <th className="py-3.5 px-4">การติดตาม</th>
+                    <th className="py-3.5 px-4">วันที่เริ่ม</th>
+                    <th className="py-3.5 px-4 text-right">จัดการ</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100">
                   {members.map((m) => {
                     const tone = toneFor(m.name);
                     const memInfo = MEMBERSHIP_STATUS_LABELS[m.membershipStatus] || {
@@ -418,66 +486,85 @@ export default function Members() {
                       tone: "blue",
                     };
                     return (
-                      <tr key={m.id}>
-                        <td>
-                          <div className="member-name">
-                            <span className={`member-avatar ${tone}`}>{m.name.slice(0, 1)}</span>
-                            <div>
-                              <strong>
+                      <tr key={m.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                              {m.name.slice(0, 1)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-slate-800 truncate">
                                 {m.name} {m.nickname ? `(${m.nickname})` : ""}
-                              </strong>
-                              <small>{m.email || m.role}</small>
+                              </p>
+                              <p className="text-[11px] text-slate-400 truncate">
+                                {m.email || m.role}
+                              </p>
                             </div>
                           </div>
                         </td>
-                        <td>
+                        <td className="py-3 px-4 text-slate-600">
                           <span>{m.gender === "male" ? "ชาย" : m.gender === "female" ? "หญิง" : "-"}</span>
-                          <small style={{ display: "block", color: "#8b9aa9" }}>{formatDate(m.birthDate)}</small>
+                          <small className="block text-slate-400 text-[10px]">{formatDate(m.birthDate)}</small>
                         </td>
-                        <td>{m.phone || "-"}</td>
-                        <td>
-                          <span className={`role-chip ${memInfo.tone}`}>{memInfo.label}</span>
+                        <td className="py-3 px-4 font-mono text-slate-700">{m.phone || "-"}</td>
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                            memInfo.tone === "green"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : memInfo.tone === "orange"
+                              ? "bg-amber-50 text-amber-700"
+                              : "bg-blue-50 text-blue-700"
+                          }`}>
+                            {memInfo.label}
+                          </span>
                         </td>
-                        <td>
-                          <div>{m.area || "-"}</div>
-                          <small style={{ color: "#8b9aa9" }}>{m.group || "ยังไม่มีกลุ่ม"}</small>
+                        <td className="py-3 px-4 text-slate-600">
+                          <div className="font-medium text-slate-800">{m.area || "-"}</div>
+                          <small className="text-slate-400 text-[10px]">{m.group || "ยังไม่มีกลุ่ม"}</small>
                         </td>
-                        <td>
-                          <span className={`status-chip ${m.status === "ติดตามแล้ว" ? "good" : "attention"}`}>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                              m.status === "ติดตามแล้ว"
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50 text-amber-700"
+                            }`}
+                          >
                             {m.status}
                           </span>
                         </td>
-                        <td>{formatDate(m.joinedAt)}</td>
-                        <td style={{ textAlign: "right" }}>
-                          <button
-                            className="row-menu"
-                            onClick={() => setSelectedMember(m)}
-                            title="ดูข้อมูลละเอียด"
-                            aria-label="ดูข้อมูลละเอียด"
-                          >
-                            <Eye size={ICON_SIZE.sm} />
-                          </button>
-                          {canManage && (
+                        <td className="py-3 px-4 text-slate-500">{formatDate(m.joinedAt)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
                             <button
-                              className="row-menu"
-                              onClick={() => openEdit(m)}
-                              title="แก้ไขข้อมูล"
-                              aria-label="แก้ไขข้อมูล"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors"
+                              onClick={() => setSelectedMember(m)}
+                              title="ดูข้อมูลละเอียด"
+                              aria-label="ดูข้อมูลละเอียด"
                             >
-                              <Pencil size={ICON_SIZE.sm} />
+                              <Eye size={ICON_SIZE.sm} />
                             </button>
-                          )}
-                          {canDelete && (
-                            <button
-                              className="row-menu"
-                              style={{ color: "#c23b4d" }}
-                              onClick={() => setDeleteTarget(m)}
-                              title="ลบสมาชิก"
-                              aria-label="ลบสมาชิก"
-                            >
-                              <Trash2 size={ICON_SIZE.sm} />
-                            </button>
-                          )}
+                            {canManage && (
+                              <button
+                                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600 transition-colors"
+                                onClick={() => openEdit(m)}
+                                title="แก้ไขข้อมูล"
+                                aria-label="แก้ไขข้อมูล"
+                              >
+                                <Pencil size={ICON_SIZE.sm} />
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button
+                                className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                                onClick={() => setDeleteTarget(m)}
+                                title="ลบสมาชิก"
+                                aria-label="ลบสมาชิก"
+                              >
+                                <Trash2 size={ICON_SIZE.sm} />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -486,46 +573,37 @@ export default function Members() {
               </table>
 
               {members.length === 0 && (
-                <div className="empty-members">
-                  <Users size={ICON_SIZE["2xl"]} />
-                  <h3>ไม่พบสมาชิก</h3>
-                  <p>ลองเปลี่ยนคำค้นหาหรือตัวกรองดูอีกครั้ง</p>
+                <div className="p-12 text-center text-slate-400">
+                  <Users size={40} className="mx-auto text-slate-300 mb-2" />
+                  <h3 className="font-semibold text-slate-700 text-sm">ไม่พบสมาชิก</h3>
+                  <p className="text-xs text-slate-400 mt-1">ลองเปลี่ยนคำค้นหาหรือตัวกรองดูอีกครั้ง</p>
                 </div>
               )}
             </div>
 
             {/* Pagination Controls */}
             {meta.totalPages > 1 && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "16px 4px 10px",
-                  fontSize: 12,
-                  color: "var(--muted)",
-                }}
-              >
+              <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
                 <span>
                   แสดงผล {members.length} รายการ (จากทั้งหมด {meta.total} รายการ)
                 </span>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <div className="flex items-center gap-2">
                   <button
-                    className="cancel-button"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 font-medium hover:bg-slate-50 disabled:opacity-50 transition-colors"
                     disabled={meta.page <= 1}
                     onClick={() => loadMembers(meta.page - 1)}
                   >
-                    <ChevronLeft size={ICON_SIZE.sm} /> ก่อนหน้า
+                    <ChevronLeft size={ICON_SIZE.xs} /> ก่อนหน้า
                   </button>
-                  <span style={{ padding: "0 8px" }}>
+                  <span className="px-2 font-medium text-slate-700">
                     หน้า {meta.page} / {meta.totalPages}
                   </span>
                   <button
-                    className="cancel-button"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 font-medium hover:bg-slate-50 disabled:opacity-50 transition-colors"
                     disabled={meta.page >= meta.totalPages}
                     onClick={() => loadMembers(meta.page + 1)}
                   >
-                    ถัดไป <ChevronRight size={ICON_SIZE.sm} />
+                    ถัดไป <ChevronRight size={ICON_SIZE.xs} />
                   </button>
                 </div>
               </div>
