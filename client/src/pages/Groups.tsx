@@ -1,3 +1,4 @@
+import { Modal, ModalTitle } from "@/components/Modal";
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
@@ -695,299 +696,295 @@ export default function Groups() {
 
       {/* Create / Edit Modal */}
       {modalOpen && (
-        <div className="modal-backdrop" onClick={() => setModalOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "560px" }}>
-            <div className="modal-heading">
-              <div>
-                <h2>{editingGroup ? "แก้ไขข้อมูลกลุ่ม" : "สร้างกลุ่มใหม่"}</h2>
-                <p>{editingGroup ? `กำลังแก้ไขกลุ่ม: ${editingGroup.name}` : "กรอกข้อมูลรายละเอียดเพื่อตั้งกลุ่มใหม่ในคริสตจักร"}</p>
-              </div>
-              <button onClick={() => setModalOpen(false)}>
-                <X size={ICON_SIZE.sm} />
-              </button>
+        <Modal onClose={() => setModalOpen(false)} style={{ maxWidth: "560px" }}>
+          <div className="modal-heading">
+            <div>
+              <ModalTitle>{editingGroup ? "แก้ไขข้อมูลกลุ่ม" : "สร้างกลุ่มใหม่"}</ModalTitle>
+              <p>{editingGroup ? `กำลังแก้ไขกลุ่ม: ${editingGroup.name}` : "กรอกข้อมูลรายละเอียดเพื่อตั้งกลุ่มใหม่ในคริสตจักร"}</p>
+            </div>
+            <button onClick={() => setModalOpen(false)} aria-label="ปิด">
+              <X size={ICON_SIZE.sm} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSaveGroup}>
+            <div className="form-grid">
+              <label className="full-field">
+                <span>ชื่อกลุ่ม *</span>
+                <input
+                  type="text"
+                  required
+                  placeholder="เช่น แคร์เมืองกาฬสินธุ์ 1, แคร์เยาวชน"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </label>
+
+              <label>
+                <span>ประเภทกลุ่ม</span>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value as GroupCategory })}
+                >
+                  {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>ระดับความเป็นส่วนตัว (PDPA)</span>
+                <select
+                  value={form.privacy}
+                  onChange={(e) => setForm({ ...form, privacy: e.target.value as GroupPrivacy })}
+                >
+                  <option value="public">สาธารณะ (แสดงพิกัด)</option>
+                  <option value="private">กลุ่มปิด (แสดงเฉพาะย่าน/เขต)</option>
+                  <option value="confidential">กลุ่มลับ (ซ่อนสถานที่สำหรับสมาชิก)</option>
+                </select>
+              </label>
+
+              <label>
+                <span>สถานะกลุ่ม</span>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value as GroupStatus })}
+                >
+                  <option value="active">เปิดดำเนินการ (Active)</option>
+                  <option value="paused">พักชั่วคราว (Paused)</option>
+                  <option value="closed">ปิดกลุ่ม (Closed)</option>
+                </select>
+              </label>
+
+              <label>
+                <span>ย่าน / พื้นที่ / อำเภอ</span>
+                <input
+                  type="text"
+                  placeholder="เช่น อ.เมืองกาฬสินธุ์, ยางตลาด"
+                  value={form.area}
+                  onChange={(e) => setForm({ ...form, area: e.target.value })}
+                />
+              </label>
+
+              <label>
+                <span>วันนัดพบ</span>
+                <input
+                  type="text"
+                  placeholder="เช่น ทุกวันศุกร์, วันพุธเว้นพุธ"
+                  value={form.meetingDay}
+                  onChange={(e) => setForm({ ...form, meetingDay: e.target.value })}
+                />
+              </label>
+
+              <label>
+                <span>เวลานัดพบ</span>
+                <input
+                  type="text"
+                  placeholder="เช่น 19:00 - 20:30 น."
+                  value={form.meetingTime}
+                  onChange={(e) => setForm({ ...form, meetingTime: e.target.value })}
+                />
+              </label>
+
+              <label className="full-field">
+                <span>สถานที่นัดพบ</span>
+                <input
+                  type="text"
+                  placeholder="เช่น บ้านพี่สมชาย, ห้องนมัสการชั้น 2"
+                  value={form.meetingLocation}
+                  onChange={(e) => setForm({ ...form, meetingLocation: e.target.value })}
+                />
+              </label>
+
+              <label className="full-field">
+                <span>คำอธิบาย / เป้าหมายกลุ่ม</span>
+                <textarea
+                  rows={3}
+                  placeholder="รายละเอียดเพิ่มเติมของกลุ่ม..."
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+              </label>
             </div>
 
-            <form onSubmit={handleSaveGroup}>
-              <div className="form-grid">
-                <label className="full-field">
-                  <span>ชื่อกลุ่ม *</span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="เช่น แคร์เมืองกาฬสินธุ์ 1, แคร์เยาวชน"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  />
-                </label>
-
-                <label>
-                  <span>ประเภทกลุ่ม</span>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value as GroupCategory })}
-                  >
-                    {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  <span>ระดับความเป็นส่วนตัว (PDPA)</span>
-                  <select
-                    value={form.privacy}
-                    onChange={(e) => setForm({ ...form, privacy: e.target.value as GroupPrivacy })}
-                  >
-                    <option value="public">สาธารณะ (แสดงพิกัด)</option>
-                    <option value="private">กลุ่มปิด (แสดงเฉพาะย่าน/เขต)</option>
-                    <option value="confidential">กลุ่มลับ (ซ่อนสถานที่สำหรับสมาชิก)</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>สถานะกลุ่ม</span>
-                  <select
-                    value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value as GroupStatus })}
-                  >
-                    <option value="active">เปิดดำเนินการ (Active)</option>
-                    <option value="paused">พักชั่วคราว (Paused)</option>
-                    <option value="closed">ปิดกลุ่ม (Closed)</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>ย่าน / พื้นที่ / อำเภอ</span>
-                  <input
-                    type="text"
-                    placeholder="เช่น อ.เมืองกาฬสินธุ์, ยางตลาด"
-                    value={form.area}
-                    onChange={(e) => setForm({ ...form, area: e.target.value })}
-                  />
-                </label>
-
-                <label>
-                  <span>วันนัดพบ</span>
-                  <input
-                    type="text"
-                    placeholder="เช่น ทุกวันศุกร์, วันพุธเว้นพุธ"
-                    value={form.meetingDay}
-                    onChange={(e) => setForm({ ...form, meetingDay: e.target.value })}
-                  />
-                </label>
-
-                <label>
-                  <span>เวลานัดพบ</span>
-                  <input
-                    type="text"
-                    placeholder="เช่น 19:00 - 20:30 น."
-                    value={form.meetingTime}
-                    onChange={(e) => setForm({ ...form, meetingTime: e.target.value })}
-                  />
-                </label>
-
-                <label className="full-field">
-                  <span>สถานที่นัดพบ</span>
-                  <input
-                    type="text"
-                    placeholder="เช่น บ้านพี่สมชาย, ห้องนมัสการชั้น 2"
-                    value={form.meetingLocation}
-                    onChange={(e) => setForm({ ...form, meetingLocation: e.target.value })}
-                  />
-                </label>
-
-                <label className="full-field">
-                  <span>คำอธิบาย / เป้าหมายกลุ่ม</span>
-                  <textarea
-                    rows={3}
-                    placeholder="รายละเอียดเพิ่มเติมของกลุ่ม..."
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  />
-                </label>
-              </div>
-
-              <div className="modal-actions">
-                <button type="button" className="cancel-button" onClick={() => setModalOpen(false)}>
-                  ยกเลิก
-                </button>
-                <button type="submit" className="primary-action" disabled={saving}>
-                  {saving ? "กำลังบันทึก..." : editingGroup ? "บันทึกการแก้ไข" : "สร้างกลุ่ม"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            <div className="modal-actions">
+              <button type="button" className="cancel-button" onClick={() => setModalOpen(false)}>
+                ยกเลิก
+              </button>
+              <button type="submit" className="primary-action" disabled={saving}>
+                {saving ? "กำลังบันทึก..." : editingGroup ? "บันทึกการแก้ไข" : "สร้างกลุ่ม"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
 
       {/* Group Members Modal */}
       {membersModalOpen && activeGroup && (
-        <div className="modal-backdrop" onClick={() => setMembersModalOpen(false)}>
-          <div className="modal-card modal-wide" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "780px" }}>
-            <div className="modal-heading">
-              <div>
-                <h2>สมาชิกในกลุ่ม: {activeGroup.name}</h2>
-                <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--muted)" }}>
-                  {CATEGORY_LABELS[activeGroup.category]} • สมาชิกทั้งหมด {groupMembersList.length} คน (ปกติ {groupMembersList.filter(m => m.status === 'active').length} คน)
-                </p>
-              </div>
-              <button onClick={() => setMembersModalOpen(false)}>
-                <X size={ICON_SIZE.sm} />
-              </button>
+        <Modal onClose={() => setMembersModalOpen(false)} className="modal-wide" style={{ maxWidth: "780px" }}>
+          <div className="modal-heading">
+            <div>
+              <ModalTitle>สมาชิกในกลุ่ม: {activeGroup.name}</ModalTitle>
+              <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--muted)" }}>
+                {CATEGORY_LABELS[activeGroup.category]} • สมาชิกทั้งหมด {groupMembersList.length} คน (ปกติ {groupMembersList.filter(m => m.status === 'active').length} คน)
+              </p>
             </div>
-
-            {/* Add member section (Only if user has permission to edit group) */}
-            {canEditGroup(activeGroup) && (
-              <div
-                style={{
-                  background: "#f7fafd",
-                  padding: "14px",
-                  borderRadius: "14px",
-                  border: "1px solid #e2edf6",
-                  marginBottom: "18px",
-                }}
-              >
-                <form onSubmit={handleAddMemberToGroup} style={{ display: "flex", gap: "10px", alignItems: "end", flexWrap: "wrap" }}>
-                  <div style={{ flex: 1, minWidth: "220px" }}>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#54687e", marginBottom: "4px" }}>
-                      เลือกสมาชิกจากทะเบียนคริสตจักร
-                    </label>
-                    <select
-                      value={selectedMemberId}
-                      onChange={(e) => setSelectedMemberId(e.target.value)}
-                      style={{ width: "100%", height: "38px", padding: "0 10px", borderRadius: "10px", border: "1px solid #d7e4f0" }}
-                    >
-                      <option value="">-- เลือกสมาชิกเพื่อเพิ่มเข้ากลุ่ม --</option>
-                      {availableMembers
-                        .filter((m) => !groupMembersList.some((gm) => gm.memberId === m.id && gm.status === "active"))
-                        .map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name} {m.nickname ? `(${m.nickname})` : ""} {m.phone ? `- ${m.phone}` : ""}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div style={{ width: "140px" }}>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#54687e", marginBottom: "4px" }}>
-                      บทบาทในกลุ่ม
-                    </label>
-                    <select
-                      value={selectedRole}
-                      onChange={(e) => setSelectedRole(e.target.value as GroupMemberRole)}
-                      style={{ width: "100%", height: "38px", padding: "0 10px", borderRadius: "10px", border: "1px solid #d7e4f0" }}
-                    >
-                      <option value="member">สมาชิก</option>
-                      <option value="leader">หัวหน้ากลุ่ม</option>
-                      <option value="assistant_leader">ผู้ช่วยหัวหน้า</option>
-                      <option value="host">เจ้าบ้าน</option>
-                    </select>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="primary-action"
-                    disabled={addingMember || !selectedMemberId}
-                    style={{ height: "38px", padding: "0 16px" }}
-                  >
-                    <UserPlus size={ICON_SIZE.sm} />
-                    <span>{addingMember ? "กำลังเพิ่ม..." : "เพิ่มเข้ากลุ่ม"}</span>
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* Members List Table */}
-            {loadingMembers ? (
-              <TableSkeleton rows={5} />
-            ) : groupMembersList.length === 0 ? (
-              <div className="state-panel">
-                <Users size={ICON_SIZE.lg} />
-                <h3>ยังไม่มีสมาชิกในกลุ่มนี้</h3>
-                <p>เลือกเพิ่มสมาชิกเข้ากลุ่มจากฟอร์มด้านบน</p>
-              </div>
-            ) : (
-              <div style={{ maxHeight: "380px", overflowY: "auto" }}>
-                <table className="member-table" style={{ width: "100%" }}>
-                  <thead>
-                    <tr>
-                      <th>ชื่อ-นามสกุล</th>
-                      <th>บทบาท</th>
-                      <th>สถานะ</th>
-                      <th>เข้าร่วมล่าสุด</th>
-                      <th>วันที่เข้ากลุ่ม</th>
-                      {canEditGroup(activeGroup) && <th style={{ textAlign: "right" }}>จัดการ</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groupMembersList.map((gm) => (
-                      <tr key={gm.id} style={{ opacity: gm.status === "inactive" ? 0.6 : 1 }}>
-                        <td>
-                          <div className="member-name">
-                            <div className="member-avatar blue">
-                              {gm.memberName.slice(0, 1)}
-                            </div>
-                            <div>
-                              <strong>{gm.memberName}</strong>
-                              {gm.memberNickname && <small>ชื่อเล่น: {gm.memberNickname}</small>}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`role-chip ${gm.role === "leader" ? "purple" : gm.role === "assistant_leader" ? "blue" : gm.role === "host" ? "orange" : ""}`}>
-                            {ROLE_LABELS[gm.role] || gm.role}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`status-chip ${gm.status === "active" ? "good" : "muted"}`}>
-                            {gm.status === "active" ? "ปกติ" : "พ้นสภาพ"}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: "11px", color: "#64748b" }}>
-                          {formatThaiDate(gm.lastAttendedAt)}
-                        </td>
-                        <td style={{ fontSize: "11px" }}>
-                          {new Date(gm.joinedAt).toLocaleDateString("th-TH")}
-                        </td>
-                        {canEditGroup(activeGroup) && (
-                          <td style={{ textAlign: "right" }}>
-                            {gm.status === "active" ? (
-                              <button
-                                className="danger-button"
-                                style={{ padding: "5px 9px", fontSize: "10px" }}
-                                onClick={() => handleRemoveMemberFromGroup(gm.memberId)}
-                                title="นำออกจากกลุ่ม (เปลี่ยนสถานะเป็น inactive)"
-                              >
-                                <span>นำออก</span>
-                              </button>
-                            ) : (
-                              <button
-                                className="blue-button"
-                                style={{ padding: "5px 9px", fontSize: "10px" }}
-                                onClick={() => handleReactivateMember(gm.memberId)}
-                                title="เปิดรับกลับเข้ากลุ่ม"
-                              >
-                                <span>รับกลับเข้ากลุ่ม</span>
-                              </button>
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            <div className="modal-actions" style={{ marginTop: "16px" }}>
-              <button className="cancel-button" onClick={() => setMembersModalOpen(false)}>
-                ปิดหน้าต่าง
-              </button>
-            </div>
+            <button onClick={() => setMembersModalOpen(false)} aria-label="ปิด">
+              <X size={ICON_SIZE.sm} />
+            </button>
           </div>
-        </div>
+
+          {/* Add member section (Only if user has permission to edit group) */}
+          {canEditGroup(activeGroup) && (
+            <div
+              style={{
+                background: "#f7fafd",
+                padding: "14px",
+                borderRadius: "14px",
+                border: "1px solid #e2edf6",
+                marginBottom: "18px",
+              }}
+            >
+              <form onSubmit={handleAddMemberToGroup} style={{ display: "flex", gap: "10px", alignItems: "end", flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: "220px" }}>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#54687e", marginBottom: "4px" }}>
+                    เลือกสมาชิกจากทะเบียนคริสตจักร
+                  </label>
+                  <select
+                    value={selectedMemberId}
+                    onChange={(e) => setSelectedMemberId(e.target.value)}
+                    style={{ width: "100%", height: "38px", padding: "0 10px", borderRadius: "10px", border: "1px solid #d7e4f0" }}
+                  >
+                    <option value="">-- เลือกสมาชิกเพื่อเพิ่มเข้ากลุ่ม --</option>
+                    {availableMembers
+                      .filter((m) => !groupMembersList.some((gm) => gm.memberId === m.id && gm.status === "active"))
+                      .map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} {m.nickname ? `(${m.nickname})` : ""} {m.phone ? `- ${m.phone}` : ""}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div style={{ width: "140px" }}>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#54687e", marginBottom: "4px" }}>
+                    บทบาทในกลุ่ม
+                  </label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value as GroupMemberRole)}
+                    style={{ width: "100%", height: "38px", padding: "0 10px", borderRadius: "10px", border: "1px solid #d7e4f0" }}
+                  >
+                    <option value="member">สมาชิก</option>
+                    <option value="leader">หัวหน้ากลุ่ม</option>
+                    <option value="assistant_leader">ผู้ช่วยหัวหน้า</option>
+                    <option value="host">เจ้าบ้าน</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="primary-action"
+                  disabled={addingMember || !selectedMemberId}
+                  style={{ height: "38px", padding: "0 16px" }}
+                >
+                  <UserPlus size={ICON_SIZE.sm} />
+                  <span>{addingMember ? "กำลังเพิ่ม..." : "เพิ่มเข้ากลุ่ม"}</span>
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Members List Table */}
+          {loadingMembers ? (
+            <TableSkeleton rows={5} />
+          ) : groupMembersList.length === 0 ? (
+            <div className="state-panel">
+              <Users size={ICON_SIZE.lg} />
+              <h3>ยังไม่มีสมาชิกในกลุ่มนี้</h3>
+              <p>เลือกเพิ่มสมาชิกเข้ากลุ่มจากฟอร์มด้านบน</p>
+            </div>
+          ) : (
+            <div style={{ maxHeight: "380px", overflowY: "auto" }}>
+              <table className="member-table" style={{ width: "100%" }}>
+                <thead>
+                  <tr>
+                    <th>ชื่อ-นามสกุล</th>
+                    <th>บทบาท</th>
+                    <th>สถานะ</th>
+                    <th>เข้าร่วมล่าสุด</th>
+                    <th>วันที่เข้ากลุ่ม</th>
+                    {canEditGroup(activeGroup) && <th style={{ textAlign: "right" }}>จัดการ</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {groupMembersList.map((gm) => (
+                    <tr key={gm.id} style={{ opacity: gm.status === "inactive" ? 0.6 : 1 }}>
+                      <td>
+                        <div className="member-name">
+                          <div className="member-avatar blue">
+                            {gm.memberName.slice(0, 1)}
+                          </div>
+                          <div>
+                            <strong>{gm.memberName}</strong>
+                            {gm.memberNickname && <small>ชื่อเล่น: {gm.memberNickname}</small>}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`role-chip ${gm.role === "leader" ? "purple" : gm.role === "assistant_leader" ? "blue" : gm.role === "host" ? "orange" : ""}`}>
+                          {ROLE_LABELS[gm.role] || gm.role}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`status-chip ${gm.status === "active" ? "good" : "muted"}`}>
+                          {gm.status === "active" ? "ปกติ" : "พ้นสภาพ"}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: "11px", color: "#64748b" }}>
+                        {formatThaiDate(gm.lastAttendedAt)}
+                      </td>
+                      <td style={{ fontSize: "11px" }}>
+                        {new Date(gm.joinedAt).toLocaleDateString("th-TH")}
+                      </td>
+                      {canEditGroup(activeGroup) && (
+                        <td style={{ textAlign: "right" }}>
+                          {gm.status === "active" ? (
+                            <button
+                              className="danger-button"
+                              style={{ padding: "5px 9px", fontSize: "10px" }}
+                              onClick={() => handleRemoveMemberFromGroup(gm.memberId)}
+                              title="นำออกจากกลุ่ม (เปลี่ยนสถานะเป็น inactive)"
+                            >
+                              <span>นำออก</span>
+                            </button>
+                          ) : (
+                            <button
+                              className="blue-button"
+                              style={{ padding: "5px 9px", fontSize: "10px" }}
+                              onClick={() => handleReactivateMember(gm.memberId)}
+                              title="เปิดรับกลับเข้ากลุ่ม"
+                            >
+                              <span>รับกลับเข้ากลุ่ม</span>
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="modal-actions" style={{ marginTop: "16px" }}>
+            <button className="cancel-button" onClick={() => setMembersModalOpen(false)}>
+              ปิดหน้าต่าง
+            </button>
+          </div>
+        </Modal>
       )}
 
       {/* Delete Confirmation Dialog */}

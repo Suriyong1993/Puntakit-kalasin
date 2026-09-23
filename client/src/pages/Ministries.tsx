@@ -1,3 +1,4 @@
+import { Modal, ModalTitle } from "@/components/Modal";
 import { useState } from "react";
 import { AlertCircle, HeartHandshake, Pencil, Plus, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
@@ -146,44 +147,42 @@ export default function Ministries() {
       </section>
 
       {formOpen && (
-        <div className="modal-backdrop" onClick={() => setFormOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 14px" }}>{editing ? "แก้ไขพันธกิจ" : "เพิ่มพันธกิจ"}</h3>
-            <form className="form-grid" onSubmit={handleSubmit}>
-              <label className="full-field">
-                ชื่อพันธกิจ
-                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              </label>
-              <label>
-                ผู้นำ
-                <input value={form.leader} onChange={(e) => setForm({ ...form, leader: e.target.value })} />
-              </label>
-              <label>
-                สถานะ
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as Ministry["status"] })}>
-                  <option value="active">ดำเนินการอยู่</option>
-                  <option value="inactive">หยุดชั่วคราว</option>
-                </select>
-              </label>
-              <label className="full-field">
-                รายละเอียด
-                <textarea
-                  rows={4}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
-              </label>
-              <div className="modal-actions full-field">
-                <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
-                  ยกเลิก
-                </button>
-                <button type="submit" className="primary-action" disabled={submitting}>
-                  {submitting ? "กำลังบันทึก..." : "บันทึก"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Modal onClose={() => setFormOpen(false)}>
+          <ModalTitle asChild><h3 style={{ margin: "0 0 14px" }}>{editing ? "แก้ไขพันธกิจ" : "เพิ่มพันธกิจ"}</h3></ModalTitle>
+          <form className="form-grid" onSubmit={handleSubmit}>
+            <label className="full-field">
+              ชื่อพันธกิจ
+              <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </label>
+            <label>
+              ผู้นำ
+              <input value={form.leader} onChange={(e) => setForm({ ...form, leader: e.target.value })} />
+            </label>
+            <label>
+              สถานะ
+              <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as Ministry["status"] })}>
+                <option value="active">ดำเนินการอยู่</option>
+                <option value="inactive">หยุดชั่วคราว</option>
+              </select>
+            </label>
+            <label className="full-field">
+              รายละเอียด
+              <textarea
+                rows={4}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+            </label>
+            <div className="modal-actions full-field">
+              <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
+                ยกเลิก
+              </button>
+              <button type="submit" className="primary-action" disabled={submitting}>
+                {submitting ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
 
       {deleteTarget && (

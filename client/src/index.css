@@ -1647,6 +1647,10 @@ button {
   background: white;
   border-radius: var(--radius-card);
   width: min(480px, 100%);
+  /* Tall forms scroll inside the card instead of running off-screen on phones */
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   box-shadow: 0 20px 60px rgba(15, 46, 81, 0.22);
   padding: 22px;
   animation: modalin 0.22s cubic-bezier(0.23, 1, 0.32, 1);

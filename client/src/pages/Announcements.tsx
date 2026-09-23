@@ -1,3 +1,4 @@
+import { Modal, ModalTitle } from "@/components/Modal";
 import { useState } from "react";
 import { AlertCircle, Megaphone, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -184,44 +185,42 @@ export default function Announcements() {
       </section>
 
       {formOpen && (
-        <div className="modal-backdrop" onClick={() => setFormOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 14px" }}>{editing ? "แก้ไขประกาศ" : "เพิ่มประกาศ"}</h3>
-            <form className="form-grid" onSubmit={handleSubmit}>
-              <label className="full-field">
-                หัวข้อ
-                <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-              </label>
-              <label className="full-field">
-                เนื้อหา
-                <textarea
-                  required
-                  rows={5}
-                  value={form.content}
-                  onChange={(e) => setForm({ ...form, content: e.target.value })}
-                />
-              </label>
-              <label className="full-field">
-                สถานะ
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value as Announcement["status"] })}
-                >
-                  <option value="draft">ฉบับร่าง</option>
-                  <option value="published">เผยแพร่แล้ว</option>
-                </select>
-              </label>
-              <div className="modal-actions full-field">
-                <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
-                  ยกเลิก
-                </button>
-                <button type="submit" className="primary-action" disabled={submitting}>
-                  {submitting ? "กำลังบันทึก..." : "บันทึก"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Modal onClose={() => setFormOpen(false)}>
+          <ModalTitle asChild><h3 style={{ margin: "0 0 14px" }}>{editing ? "แก้ไขประกาศ" : "เพิ่มประกาศ"}</h3></ModalTitle>
+          <form className="form-grid" onSubmit={handleSubmit}>
+            <label className="full-field">
+              หัวข้อ
+              <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            </label>
+            <label className="full-field">
+              เนื้อหา
+              <textarea
+                required
+                rows={5}
+                value={form.content}
+                onChange={(e) => setForm({ ...form, content: e.target.value })}
+              />
+            </label>
+            <label className="full-field">
+              สถานะ
+              <select
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value as Announcement["status"] })}
+              >
+                <option value="draft">ฉบับร่าง</option>
+                <option value="published">เผยแพร่แล้ว</option>
+              </select>
+            </label>
+            <div className="modal-actions full-field">
+              <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
+                ยกเลิก
+              </button>
+              <button type="submit" className="primary-action" disabled={submitting}>
+                {submitting ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
 
       {deleteTarget && (
