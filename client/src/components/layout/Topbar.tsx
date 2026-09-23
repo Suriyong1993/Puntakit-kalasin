@@ -61,7 +61,7 @@ export function Topbar({ onMenu }: TopbarProps) {
   const roleText = (user?.role && ROLE_LABEL[user.role]) || "ผู้ใช้งาน";
 
   return (
-    <header className="sticky top-0 z-30 flex h-18 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-18 w-full items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
       {/* Left section: Hamburger toggle on mobile + search bar */}
       <div className="flex items-center gap-3 sm:gap-4 flex-1 max-w-xl">
         <button
@@ -122,8 +122,8 @@ export function Topbar({ onMenu }: TopbarProps) {
             aria-expanded={menuOpen}
             aria-haspopup="true"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-sm font-bold text-white shadow-xs">
-              {user?.name?.slice(0, 1) ?? "น"}
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-xs">
+              {user?.name?.trim().slice(0, 1) || "?"}
             </div>
             <div className="hidden text-left sm:block">
               <span className="block text-xs font-semibold text-slate-800 leading-tight">
@@ -143,7 +143,7 @@ export function Topbar({ onMenu }: TopbarProps) {
 
           {/* TailAdmin Dropdown Popover */}
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-60 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl shadow-slate-200/50 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg z-50 animate-in fade-in zoom-in-95 duration-150">
               {/* User Info Header */}
               <div className="border-b border-slate-100 px-3 py-2.5">
                 <p className="text-xs font-semibold text-slate-800 truncate">

@@ -16,6 +16,8 @@ import Ministries from "./pages/Ministries";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import ComingSoon from "./pages/ComingSoon";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 // Member PWA Pages
 import MemberHome from "./pages/member/MemberHome";
@@ -28,6 +30,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+
+      {/* Public legal routes (accessible without login) */}
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
 
       {/* Member PWA Routes */}
       <Route path="/app">

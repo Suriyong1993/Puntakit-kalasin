@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link as WouterLink, useLocation } from "wouter";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -73,9 +73,15 @@ export default function Login() {
             </p>
           )}
           <button className="primary-action modal-full-button full-field" type="submit" disabled={submitting}>
-            <LogIn size={ICON_SIZE.sm} /> {submitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+            <LogIn size={ICON_SIZE.sm} /> {submitting ? "กำลังเข้าสู่ระบบ" : "เข้าสู่ระบบ"}
           </button>
         </form>
+
+        <p className="login-legal" data-testid="login-legal-links">
+          เมื่อเข้าสู่ระบบ คุณยอมรับ{" "}
+          <WouterLink href="/terms">เงื่อนไขการใช้งาน</WouterLink> และ{" "}
+          <WouterLink href="/privacy">นโยบายความเป็นส่วนตัว</WouterLink>
+        </p>
       </div>
     </div>
   );

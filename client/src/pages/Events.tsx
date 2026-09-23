@@ -3,6 +3,7 @@ import { AlertCircle, CalendarDays, MapPin, Pencil, Plus, Trash2 } from "lucide-
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { CardGridSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResource } from "@/hooks/useResource";
@@ -145,10 +146,7 @@ export default function Events() {
 
       <section className="tailadmin-card p-5 sm:p-6">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500 text-xs">
-            <div className="spinner mx-auto mb-3" />
-            <p>กำลังโหลดกิจกรรม...</p>
-          </div>
+          <CardGridSkeleton count={6} />
         ) : error ? (
           <div className="p-10 text-center text-rose-600">
             <AlertCircle size={ICON_SIZE.xl} className="mx-auto mb-2 text-rose-500" />

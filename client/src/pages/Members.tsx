@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import QRCode from "qrcode";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { TableSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError, type ApiMeta } from "@/lib/api";
@@ -455,12 +456,7 @@ export default function Members() {
           </div>
         )}
 
-        {isLoading && !error && (
-          <div className="p-12 text-center text-slate-500 text-xs">
-            <div className="spinner mx-auto mb-3" />
-            <p>กำลังโหลดรายชื่อสมาชิก...</p>
-          </div>
-        )}
+        {isLoading && !error && <TableSkeleton rows={6} />}
 
         {!isLoading && !error && (
           <>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertCircle, Building2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { FormSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError } from "@/lib/api";
@@ -82,10 +83,7 @@ export default function Church() {
 
       <section className="tailadmin-card p-6 sm:p-8 max-w-3xl">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500 text-xs">
-            <div className="spinner mx-auto mb-3" />
-            <p>กำลังโหลดข้อมูลคริสตจักร...</p>
-          </div>
+          <FormSkeleton fields={5} />
         ) : error ? (
           <div className="p-10 text-center text-rose-600">
             <AlertCircle size={ICON_SIZE.xl} className="mx-auto mb-2 text-rose-500" />

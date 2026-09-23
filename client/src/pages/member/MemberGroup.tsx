@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { MemberAppLayout } from "@/components/layout/MemberAppLayout";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { api, ApiError } from "@/lib/api";
+import { ListSkeleton } from "@/components/LoadingStates";
 
 interface GroupMember {
   id: string;
@@ -98,9 +99,8 @@ export default function MemberGroup() {
 
         {/* Loading state */}
         {loading && (
-          <div className="space-y-4 animate-pulse">
-            <div className="h-40 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-            <div className="h-60 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+          <div className="space-y-4">
+            <ListSkeleton count={2} />
           </div>
         )}
 

@@ -80,7 +80,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-[#1C2434] text-slate-300 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
-          open ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+          open ? "translate-x-0 shadow-lg" : "-translate-x-full"
         }`}
         aria-label="เมนูหลัก"
       >

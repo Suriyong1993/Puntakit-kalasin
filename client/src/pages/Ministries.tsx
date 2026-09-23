@@ -3,6 +3,7 @@ import { AlertCircle, HeartHandshake, Pencil, Plus, Trash2, User } from "lucide-
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { CardGridSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResource } from "@/hooks/useResource";
@@ -94,10 +95,7 @@ export default function Ministries() {
 
       <section className="member-panel card-surface">
         {isLoading ? (
-          <div className="state-panel">
-            <div className="spinner" style={{ margin: "0 auto 12px" }} />
-            <p>กำลังโหลดพันธกิจ...</p>
-          </div>
+          <CardGridSkeleton count={6} />
         ) : error ? (
           <div className="state-panel error-panel">
             <AlertCircle size={ICON_SIZE["2xl"]} />

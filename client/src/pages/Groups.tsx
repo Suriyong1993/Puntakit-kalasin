@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { CardGridSkeleton, TableSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError } from "@/lib/api";
@@ -524,10 +525,7 @@ export default function Groups() {
 
       {/* Groups Grid */}
       {loading ? (
-        <div className="state-panel">
-          <div className="spinner" />
-          <p style={{ marginTop: 12 }}>กำลังโหลดข้อมูลกลุ่ม...</p>
-        </div>
+        <CardGridSkeleton count={6} />
       ) : error ? (
         <div className="state-panel error">
           <AlertCircle size={ICON_SIZE.xl} />
@@ -903,10 +901,7 @@ export default function Groups() {
 
             {/* Members List Table */}
             {loadingMembers ? (
-              <div className="state-panel">
-                <div className="spinner" />
-                <p style={{ marginTop: 10 }}>กำลังโหลดรายชื่อสมาชิกในกลุ่ม...</p>
-              </div>
+              <TableSkeleton rows={5} />
             ) : groupMembersList.length === 0 ? (
               <div className="state-panel">
                 <Users size={ICON_SIZE.lg} />

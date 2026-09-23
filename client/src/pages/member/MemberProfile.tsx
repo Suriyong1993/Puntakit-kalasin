@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   User,
   Phone,
@@ -7,6 +7,7 @@ import {
   MapPin,
   Heart,
   Lock,
+  FileText,
   Bell,
   LogOut,
   Save,
@@ -22,6 +23,7 @@ import { MemberAppLayout } from "@/components/layout/MemberAppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { api, ApiError } from "@/lib/api";
+import { FormSkeleton } from "@/components/LoadingStates";
 import { subscribeToPushNotifications } from "@/lib/pwa";
 
 interface MemberProfileData {
@@ -191,6 +193,14 @@ export default function MemberProfile() {
   const getInitials = (name: string) => {
     return name.slice(0, 2).toUpperCase();
   };
+
+  if (loading) {
+    return (
+      <MemberAppLayout title="โปรไฟล์และข้อมูลส่วนตัว">
+        <FormSkeleton />
+      </MemberAppLayout>
+    );
+  }
 
   return (
     <MemberAppLayout title="โปรไฟล์และข้อมูลส่วนตัว">
@@ -499,6 +509,35 @@ export default function MemberProfile() {
               </button>
             </form>
           )}
+        </div>
+
+        {/* Privacy & Legal Links */}
+        <div
+          className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-xs space-y-3"
+          data-testid="privacy-links"
+        >
+          <div className="flex items-center space-x-2">
+            <Lock size={ICON_SIZE.sm} className="text-[var(--navy)] dark:text-blue-400" />
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
+              ความเป็นส่วนตัวและข้อกำหนด
+            </h3>
+          </div>
+          <div className="flex items-center space-x-2 pt-1">
+            <Link
+              href="/privacy"
+              className="flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-300 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
+            >
+              <Lock size={14} />
+              <span>นโยบายความเป็นส่วนตัว</span>
+            </Link>
+            <Link
+              href="/terms"
+              className="flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-300 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
+            >
+              <FileText size={14} />
+              <span>เงื่อนไขการใช้งาน</span>
+            </Link>
+          </div>
         </div>
 
         {/* Logout Button */}

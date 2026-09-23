@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { MemberAppLayout } from "@/components/layout/MemberAppLayout";
 import { PrayerRequestModal } from "@/components/PrayerRequestModal";
+import { ListSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { api, ApiError } from "@/lib/api";
 import { subscribeToPushNotifications } from "@/lib/pwa";
@@ -133,9 +134,8 @@ export default function MemberHome() {
   if (loading) {
     return (
       <MemberAppLayout>
-        <div className="state-panel" style={{ padding: "60px 0" }}>
-          <div className="spinner" />
-          <p style={{ marginTop: 12 }}>กำลังโหลดข้อมูลสมาชิก...</p>
+        <div className="space-y-4">
+          <ListSkeleton count={3} />
         </div>
       </MemberAppLayout>
     );

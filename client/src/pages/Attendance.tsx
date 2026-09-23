@@ -28,6 +28,8 @@ import {
 import { toast } from "sonner";
 import QRCode from "qrcode";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { TableSkeleton } from "@/components/LoadingStates";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError } from "@/lib/api";
@@ -538,10 +540,7 @@ export default function Attendance() {
 
           {/* Member Roster List */}
           {loadingLive ? (
-            <div className="state-panel">
-              <div className="spinner" />
-              <p style={{ marginTop: 10 }}>กำลังโหลดรายชื่อสมาชิก...</p>
-            </div>
+            <TableSkeleton rows={8} />
           ) : (
             <div className="member-table-wrap">
               <table className="member-table">
@@ -758,9 +757,7 @@ export default function Attendance() {
               {sessionQrDataUrl ? (
                 <img src={sessionQrDataUrl} alt="Session QR Code" style={{ width: "240px", height: "240px" }} />
               ) : (
-                <div style={{ width: "240px", height: "240px", display: "grid", placeItems: "center" }}>
-                  <div className="spinner" />
-                </div>
+                <Skeleton className="h-[240px] w-[240px] rounded-[20px]" />
               )}
             </div>
 
@@ -800,10 +797,7 @@ export default function Attendance() {
           </div>
 
           {loadingAbsentees ? (
-            <div className="state-panel">
-              <div className="spinner" />
-              <p style={{ marginTop: 10 }}>กำลังวิเคราะห์ข้อมูลการขาดการเข้าร่วม...</p>
-            </div>
+            <TableSkeleton rows={5} />
           ) : absentees.length === 0 ? (
             <div className="state-panel">
               <CheckCircle2 size={ICON_SIZE.lg} style={{ color: "#22c55e" }} />

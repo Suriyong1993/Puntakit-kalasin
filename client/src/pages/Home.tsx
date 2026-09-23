@@ -34,6 +34,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -81,14 +82,14 @@ interface ChurchEvent {
   status: string;
 }
 
-// Discipleship Journey Steps
+// Discipleship Journey Steps (single blue-family palette per design.md — avoid rainbow)
 const journeySteps = [
-  { n: "1", title: "พบคน", detail: "สร้างความสัมพันธ์และมิตรภาพ", icon: Users, color: "text-emerald-500 bg-emerald-50 border-emerald-200" },
-  { n: "2", title: "ประกาศ", detail: "แบ่งปันข่าวประเสริฐด้วยความรัก", icon: Megaphone, color: "text-blue-500 bg-blue-50 border-blue-200" },
-  { n: "3", title: "นำรับเชื่อ", detail: "ต้อนรับและติดตามดูแลใกล้ชิด", icon: Heart, color: "text-rose-500 bg-rose-50 border-rose-200" },
-  { n: "4", title: "นมัสการ", detail: "ร่วมสามัคคีธรรมที่คริสตจักร", icon: Building2, color: "text-amber-500 bg-amber-50 border-amber-200" },
-  { n: "5", title: "เข้ากลุ่มแคร์", detail: "ผูกพันในครอบครัวแห่งความเชื่อ", icon: UsersRound, color: "text-purple-500 bg-purple-50 border-purple-200" },
-  { n: "6", title: "สร้างสาวก", detail: "เติบโตและพร้อมส่งต่อพระพร", icon: Sparkles, color: "text-indigo-500 bg-indigo-50 border-indigo-200" },
+  { n: "1", title: "พบคน", detail: "สร้างความสัมพันธ์และมิตรภาพ", icon: Users, color: "text-blue-600 bg-blue-50 border-blue-200" },
+  { n: "2", title: "ประกาศ", detail: "แบ่งปันข่าวประเสริฐด้วยความรัก", icon: Megaphone, color: "text-blue-600 bg-blue-50 border-blue-200" },
+  { n: "3", title: "นำรับเชื่อ", detail: "ต้อนรับและติดตามดูแลใกล้ชิด", icon: Heart, color: "text-blue-700 bg-blue-50 border-blue-200" },
+  { n: "4", title: "นมัสการ", detail: "ร่วมสามัคคีธรรมที่คริสตจักร", icon: Building2, color: "text-blue-700 bg-blue-50 border-blue-200" },
+  { n: "5", title: "เข้ากลุ่มแคร์", detail: "ผูกพันในครอบครัวแห่งความเชื่อ", icon: UsersRound, color: "text-blue-800 bg-blue-50 border-blue-200" },
+  { n: "6", title: "สร้างสาวก", detail: "เติบโตและพร้อมส่งต่อพระพร", icon: Sparkles, color: "text-blue-800 bg-blue-50 border-blue-200" },
 ];
 
 export default function Home() {
@@ -198,9 +199,11 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
-              {isLoading ? "..." : totalMembers.toLocaleString()}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{totalMembers.toLocaleString()}</span>
+            )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-xs">
@@ -223,9 +226,11 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
-              {isLoading ? "..." : activeMembers.toLocaleString()}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{activeMembers.toLocaleString()}</span>
+            )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-xs">
@@ -247,9 +252,11 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
-              {isLoading ? "..." : followedUp.toLocaleString()}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{followedUp.toLocaleString()}</span>
+            )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-500">
@@ -269,9 +276,11 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-800">
-              {isLoading ? "..." : needFollowUp.toLocaleString()}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{needFollowUp.toLocaleString()}</span>
+            )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-xs">
@@ -296,7 +305,7 @@ export default function Home() {
         {/* Left 2 Columns */}
         <div className="lg:col-span-2 space-y-6">
           {/* Church Vision Banner */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-lg">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[var(--navy)] to-[var(--blue)] p-6 sm:p-8 text-white shadow-sm">
             <div className="relative z-10 max-w-xl">
               <span className="inline-block rounded-full bg-blue-500/30 px-3 py-1 text-[11px] font-semibold text-blue-300 backdrop-blur-xs mb-3">
                 นิมิตและพันธกิจคริสตจักร
@@ -378,7 +387,7 @@ export default function Home() {
                     }}
                     formatter={(value: any) => [`${value ?? 0} คน`, "จำนวน"]}
                   />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={38} />
+                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={38} fill="var(--blue)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
