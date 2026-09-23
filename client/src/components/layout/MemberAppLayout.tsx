@@ -175,6 +175,7 @@ export function MemberAppLayout({ children, title }: MemberAppLayoutProps) {
           return (
             <button
               key={item.path}
+              aria-current={isActive ? "page" : undefined}
               onClick={() => navigate(item.path)}
               style={{
                 flex: 1,
@@ -188,7 +189,6 @@ export function MemberAppLayout({ children, title }: MemberAppLayoutProps) {
                 color: isActive ? "#2f6fcc" : "#71859c",
                 cursor: "pointer",
                 padding: "6px 0",
-                transition: "all 0.15s ease",
               }}
             >
               <div
