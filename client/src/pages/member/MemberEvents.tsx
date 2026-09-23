@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { MemberAppLayout } from "@/components/layout/MemberAppLayout";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { api, ApiError } from "@/lib/api";
+import { ListSkeleton } from "@/components/LoadingStates";
 
 interface EventItem {
   id: string;
@@ -153,10 +154,7 @@ export default function MemberEvents() {
       </div>
 
       {loading ? (
-        <div className="state-panel">
-          <div className="spinner" />
-          <p style={{ marginTop: 10 }}>กำลังโหลดข้อมูล...</p>
-        </div>
+        <ListSkeleton count={3} />
       ) : tab === "events" ? (
         /* Events List */
         eventsList.length === 0 ? (

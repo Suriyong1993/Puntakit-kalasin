@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { MemberAppLayout } from "@/components/layout/MemberAppLayout";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { api, ApiError } from "@/lib/api";
+import { ListSkeleton } from "@/components/LoadingStates";
 
 interface AttendanceRecord {
   id: string;
@@ -223,13 +224,7 @@ export default function MemberAttendance() {
         </div>
 
         {/* Loading state */}
-        {loading && (
-          <div className="space-y-3 animate-pulse">
-            <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-            <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-            <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-          </div>
-        )}
+        {loading && <ListSkeleton count={3} />}
 
         {/* Empty state */}
         {!loading && filteredRecords.length === 0 && (

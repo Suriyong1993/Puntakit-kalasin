@@ -3,6 +3,7 @@ import { AlertCircle, Megaphone, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ListSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResource } from "@/hooks/useResource";
@@ -84,64 +85,98 @@ export default function Announcements() {
 
   return (
     <AppLayout>
-      <div className="page-heading">
+      {/* Page Heading */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="eyebrow blue-eyebrow">COMMUNICATION</span>
-          <h1>การประกาศ</h1>
-          <p>จัดการประกาศข่าวสารสำหรับคริสตจักร</p>
+          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+            ANNOUNCEMENTS • ข่าวสารและการประกาศ
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+            การประกาศ
+          </h1>
+          <p className="text-xs text-slate-500">
+            จัดการประกาศข่าวสารและข้อมูลประชาสัมพันธ์สำหรับคริสตจักร
+          </p>
         </div>
         {isAdmin && (
-          <button className="primary-action" onClick={openCreate}>
+          <button
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs"
+            onClick={openCreate}
+          >
             <Plus size={ICON_SIZE.sm} /> เพิ่มประกาศ
           </button>
         )}
       </div>
 
-      <section className="member-panel card-surface">
+      <section className="tailadmin-card p-5 sm:p-6">
         {isLoading ? (
-          <div className="state-panel">
-            <div className="spinner" style={{ margin: "0 auto 12px" }} />
-            <p>กำลังโหลดประกาศ...</p>
-          </div>
+          <ListSkeleton count={5} />
         ) : error ? (
-          <div className="state-panel error-panel">
-            <AlertCircle size={ICON_SIZE["2xl"]} />
-            <h3>โหลดข้อมูลไม่สำเร็จ</h3>
-            <p>{error}</p>
-            <button className="retry-button" onClick={reload}>
+          <div className="p-10 text-center text-rose-600">
+            <AlertCircle size={ICON_SIZE.xl} className="mx-auto mb-2 text-rose-500" />
+            <h3 className="font-bold text-sm">โหลดข้อมูลไม่สำเร็จ</h3>
+            <p className="text-xs text-slate-500 mt-1">{error}</p>
+            <button
+              className="mt-4 rounded-xl bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-100"
+              onClick={reload}
+            >
               ลองใหม่
             </button>
           </div>
         ) : items.length === 0 ? (
-          <div className="state-panel">
-            <Megaphone size={ICON_SIZE["2xl"]} />
-            <h3>ยังไม่มีประกาศ</h3>
-            <p>{isAdmin ? "เริ่มเพิ่มประกาศแรกของคุณ" : "รอผู้ดูแลระบบเพิ่มประกาศ"}</p>
+          <div className="p-12 text-center text-slate-400">
+            <Megaphone size={40} className="mx-auto text-slate-300 mb-2" />
+            <h3 className="font-semibold text-slate-700 text-sm">ยังไม่มีประกาศ</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              {isAdmin ? "เริ่มเพิ่มประกาศแรกของคุณ" : "รอผู้ดูแลระบบเพิ่มประกาศ"}
+            </p>
           </div>
         ) : (
-          <div className="ministry-grid" style={{ padding: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {items.map((a) => (
-              <div className="entity-card" key={a.id}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                  <h3>{a.title}</h3>
-                  <span className={`status-chip ${a.status === "published" ? "good" : "attention"}`}>
-                    {a.status === "published" ? "เผยแพร่แล้ว" : "ฉบับร่าง"}
-                  </span>
-                </div>
-                <p>{a.content}</p>
-                <div className="entity-meta">
-                  <span>เผยแพร่: {formatDate(a.publishDate)}</span>
-                </div>
-                {isAdmin && (
-                  <div className="entity-actions">
-                    <button className="cancel-button" onClick={() => openEdit(a)}>
-                      <Pencil size={ICON_SIZE.sm} /> แก้ไข
-                    </button>
-                    <button className="danger-button" onClick={() => setDeleteTarget(a)}>
-                      <Trash2 size={ICON_SIZE.sm} /> ลบ
-                    </button>
+              <div
+                className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                key={a.id}
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-bold text-slate-800 text-base leading-snug">{a.title}</h3>
+                    <span
+                      className={`flex-shrink-0 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                        a.status === "published"
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {a.status === "published" ? "เผยแพร่แล้ว" : "ฉบับร่าง"}
+                    </span>
                   </div>
-                )}
+                  <p className="text-xs text-slate-600 mb-4 whitespace-pre-line leading-relaxed">
+                    {a.content}
+                  </p>
+                </div>
+
+                <div>
+                  <div className="text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                    <span>วันที่เผยแพร่: {formatDate(a.publishDate)}</span>
+                  </div>
+                  {isAdmin && (
+                    <div className="flex items-center gap-2 pt-3 mt-1">
+                      <button
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                        onClick={() => openEdit(a)}
+                      >
+                        <Pencil size={ICON_SIZE.xs} /> แก้ไข
+                      </button>
+                      <button
+                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition-colors"
+                        onClick={() => setDeleteTarget(a)}
+                      >
+                        <Trash2 size={ICON_SIZE.xs} /> ลบ
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

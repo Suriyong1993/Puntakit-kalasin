@@ -104,6 +104,7 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+.db_data/
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
@@ -111,3 +112,9 @@ temp/
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
+
+# Agent skills (npx skills) — source of truth is .agents/skills + skills-lock.json (committed).
+# .claude/skills and agent/skills are machine-generated junctions, re-create with:
+#   npx skills experimental_install
+.claude/
+agent/

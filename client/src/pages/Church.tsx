@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertCircle, Building2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { FormSkeleton } from "@/components/LoadingStates";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError } from "@/lib/api";
@@ -67,76 +68,116 @@ export default function Church() {
 
   return (
     <AppLayout>
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow blue-eyebrow">CHURCH PROFILE</span>
-          <h1>ข้อมูลคริสตจักร</h1>
-          <p>ข้อมูลพื้นฐานของคริสตจักรที่แสดงต่อสมาชิกและผู้เยี่ยมชม</p>
-        </div>
+      {/* Page Heading */}
+      <div className="mb-6">
+        <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+          CHURCH PROFILE • ข้อมูลคริสตจักร
+        </span>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+          ข้อมูลคริสตจักร
+        </h1>
+        <p className="text-xs text-slate-500">
+          ข้อมูลพื้นฐานของคริสตจักรที่แสดงต่อสมาชิกและผู้เยี่ยมชม
+        </p>
       </div>
 
-      <section className="member-panel card-surface" style={{ padding: 20 }}>
+      <section className="tailadmin-card p-6 sm:p-8 max-w-3xl">
         {isLoading ? (
-          <div className="state-panel">
-            <div className="spinner" style={{ margin: "0 auto 12px" }} />
-            <p>กำลังโหลดข้อมูลคริสตจักร...</p>
-          </div>
+          <FormSkeleton fields={5} />
         ) : error ? (
-          <div className="state-panel error-panel">
-            <AlertCircle size={ICON_SIZE["2xl"]} />
-            <h3>โหลดข้อมูลไม่สำเร็จ</h3>
-            <p>{error}</p>
-            <button className="retry-button" onClick={load}>
+          <div className="p-10 text-center text-rose-600">
+            <AlertCircle size={ICON_SIZE.xl} className="mx-auto mb-2 text-rose-500" />
+            <h3 className="font-bold text-sm">โหลดข้อมูลไม่สำเร็จ</h3>
+            <p className="text-xs text-slate-500 mt-1">{error}</p>
+            <button
+              className="mt-4 rounded-xl bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-100"
+              onClick={load}
+            >
               ลองใหม่
             </button>
           </div>
         ) : (
-          <form className="form-grid" onSubmit={handleSubmit}>
-            <label className="full-field">
-              ชื่อคริสตจักร
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                ชื่อคริสตจักร *
+              </label>
               <input
                 required
                 disabled={!isAdmin}
+                className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
-            </label>
-            <label>
-              เบอร์โทร
-              <input disabled={!isAdmin} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-            </label>
-            <label>
-              อีเมล
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                  เบอร์โทรศัพท์
+                </label>
+                <input
+                  disabled={!isAdmin}
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                  อีเมล
+                </label>
+                <input
+                  type="email"
+                  disabled={!isAdmin}
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                ที่อยู่คริสตจักร
+              </label>
               <input
-                type="email"
                 disabled={!isAdmin}
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
               />
-            </label>
-            <label className="full-field">
-              ที่อยู่
-              <input disabled={!isAdmin} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-            </label>
-            <label className="full-field">
-              รายละเอียด
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                รายละเอียดเกี่ยวกับคริสตจักร
+              </label>
               <textarea
                 rows={5}
                 disabled={!isAdmin}
+                className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
-            </label>
+            </div>
+
             {updatedAt && (
-              <p className="full-field" style={{ fontSize: 11, color: "var(--muted)", margin: 0 }}>
-                <Building2 size={ICON_SIZE.xs} style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} />
-                อัปเดตล่าสุด: {new Date(updatedAt).toLocaleString("th-TH")}
-              </p>
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-400 pt-2">
+                <Building2 size={ICON_SIZE.xs} />
+                <span>อัปเดตล่าสุด: {new Date(updatedAt).toLocaleString("th-TH")}</span>
+              </div>
             )}
+
             {isAdmin && (
-              <div className="modal-actions full-field">
-                <button type="submit" className="primary-action" disabled={saving}>
-                  <Save size={ICON_SIZE.sm} /> {saving ? "กำลังบันทึก..." : "บันทึก"}
+              <div className="pt-4 border-t border-slate-100 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs disabled:opacity-50"
+                >
+                  <Save size={ICON_SIZE.sm} />
+                  <span>{saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}</span>
                 </button>
               </div>
             )}

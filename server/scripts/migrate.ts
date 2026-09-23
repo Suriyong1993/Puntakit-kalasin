@@ -1,30 +1,43 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
-import { migrate } from "drizzle-orm/neon-http/migrator";
-import * as path from "node:path";
-import * as fs from "node:fs";
+import { bootstrapDatabase } from "../db/bootstrap";
+import { closeDatabase, getDatabaseConfig } from "../db/client";
+import { DatabaseConfigurationError } from "../db/config";
 
-async function run() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    console.error("DATABASE_URL is not set.");
-    process.exit(1);
-  }
-
-  console.log("Connecting to database via neon-http...");
-  const sql = neon(connectionString);
-  const db = drizzle(sql);
-
-  const migrationsFolder = path.resolve(process.cwd(), "server/db/migrations");
-  console.log(`Running migrations from ${migrationsFolder}...`);
-
+/**
+ * `pnpm db:migrate` — driver-aware migration / local bootstrap.
+ *
+ * Examples:
+ *   pnpm db:migrate                                   # uses .env.local (PGlite locally)
+ *   DATABASE_DRIVER=neon DATABASE_URL=... pnpm db:migrate:env
+ */
+async function main(): Promise<number> {
   try {
-    await migrate(db, { migrationsFolder });
-    console.log("Migrations applied successfully!");
-  } catch (err) {
-    console.error("Error applying migrations:", err);
-    process.exit(1);
+    const config = getDatabaseConfig();
+    const target = config.driver === "pglite" ? config.pgliteDataDir : "remote database (credentials hidden)";
+    console.log(`[db:migrate] driver=${config.driver} target=${target}`);
+
+    const result = await bootstrapDatabase({ force: true });
+
+    if (result.verification) {
+      console.log(`[db:migrate] migrations recorded in journal: ${result.verification.appliedMigrations}`);
+      console.log(
+        `[db:migrate] tables ready (${result.verification.tables.length}): ${result.verification.tables.join(", ")}`,
+      );
+    }
+    console.log("[db:migrate] done");
+    return 0;
+  } catch (error) {
+    if (error instanceof DatabaseConfigurationError) {
+      console.error(`[db:migrate] configuration error: ${error.message}`);
+    } else {
+      console.error("[db:migrate] migration failed:", error);
+    }
+    return 1;
+  } finally {
+    await closeDatabase();
   }
 }
 
-run();
+main().then((exitCode) => {
+  process.exitCode = exitCode;
+});
+
