@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   ATTENDANCE_STATUSES,
   CHECKIN_METHODS,
+  FOLLOW_UP_STATUSES,
   GENDERS,
   GROUP_CATEGORIES,
   GROUP_MEMBER_ROLES,
@@ -288,6 +289,47 @@ export const missionActivityQuerySchema = z.object({
   search: z.string().trim().optional(),
 });
 export type MissionActivityQuery = z.infer<typeof missionActivityQuerySchema>;
+
+const followUpFieldsSchema = z.object({
+  title: z.string().trim().min(1, "กรุณากรอกหัวข้อการติดตาม").max(300),
+  note: z.string().trim().max(3000).optional().or(z.literal("")),
+  subjectMemberId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  subjectGroupId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  activityId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  ownerId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  dueAt: z.coerce.date().optional().nullable(),
+});
+
+export const followUpInputSchema = followUpFieldsSchema.refine(
+  (data) => Boolean(data.subjectMemberId) || Boolean(data.subjectGroupId),
+  {
+    message: "การติดตามต้องระบุบุคคลหรือกลุ่มอย่างน้อยหนึ่งอย่าง",
+    path: ["subjectMemberId"],
+  }
+);
+export type FollowUpInput = z.infer<typeof followUpInputSchema>;
+
+export const followUpUpdateSchema = followUpFieldsSchema.partial();
+export type FollowUpUpdate = z.infer<typeof followUpUpdateSchema>;
+
+export const followUpStatusUpdateSchema = z.object({
+  status: z.enum(FOLLOW_UP_STATUSES),
+});
+export type FollowUpStatusUpdate = z.infer<typeof followUpStatusUpdateSchema>;
+
+export const followUpQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  status: z.enum(FOLLOW_UP_STATUSES).optional(),
+  ownerId: z.string().optional(),
+  subjectMemberId: z.string().optional(),
+  subjectGroupId: z.string().optional(),
+  overdue: z
+    .string()
+    .optional()
+    .transform((val) => val === "true"),
+});
+export type FollowUpQuery = z.infer<typeof followUpQuerySchema>;
 
 export const pushSubscriptionSchema = z.object({
   endpoint: z.string().url("Endpoint ไม่ถูกต้อง"),

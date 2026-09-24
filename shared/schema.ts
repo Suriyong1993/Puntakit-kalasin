@@ -489,6 +489,40 @@ export const missionActivityMedia = pgTable(
   (table) => [index("mission_activity_media_activity_id_idx").on(table.activityId)]
 );
 
+export const FOLLOW_UP_STATUSES = ["open", "in_progress", "completed", "cancelled"] as const;
+export type FollowUpStatus = (typeof FOLLOW_UP_STATUSES)[number];
+
+// Follow-up: "what needs to happen next," attached to a person and/or a
+// group, optionally traced back to the activity that raised it. Deliberately
+// separate from members.status (a two-state pastoral flag on the person) —
+// see docs/PUNTAKIT_PRODUCT_ARCHITECTURE.md for why they are not merged.
+export const followUps = pgTable(
+  "follow_ups",
+  {
+    id: id(),
+    status: text("status", { enum: FOLLOW_UP_STATUSES }).notNull().default("open"),
+    title: text("title").notNull(),
+    note: text("note"),
+    subjectMemberId: text("subject_member_id").references(() => members.id, { onDelete: "cascade" }),
+    subjectGroupId: text("subject_group_id").references(() => groups.id, { onDelete: "cascade" }),
+    activityId: text("activity_id").references(() => missionActivities.id, { onDelete: "set null" }),
+    ownerId: text("owner_id").references(() => users.id, { onDelete: "set null" }),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("follow_ups_status_idx").on(table.status),
+    index("follow_ups_subject_member_id_idx").on(table.subjectMemberId),
+    index("follow_ups_subject_group_id_idx").on(table.subjectGroupId),
+    index("follow_ups_activity_id_idx").on(table.activityId),
+    index("follow_ups_owner_id_idx").on(table.ownerId),
+    index("follow_ups_due_at_idx").on(table.dueAt),
+  ]
+);
+
 export type User = typeof users.$inferSelect;
 export type UserSession = typeof userSessions.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
@@ -506,3 +540,4 @@ export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type MissionActivity = typeof missionActivities.$inferSelect;
 export type MissionActivityParticipant = typeof missionActivityParticipants.$inferSelect;
 export type MissionActivityMedia = typeof missionActivityMedia.$inferSelect;
+export type FollowUp = typeof followUps.$inferSelect;

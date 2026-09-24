@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Feed from "./pages/Feed";
+import FollowUps from "./pages/FollowUps";
 import Members from "./pages/Members";
 import Groups from "./pages/Groups";
 import Attendance from "./pages/Attendance";
@@ -71,6 +72,11 @@ function Router() {
       <Route path="/feed">
         <ProtectedRoute>
           <Feed />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/follow-up">
+        <ProtectedRoute>
+          <FollowUps />
         </ProtectedRoute>
       </Route>
       <Route path="/members">

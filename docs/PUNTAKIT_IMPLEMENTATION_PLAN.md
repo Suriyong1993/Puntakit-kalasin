@@ -151,14 +151,54 @@ members modal and confirmed the same activity renders correctly in both
 architecture doc, not just asserted but actually observed across two
 different surfaces.
 
-## Phase 4 — Follow-up
+## Phase 4 — Follow-up — DONE (schema/API/UI shipped; data migration still blocked, as planned)
 
-- Add `followUps` table + `server/routes/followUps.ts`.
-- Add `/follow-up` page: open/overdue/completed views, owner assignment.
-- Link follow-up creation from an Activity card and from a Person page.
-- Do not touch `members.status` yet — both can coexist; migrate that flag
-  into real follow-up records only after Phase 4 ships and is validated,
-  as a separate, explicitly-approved step (touches existing data).
+Shipped on branch `claude/eloquent-archimedes-04s1kg`, not yet in a PR.
+
+- Added `follow_ups` table (additive migration
+  `server/db/migrations/0005_secret_warstar.sql`, one new table, no
+  changes to existing ones) — `status`, `title`, `note`,
+  `subjectMemberId`/`subjectGroupId` (at least one required, enforced by
+  Zod `.refine`), optional `activityId` tracing back to the activity that
+  raised it, `ownerId`, `dueAt`, `completedAt`, `createdById`.
+  Deliberately kept separate from `members.status` — see
+  `docs/PUNTAKIT_PRODUCT_ARCHITECTURE.md` and the note below.
+- Added `server/routes/followUps.ts`: list (filterable by status/owner/
+  subject/`overdue=true`)/detail/create/update/status-transition.
+  Follow-ups are internal tasks, not public content — unlike Mission
+  Activity, visibility has no "published" escape hatch: privileged roles,
+  the owner, the creator, or a `group_leader` who actually leads the
+  subject group. Explicit lifecycle map (`open → in_progress/completed/
+  cancelled`, `in_progress → open/completed/cancelled`, `completed/
+  cancelled → open` to reopen); `completedAt` is stamped on entering
+  `completed` and cleared on reopen.
+- Added `client/src/pages/FollowUps.tsx` at `/follow-up` (new sidebar
+  entry, additive — not the Phase 8 restructuring): status/overdue
+  filters, one list, inline lifecycle action buttons, overdue rows
+  highlighted.
+- Linked follow-up creation from two places, per plan: a "สร้างรายการ
+  ติดตามจากกิจกรรมนี้" button on each Feed activity card (only shown when
+  the activity has a group — a required subject) and a "+ สร้างรายการ
+  ติดตาม" button in the Member detail modal, next to its
+  `ActivityTimeline`.
+- **`members.status` untouched**, exactly as planned — no migration, no
+  reinterpretation of that field. It is a separate concept (a two-state
+  pastoral flag on the person) from a follow-up (a task with an owner, a
+  due date, and a lifecycle). The data-migration step remains explicitly
+  blocked pending approval; nothing in this phase touches it.
+
+**Verification:** `pnpm check`, `pnpm test` (139/139 — 14 new tests in
+`server/routes/followUps.test.ts`, same real-PGlite full-loop pattern as
+`activities.test.ts`: create → persist → fetch → 401/403/404 → relate
+person/group/activity → three chained lifecycle transitions including the
+reject-invalid-transition and completedAt-stamped/cleared cases → audit
+rows → an `overdue=true` filter query against a directly-inserted overdue
+row), `pnpm build` all pass. One more mechanical fix in
+`server/db/bootstrap.test.ts` (migration count 5 → 6). Also manually
+verified live: seeded a group and an activity, clicked "create follow-up"
+from a real Feed card, confirmed the new item and a separately-seeded
+overdue item both render correctly on `/follow-up` (desktop and mobile),
+with working status-transition buttons.
 
 ## Phase 5 — Mission Inbox
 

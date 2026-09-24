@@ -5,6 +5,7 @@ import {
   Camera,
   CheckCircle2,
   Image as ImageIcon,
+  ListTodo,
   MapPin,
   Plus,
   RotateCcw,
@@ -202,6 +203,19 @@ export default function Feed() {
     }
   };
 
+  const createFollowUp = async (activity: FeedActivity) => {
+    try {
+      await api.post("/api/follow-ups", {
+        title: `ติดตามหลัง: ${activity.title}`,
+        activityId: activity.id,
+        subjectGroupId: activity.groupId || undefined,
+      });
+      toast.success("สร้างรายการติดตามแล้ว");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "สร้างรายการติดตามไม่สำเร็จ");
+    }
+  };
+
   const toggleParticipant = (memberId: string) => {
     setForm((f) => ({
       ...f,
@@ -365,6 +379,14 @@ export default function Feed() {
                         <RotateCcw size={12} /> กู้คืนเป็นฉบับร่าง
                       </button>
                     </div>
+                  )}
+                  {canAdvance && activity.groupId && (
+                    <button
+                      className="w-full mt-2 inline-flex items-center justify-center gap-1 rounded-xl border border-dashed border-slate-300 px-2 py-1.5 text-[11px] font-semibold text-slate-500 hover:bg-slate-50"
+                      onClick={() => createFollowUp(activity)}
+                    >
+                      <ListTodo size={12} /> สร้างรายการติดตามจากกิจกรรมนี้
+                    </button>
                   )}
                 </div>
               </article>

@@ -36,6 +36,13 @@
       "when": 1790270059427,
       "tag": "0004_clumsy_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790271255833,
+      "tag": "0005_secret_warstar",
+      "breakpoints": true
     }
   ]
 }

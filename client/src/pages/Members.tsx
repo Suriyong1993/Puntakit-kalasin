@@ -898,9 +898,35 @@ export default function Members() {
             )}
 
             <div style={{ marginTop: 14 }}>
-              <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8, fontSize: 12 }}>
-                กิจกรรมพันธกิจล่าสุด
-              </strong>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <strong style={{ color: "var(--ink)", fontSize: 12 }}>กิจกรรมพันธกิจล่าสุด</strong>
+                <button
+                  type="button"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "var(--blue)",
+                    background: "none",
+                    border: "1px dashed #b9d3ec",
+                    borderRadius: 10,
+                    padding: "4px 10px",
+                    cursor: "pointer",
+                  }}
+                  onClick={async () => {
+                    try {
+                      await api.post("/api/follow-ups", {
+                        title: `ติดตาม: ${selectedMember.name}`,
+                        subjectMemberId: selectedMember.id,
+                      });
+                      toast.success("สร้างรายการติดตามแล้ว");
+                    } catch (err) {
+                      toast.error(err instanceof ApiError ? err.message : "สร้างรายการติดตามไม่สำเร็จ");
+                    }
+                  }}
+                >
+                  + สร้างรายการติดตาม
+                </button>
+              </div>
               <ActivityTimeline subjectType="member" subjectId={selectedMember.id} />
             </div>
 
