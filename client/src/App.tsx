@@ -18,6 +18,8 @@ import Profile from "./pages/Profile";
 import ComingSoon from "./pages/ComingSoon";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Feed from "./pages/Feed";
+import ActivityDetail from "./pages/ActivityDetail";
 
 // Member PWA Pages
 import MemberHome from "./pages/member/MemberHome";
@@ -62,9 +64,24 @@ function Router() {
         </ProtectedRoute>
       </Route>
 
-      <Route path="/">
+      <Route path="/feed">
+        <ProtectedRoute>
+          <Feed />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/activities/:id">
+        <ProtectedRoute>
+          <ActivityDetail />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/operations">
         <ProtectedRoute>
           <Home />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/">
+        <ProtectedRoute>
+          <Feed />
         </ProtectedRoute>
       </Route>
       <Route path="/members">

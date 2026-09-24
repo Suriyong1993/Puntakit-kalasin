@@ -9,6 +9,10 @@ import {
   GROUP_PRIVACIES,
   GROUP_STATUSES,
   MEMBERSHIP_STATUSES,
+  MISSION_ACTIVITY_MEDIA_TYPES,
+  MISSION_ACTIVITY_SOURCES,
+  MISSION_ACTIVITY_TYPES,
+  MISSION_ACTIVITY_VISIBILITIES,
   PRAYER_CATEGORIES,
   SERVICE_TYPES,
   USER_ROLES,
@@ -21,7 +25,13 @@ export const memberInputSchema = z.object({
   gender: z.enum(GENDERS).optional().nullable(),
   birthDate: z.coerce.date().optional().nullable(),
   phone: z.string().trim().max(50).optional().or(z.literal("")),
-  email: z.string().trim().email("อีเมลไม่ถูกต้อง").max(200).optional().or(z.literal("")),
+  email: z
+    .string()
+    .trim()
+    .email("อีเมลไม่ถูกต้อง")
+    .max(200)
+    .optional()
+    .or(z.literal("")),
   lineId: z.string().trim().max(100).optional().or(z.literal("")),
   address: z.string().trim().max(500).optional().or(z.literal("")),
   role: z.string().trim().min(1).max(100).default("สมาชิก"),
@@ -32,7 +42,12 @@ export const memberInputSchema = z.object({
   assignedLeaderId: z.string().uuid().optional().or(z.literal("")).nullable(),
   emergencyContactName: z.string().trim().max(200).optional().or(z.literal("")),
   emergencyContactPhone: z.string().trim().max(50).optional().or(z.literal("")),
-  emergencyContactRelation: z.string().trim().max(100).optional().or(z.literal("")),
+  emergencyContactRelation: z
+    .string()
+    .trim()
+    .max(100)
+    .optional()
+    .or(z.literal("")),
   consentGiven: z.boolean().default(false),
   joinedAt: z.coerce.date().optional(),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
@@ -52,7 +67,7 @@ export const memberQuerySchema = z.object({
   includeDeleted: z
     .string()
     .optional()
-    .transform((val) => val === "true"),
+    .transform(val => val === "true"),
 });
 export type MemberQuery = z.infer<typeof memberQuerySchema>;
 
@@ -75,7 +90,9 @@ export const eventInputSchema = z.object({
   description: z.string().trim().max(5000).optional().or(z.literal("")),
   eventDate: z.coerce.date(),
   location: z.string().trim().max(300).optional().or(z.literal("")),
-  category: z.enum(["worship", "activity", "meeting", "other"]).default("worship"),
+  category: z
+    .enum(["worship", "activity", "meeting", "other"])
+    .default("worship"),
   status: z.enum(["scheduled", "cancelled", "completed"]).default("scheduled"),
 });
 export type EventInput = z.infer<typeof eventInputSchema>;
@@ -92,7 +109,13 @@ export const churchProfileInputSchema = z.object({
   name: z.string().trim().min(1, "กรุณากรอกชื่อคริสตจักร").max(300),
   address: z.string().trim().max(500).optional().or(z.literal("")),
   phone: z.string().trim().max(50).optional().or(z.literal("")),
-  email: z.string().trim().email("อีเมลไม่ถูกต้อง").max(200).optional().or(z.literal("")),
+  email: z
+    .string()
+    .trim()
+    .email("อีเมลไม่ถูกต้อง")
+    .max(200)
+    .optional()
+    .or(z.literal("")),
   description: z.string().trim().max(5000).optional().or(z.literal("")),
 });
 export type ChurchProfileInput = z.infer<typeof churchProfileInputSchema>;
@@ -113,7 +136,10 @@ export type LoginInput = z.infer<typeof loginInputSchema>;
 
 export const changePasswordInputSchema = z.object({
   currentPassword: z.string().min(1, "กรุณากรอกรหัสผ่านปัจจุบัน"),
-  newPassword: z.string().min(8, "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร").max(200),
+  newPassword: z
+    .string()
+    .min(8, "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร")
+    .max(200),
 });
 export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
 
@@ -187,7 +213,9 @@ export const bulkAttendanceInputSchema = z.object({
   serviceType: z.enum(SERVICE_TYPES).default("sunday_service"),
   groupId: z.string().uuid().optional().or(z.literal("")).nullable(),
   eventId: z.string().uuid().optional().or(z.literal("")).nullable(),
-  records: z.array(bulkAttendanceItemSchema).min(1, "กรุณาระบุข้อมูลการเช็คชื่ออย่างน้อย 1 รายการ"),
+  records: z
+    .array(bulkAttendanceItemSchema)
+    .min(1, "กรุณาระบุข้อมูลการเช็คชื่ออย่างน้อย 1 รายการ"),
 });
 export type BulkAttendanceInput = z.infer<typeof bulkAttendanceInputSchema>;
 
@@ -217,7 +245,9 @@ export const consecutiveAbsenceQuerySchema = z.object({
   serviceType: z.enum(SERVICE_TYPES).default("sunday_service"),
   groupId: z.string().optional(),
 });
-export type ConsecutiveAbsenceQuery = z.infer<typeof consecutiveAbsenceQuerySchema>;
+export type ConsecutiveAbsenceQuery = z.infer<
+  typeof consecutiveAbsenceQuerySchema
+>;
 
 export const memberProfileUpdateSchema = z.object({
   nickname: z.string().trim().max(100).optional().or(z.literal("")),
@@ -227,7 +257,12 @@ export const memberProfileUpdateSchema = z.object({
   avatarUrl: z.string().trim().max(500).optional().or(z.literal("")),
   emergencyContactName: z.string().trim().max(200).optional().or(z.literal("")),
   emergencyContactPhone: z.string().trim().max(50).optional().or(z.literal("")),
-  emergencyContactRelation: z.string().trim().max(100).optional().or(z.literal("")),
+  emergencyContactRelation: z
+    .string()
+    .trim()
+    .max(100)
+    .optional()
+    .or(z.literal("")),
   consentGiven: z.boolean().optional(),
 });
 export type MemberProfileUpdate = z.infer<typeof memberProfileUpdateSchema>;
@@ -253,3 +288,54 @@ export const pushSubscriptionSchema = z.object({
 });
 export type PushSubscriptionInput = z.infer<typeof pushSubscriptionSchema>;
 
+const missionActivityMediaInputSchema = z.object({
+  type: z.enum(MISSION_ACTIVITY_MEDIA_TYPES).default("image"),
+  url: z.string().trim().url("ลิงก์สื่อไม่ถูกต้อง").max(1000),
+  caption: z.string().trim().max(500).optional().or(z.literal("")),
+});
+
+export const missionActivityInputSchema = z.object({
+  type: z.enum(MISSION_ACTIVITY_TYPES).default("other"),
+  occurredAt: z.coerce.date().default(() => new Date()),
+  title: z.string().trim().min(1, "กรุณากรอกหัวข้อกิจกรรม").max(200),
+  story: z
+    .string()
+    .trim()
+    .min(1, "กรุณาเล่าเรื่องกิจกรรมอย่างน้อย 1 บรรทัด")
+    .max(10000),
+  groupId: z
+    .string()
+    .uuid("รหัสกลุ่มไม่ถูกต้อง")
+    .optional()
+    .or(z.literal(""))
+    .nullable(),
+  locationText: z.string().trim().max(300).optional().or(z.literal("")),
+  latitude: z.string().trim().max(50).optional().or(z.literal("")),
+  longitude: z.string().trim().max(50).optional().or(z.literal("")),
+  source: z.enum(MISSION_ACTIVITY_SOURCES).default("manual"),
+  visibility: z.enum(MISSION_ACTIVITY_VISIBILITIES).default("group"),
+  participants: z
+    .array(z.string().uuid("รหัสสมาชิกไม่ถูกต้อง"))
+    .max(100)
+    .default([]),
+  media: z.array(missionActivityMediaInputSchema).max(20).default([]),
+});
+export type MissionActivityInput = z.infer<typeof missionActivityInputSchema>;
+
+export const missionActivityUpdateSchema = missionActivityInputSchema.partial();
+export type MissionActivityUpdate = z.infer<typeof missionActivityUpdateSchema>;
+
+export const missionActivityQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  type: z.enum(MISSION_ACTIVITY_TYPES).optional(),
+  groupId: z.string().uuid("รหัสกลุ่มไม่ถูกต้อง").optional(),
+  memberId: z.string().uuid("รหัสสมาชิกไม่ถูกต้อง").optional(),
+  area: z.string().trim().max(100).optional(),
+  startDate: z.string().trim().optional(),
+  endDate: z.string().trim().optional(),
+  status: z
+    .enum(["draft", "pending_review", "published", "archived", "all"])
+    .default("published"),
+});
+export type MissionActivityQuery = z.infer<typeof missionActivityQuerySchema>;

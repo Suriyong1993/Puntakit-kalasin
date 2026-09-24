@@ -1,4 +1,12 @@
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { randomUUID } from "node:crypto";
 
 const id = () =>
@@ -22,14 +30,16 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
-  role: text("role", { enum: USER_ROLES })
-    .notNull()
-    .default("member"),
+  role: text("role", { enum: USER_ROLES }).notNull().default("member"),
   status: text("status", { enum: ["active", "suspended"] })
     .notNull()
     .default("active"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const userSessions = pgTable(
@@ -44,9 +54,11 @@ export const userSessions = pgTable(
     ipAddress: text("ip_address"),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
+  table => [
     index("user_sessions_user_id_idx").on(table.userId),
     index("user_sessions_token_hash_idx").on(table.tokenHash),
   ]
@@ -56,23 +68,33 @@ export const auditLogs = pgTable(
   "audit_logs",
   {
     id: id(),
-    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     action: text("action").notNull(),
     entityType: text("entity_type").notNull(),
     entityId: text("entity_id"),
     details: text("details"),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
+  table => [
     index("audit_logs_user_id_idx").on(table.userId),
     index("audit_logs_action_idx").on(table.action),
     index("audit_logs_created_at_idx").on(table.createdAt),
   ]
 );
 
-export const MEMBERSHIP_STATUSES = ["active", "visitor", "candidate", "transferred", "inactive"] as const;
+export const MEMBERSHIP_STATUSES = [
+  "active",
+  "visitor",
+  "candidate",
+  "transferred",
+  "inactive",
+] as const;
 export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
 
 export const GENDERS = ["male", "female", "other"] as const;
@@ -100,22 +122,36 @@ export const members = pgTable(
     status: text("status", { enum: ["ติดตามแล้ว", "ต้องติดตาม"] })
       .notNull()
       .default("ต้องติดตาม"),
-    assignedLeaderId: text("assigned_leader_id").references(() => users.id, { onDelete: "set null" }),
-    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    assignedLeaderId: text("assigned_leader_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     emergencyContactName: text("emergency_contact_name"),
     emergencyContactPhone: text("emergency_contact_phone"),
     emergencyContactRelation: text("emergency_contact_relation"),
     consentGiven: boolean("consent_given").notNull().default(false),
     consentDate: timestamp("consent_date", { withTimezone: true }),
-    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     notes: text("notes"),
-    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
-    updatedById: text("updated_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdById: text("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    updatedById: text("updated_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
+  table => [
     index("members_area_idx").on(table.area),
     index("members_status_idx").on(table.status),
     index("members_phone_idx").on(table.phone),
@@ -129,13 +165,21 @@ export const announcements = pgTable("announcements", {
   id: id(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  publishDate: timestamp("publish_date", { withTimezone: true }).notNull().defaultNow(),
+  publishDate: timestamp("publish_date", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   status: text("status", { enum: ["draft", "published"] })
     .notNull()
     .default("draft"),
-  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdBy: text("created_by").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const events = pgTable("events", {
@@ -144,14 +188,20 @@ export const events = pgTable("events", {
   description: text("description"),
   eventDate: timestamp("event_date", { withTimezone: true }).notNull(),
   location: text("location"),
-  category: text("category", { enum: ["worship", "activity", "meeting", "other"] })
+  category: text("category", {
+    enum: ["worship", "activity", "meeting", "other"],
+  })
     .notNull()
     .default("worship"),
   status: text("status", { enum: ["scheduled", "cancelled", "completed"] })
     .notNull()
     .default("scheduled"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const ministries = pgTable("ministries", {
@@ -162,8 +212,12 @@ export const ministries = pgTable("ministries", {
   status: text("status", { enum: ["active", "inactive"] })
     .notNull()
     .default("active"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const churchProfile = pgTable("church_profile", {
@@ -173,7 +227,9 @@ export const churchProfile = pgTable("church_profile", {
   phone: text("phone"),
   email: text("email"),
   description: text("description"),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const GROUP_CATEGORIES = [
@@ -203,7 +259,12 @@ export type GroupPrivacy = (typeof GROUP_PRIVACIES)[number];
 export const GROUP_MEMBER_STATUSES = ["active", "inactive"] as const;
 export type GroupMemberStatus = (typeof GROUP_MEMBER_STATUSES)[number];
 
-export const GROUP_MEMBER_ROLES = ["leader", "assistant_leader", "host", "member"] as const;
+export const GROUP_MEMBER_ROLES = [
+  "leader",
+  "assistant_leader",
+  "host",
+  "member",
+] as const;
 export type GroupMemberRole = (typeof GROUP_MEMBER_ROLES)[number];
 
 export const SERVICE_TYPES = [
@@ -215,10 +276,20 @@ export const SERVICE_TYPES = [
 ] as const;
 export type ServiceType = (typeof SERVICE_TYPES)[number];
 
-export const ATTENDANCE_STATUSES = ["present", "absent", "leave", "online"] as const;
+export const ATTENDANCE_STATUSES = [
+  "present",
+  "absent",
+  "leave",
+  "online",
+] as const;
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
-export const CHECKIN_METHODS = ["manual", "qr_scan", "self_qr", "kiosk"] as const;
+export const CHECKIN_METHODS = [
+  "manual",
+  "qr_scan",
+  "self_qr",
+  "kiosk",
+] as const;
 export type CheckInMethod = (typeof CHECKIN_METHODS)[number];
 
 export const groups = pgTable(
@@ -226,11 +297,21 @@ export const groups = pgTable(
   {
     id: id(),
     name: text("name").notNull(),
-    leaderId: text("leader_id").references(() => users.id, { onDelete: "set null" }),
-    coLeaderId: text("co_leader_id").references(() => users.id, { onDelete: "set null" }),
-    category: text("category", { enum: GROUP_CATEGORIES }).notNull().default("cell"),
-    privacy: text("privacy", { enum: GROUP_PRIVACIES }).notNull().default("public"),
-    status: text("status", { enum: GROUP_STATUSES }).notNull().default("active"),
+    leaderId: text("leader_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    coLeaderId: text("co_leader_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    category: text("category", { enum: GROUP_CATEGORIES })
+      .notNull()
+      .default("cell"),
+    privacy: text("privacy", { enum: GROUP_PRIVACIES })
+      .notNull()
+      .default("public"),
+    status: text("status", { enum: GROUP_STATUSES })
+      .notNull()
+      .default("active"),
     area: text("area"),
     meetingDay: text("meeting_day"),
     meetingTime: text("meeting_time"),
@@ -243,12 +324,18 @@ export const groups = pgTable(
     coverUrl: text("cover_url"),
     startDate: timestamp("start_date", { withTimezone: true }),
     description: text("description"),
-    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdById: text("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
+  table => [
     index("groups_status_idx").on(table.status),
     index("groups_privacy_idx").on(table.privacy),
     index("groups_category_idx").on(table.category),
@@ -269,18 +356,32 @@ export const groupMembers = pgTable(
     memberId: text("member_id")
       .notNull()
       .references(() => members.id, { onDelete: "cascade" }),
-    role: text("role", { enum: GROUP_MEMBER_ROLES }).notNull().default("member"),
-    status: text("status", { enum: GROUP_MEMBER_STATUSES }).notNull().default("active"),
-    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+    role: text("role", { enum: GROUP_MEMBER_ROLES })
+      .notNull()
+      .default("member"),
+    status: text("status", { enum: GROUP_MEMBER_STATUSES })
+      .notNull()
+      .default("active"),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     leftAt: timestamp("left_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
-    uniqueIndex("group_members_group_member_uniq").on(table.groupId, table.memberId),
+  table => [
+    uniqueIndex("group_members_group_member_uniq").on(
+      table.groupId,
+      table.memberId
+    ),
     index("group_members_group_id_idx").on(table.groupId),
     index("group_members_member_id_idx").on(table.memberId),
     index("group_members_group_id_status_idx").on(table.groupId, table.status),
-    index("group_members_member_id_status_idx").on(table.memberId, table.status),
+    index("group_members_member_id_status_idx").on(
+      table.memberId,
+      table.status
+    ),
   ]
 );
 
@@ -289,27 +390,52 @@ export const attendanceRecords = pgTable(
   {
     id: id(),
     date: timestamp("date", { withTimezone: true }).notNull(),
-    serviceType: text("service_type", { enum: SERVICE_TYPES }).notNull().default("sunday_service"),
-    groupId: text("group_id").references(() => groups.id, { onDelete: "set null" }),
-    eventId: text("event_id").references(() => events.id, { onDelete: "set null" }),
+    serviceType: text("service_type", { enum: SERVICE_TYPES })
+      .notNull()
+      .default("sunday_service"),
+    groupId: text("group_id").references(() => groups.id, {
+      onDelete: "set null",
+    }),
+    eventId: text("event_id").references(() => events.id, {
+      onDelete: "set null",
+    }),
     memberId: text("member_id")
       .notNull()
       .references(() => members.id, { onDelete: "cascade" }),
-    status: text("status", { enum: ATTENDANCE_STATUSES }).notNull().default("present"),
-    checkInMethod: text("check_in_method", { enum: CHECKIN_METHODS }).notNull().default("manual"),
-    checkedInBy: text("checked_in_by").references(() => users.id, { onDelete: "set null" }),
-    checkedInAt: timestamp("checked_in_at", { withTimezone: true }).notNull().defaultNow(),
+    status: text("status", { enum: ATTENDANCE_STATUSES })
+      .notNull()
+      .default("present"),
+    checkInMethod: text("check_in_method", { enum: CHECKIN_METHODS })
+      .notNull()
+      .default("manual"),
+    checkedInBy: text("checked_in_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    checkedInAt: timestamp("checked_in_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     notes: text("notes"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
+  table => [
     index("attendance_date_idx").on(table.date),
     index("attendance_service_type_idx").on(table.serviceType),
     index("attendance_group_id_idx").on(table.groupId),
     index("attendance_member_id_idx").on(table.memberId),
     index("attendance_status_idx").on(table.status),
-    index("attendance_group_member_date_status_idx").on(table.groupId, table.memberId, table.date, table.status),
-    index("attendance_member_date_status_idx").on(table.memberId, table.date, table.status),
+    index("attendance_group_member_date_status_idx").on(
+      table.groupId,
+      table.memberId,
+      table.date,
+      table.status
+    ),
+    index("attendance_member_date_status_idx").on(
+      table.memberId,
+      table.date,
+      table.status
+    ),
   ]
 );
 
@@ -326,8 +452,13 @@ export type PrayerCategory = (typeof PRAYER_CATEGORIES)[number];
 export const PRAYER_STATUSES = ["pending", "praying", "answered"] as const;
 export type PrayerStatus = (typeof PRAYER_STATUSES)[number];
 
-export const EVENT_REGISTRATION_STATUSES = ["registered", "cancelled", "attended"] as const;
-export type EventRegistrationStatus = (typeof EVENT_REGISTRATION_STATUSES)[number];
+export const EVENT_REGISTRATION_STATUSES = [
+  "registered",
+  "cancelled",
+  "attended",
+] as const;
+export type EventRegistrationStatus =
+  (typeof EVENT_REGISTRATION_STATUSES)[number];
 
 export const eventRegistrations = pgTable(
   "event_registrations",
@@ -336,15 +467,28 @@ export const eventRegistrations = pgTable(
     eventId: text("event_id")
       .notNull()
       .references(() => events.id, { onDelete: "cascade" }),
-    memberId: text("member_id").references(() => members.id, { onDelete: "cascade" }),
-    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
-    status: text("status", { enum: EVENT_REGISTRATION_STATUSES }).notNull().default("registered"),
-    registeredAt: timestamp("registered_at", { withTimezone: true }).notNull().defaultNow(),
+    memberId: text("member_id").references(() => members.id, {
+      onDelete: "cascade",
+    }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    status: text("status", { enum: EVENT_REGISTRATION_STATUSES })
+      .notNull()
+      .default("registered"),
+    registeredAt: timestamp("registered_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     notes: text("notes"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
-    uniqueIndex("event_registrations_event_user_uniq").on(table.eventId, table.userId),
+  table => [
+    uniqueIndex("event_registrations_event_user_uniq").on(
+      table.eventId,
+      table.userId
+    ),
     index("event_registrations_event_id_idx").on(table.eventId),
     index("event_registrations_user_id_idx").on(table.userId),
     index("event_registrations_member_id_idx").on(table.memberId),
@@ -355,18 +499,30 @@ export const prayerRequests = pgTable(
   "prayer_requests",
   {
     id: id(),
-    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
-    memberId: text("member_id").references(() => members.id, { onDelete: "set null" }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    memberId: text("member_id").references(() => members.id, {
+      onDelete: "set null",
+    }),
     title: text("title").notNull(),
     content: text("content").notNull(),
-    category: text("category", { enum: PRAYER_CATEGORIES }).notNull().default("spiritual"),
+    category: text("category", { enum: PRAYER_CATEGORIES })
+      .notNull()
+      .default("spiritual"),
     isConfidential: boolean("is_confidential").notNull().default(false),
-    status: text("status", { enum: PRAYER_STATUSES }).notNull().default("pending"),
+    status: text("status", { enum: PRAYER_STATUSES })
+      .notNull()
+      .default("pending"),
     answeredNotes: text("answered_notes"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
+  table => [
     index("prayer_requests_user_id_idx").on(table.userId),
     index("prayer_requests_status_idx").on(table.status),
     index("prayer_requests_category_idx").on(table.category),
@@ -385,10 +541,158 @@ export const pushSubscriptions = pgTable(
     p256dh: text("p256dh").notNull(),
     auth: text("auth").notNull(),
     userAgent: text("user_agent"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [
-    index("push_subscriptions_user_id_idx").on(table.userId),
+  table => [index("push_subscriptions_user_id_idx").on(table.userId)]
+);
+
+export const MISSION_ACTIVITY_TYPES = [
+  "mission_visit",
+  "house_mission",
+  "bible_study",
+  "prayer",
+  "worship",
+  "fellowship",
+  "testimony",
+  "evangelism",
+  "pastoral_visit",
+  "outreach",
+  "ministry_update",
+  "other",
+] as const;
+export type MissionActivityType = (typeof MISSION_ACTIVITY_TYPES)[number];
+
+export const MISSION_ACTIVITY_STATUSES = [
+  "draft",
+  "pending_review",
+  "published",
+  "archived",
+] as const;
+export type MissionActivityStatus = (typeof MISSION_ACTIVITY_STATUSES)[number];
+
+export const MISSION_ACTIVITY_SOURCES = [
+  "manual",
+  "line",
+  "import",
+  "system",
+] as const;
+export type MissionActivitySource = (typeof MISSION_ACTIVITY_SOURCES)[number];
+
+export const MISSION_ACTIVITY_VISIBILITIES = [
+  "public",
+  "group",
+  "leaders",
+  "private",
+] as const;
+export type MissionActivityVisibility =
+  (typeof MISSION_ACTIVITY_VISIBILITIES)[number];
+
+export const MISSION_ACTIVITY_MEDIA_TYPES = ["image", "video", "file"] as const;
+export type MissionActivityMediaType =
+  (typeof MISSION_ACTIVITY_MEDIA_TYPES)[number];
+
+export const missionActivities = pgTable(
+  "mission_activities",
+  {
+    id: id(),
+    type: text("type", { enum: MISSION_ACTIVITY_TYPES })
+      .notNull()
+      .default("other"),
+    status: text("status", { enum: MISSION_ACTIVITY_STATUSES })
+      .notNull()
+      .default("pending_review"),
+    source: text("source", { enum: MISSION_ACTIVITY_SOURCES })
+      .notNull()
+      .default("manual"),
+    visibility: text("visibility", { enum: MISSION_ACTIVITY_VISIBILITIES })
+      .notNull()
+      .default("group"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    title: text("title").notNull(),
+    story: text("story").notNull(),
+    locationText: text("location_text"),
+    latitude: text("latitude"),
+    longitude: text("longitude"),
+    groupId: text("group_id").references(() => groups.id, {
+      onDelete: "set null",
+    }),
+    createdById: text("created_by_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    verifiedById: text("verified_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  table => [
+    index("mission_activities_occurred_at_idx").on(table.occurredAt),
+    index("mission_activities_type_idx").on(table.type),
+    index("mission_activities_status_idx").on(table.status),
+    index("mission_activities_visibility_idx").on(table.visibility),
+    index("mission_activities_group_id_idx").on(table.groupId),
+    index("mission_activities_created_by_id_idx").on(table.createdById),
+  ]
+);
+
+export const missionActivityParticipants = pgTable(
+  "mission_activity_participants",
+  {
+    id: id(),
+    activityId: text("activity_id")
+      .notNull()
+      .references(() => missionActivities.id, { onDelete: "cascade" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("participant"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  table => [
+    uniqueIndex("mission_activity_participants_activity_member_uniq").on(
+      table.activityId,
+      table.memberId
+    ),
+    index("mission_activity_participants_activity_id_idx").on(table.activityId),
+    index("mission_activity_participants_member_id_idx").on(table.memberId),
+  ]
+);
+
+export const missionActivityMedia = pgTable(
+  "mission_activity_media",
+  {
+    id: id(),
+    activityId: text("activity_id")
+      .notNull()
+      .references(() => missionActivities.id, { onDelete: "cascade" }),
+    type: text("type", { enum: MISSION_ACTIVITY_MEDIA_TYPES })
+      .notNull()
+      .default("image"),
+    url: text("url").notNull(),
+    caption: text("caption"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  table => [
+    index("mission_activity_media_activity_id_idx").on(table.activityId),
+    index("mission_activity_media_sort_order_idx").on(
+      table.activityId,
+      table.sortOrder
+    ),
   ]
 );
 
@@ -406,3 +710,7 @@ export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type PrayerRequest = typeof prayerRequests.$inferSelect;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type MissionActivity = typeof missionActivities.$inferSelect;
+export type MissionActivityParticipant =
+  typeof missionActivityParticipants.$inferSelect;
+export type MissionActivityMedia = typeof missionActivityMedia.$inferSelect;
