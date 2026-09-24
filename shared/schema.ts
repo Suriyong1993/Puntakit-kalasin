@@ -392,6 +392,103 @@ export const pushSubscriptions = pgTable(
   ]
 );
 
+export const MISSION_ACTIVITY_TYPES = [
+  "house_mission",
+  "mission_visit",
+  "bible_study",
+  "prayer",
+  "worship",
+  "fellowship",
+  "testimony",
+  "evangelism",
+  "pastoral_visit",
+  "outreach",
+  "ministry_update",
+  "other",
+] as const;
+export type MissionActivityType = (typeof MISSION_ACTIVITY_TYPES)[number];
+
+export const MISSION_ACTIVITY_STATUSES = [
+  "draft",
+  "pending_review",
+  "published",
+  "archived",
+] as const;
+export type MissionActivityStatus = (typeof MISSION_ACTIVITY_STATUSES)[number];
+
+export const MISSION_MEDIA_KINDS = ["image", "video"] as const;
+export type MissionMediaKind = (typeof MISSION_MEDIA_KINDS)[number];
+
+// Mission Activity is the core Ministry OS object: one record of "something
+// happened," reused (never duplicated) by Feed, Person/Group Timeline, Map,
+// and Operations. See docs/PUNTAKIT_PRODUCT_ARCHITECTURE.md.
+export const missionActivities = pgTable(
+  "mission_activities",
+  {
+    id: id(),
+    type: text("type", { enum: MISSION_ACTIVITY_TYPES }).notNull(),
+    status: text("status", { enum: MISSION_ACTIVITY_STATUSES })
+      .notNull()
+      .default("draft"),
+    title: text("title").notNull(),
+    story: text("story"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+    groupId: text("group_id").references(() => groups.id, { onDelete: "set null" }),
+    placeLabel: text("place_label"),
+    latitude: text("latitude"),
+    longitude: text("longitude"),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("mission_activities_type_idx").on(table.type),
+    index("mission_activities_status_idx").on(table.status),
+    index("mission_activities_group_id_idx").on(table.groupId),
+    index("mission_activities_occurred_at_idx").on(table.occurredAt),
+    index("mission_activities_created_by_id_idx").on(table.createdById),
+    index("mission_activities_deleted_at_idx").on(table.deletedAt),
+  ]
+);
+
+export const missionActivityParticipants = pgTable(
+  "mission_activity_participants",
+  {
+    id: id(),
+    activityId: text("activity_id")
+      .notNull()
+      .references(() => missionActivities.id, { onDelete: "cascade" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("mission_activity_participants_activity_member_uniq").on(
+      table.activityId,
+      table.memberId
+    ),
+    index("mission_activity_participants_activity_id_idx").on(table.activityId),
+    index("mission_activity_participants_member_id_idx").on(table.memberId),
+  ]
+);
+
+export const missionActivityMedia = pgTable(
+  "mission_activity_media",
+  {
+    id: id(),
+    activityId: text("activity_id")
+      .notNull()
+      .references(() => missionActivities.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    kind: text("kind", { enum: MISSION_MEDIA_KINDS }).notNull().default("image"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("mission_activity_media_activity_id_idx").on(table.activityId)]
+);
+
 export type User = typeof users.$inferSelect;
 export type UserSession = typeof userSessions.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
@@ -406,3 +503,6 @@ export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type PrayerRequest = typeof prayerRequests.$inferSelect;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type MissionActivity = typeof missionActivities.$inferSelect;
+export type MissionActivityParticipant = typeof missionActivityParticipants.$inferSelect;
+export type MissionActivityMedia = typeof missionActivityMedia.$inferSelect;

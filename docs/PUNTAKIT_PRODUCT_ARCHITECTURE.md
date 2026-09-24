@@ -1,8 +1,11 @@
 # Puntakit Product Architecture — Ministry Operating System
 
 Date: 2026-09-24
-Status: proposed, not yet implemented. See `docs/PUNTAKIT_IMPLEMENTATION_PLAN.md`
-for what ships in which phase.
+Status: Phase 1 (Mission Activity data layer + API) implemented and verified
+against a real embedded PostgreSQL instance (PGlite). See §"Phase 1 —
+implemented" below for what actually shipped, versus the rest of this
+document, which stays a proposal for Phase 2+. See
+`docs/PUNTAKIT_IMPLEMENTATION_PLAN.md` for what ships in which phase.
 
 ## Product hierarchy
 
@@ -34,6 +37,142 @@ People/Group/Attendance/Event tables. This follows the audit finding in
 existing `auditLogs` table is not reused for it (system audit trail vs.
 ministry content must stay separate).
 
+## Phase 1 — implemented (actual, not hypothetical)
+
+What shipped is smaller than the illustrative schema later in this document
+("New domain model" below), on purpose — per the plan's own instruction to
+prefer the smallest schema that proves the core loop and evolve later.
+Differences from the original proposal, and why:
+
+- **No `visibility` enum column.** The original draft proposed
+  `church`/`leaders`/`private`. Dropped — authorization is enforced through
+  the existing `USER_ROLES` RBAC (role checks in
+  `server/routes/activities.ts`), the same pattern `server/routes/groups.ts`
+  and `server/routes/members.ts` already use, per the explicit instruction
+  not to invent a second permission system. Status (`draft`/
+  `pending_review`) already gates visibility for unreviewed content; a
+  separate visibility axis can be added later if a real need appears.
+- **No `missionSubmissions` (Mission Inbox) or `followUps` tables.** Out of
+  scope for Phase 1 by instruction — the goal was to prove the core
+  `MissionActivity` object works end to end, not build every downstream
+  domain at once.
+- **Location is columns on the activity, not a `Place` entity**
+  (`placeLabel`, `latitude`, `longitude` — same shape as `groups`' existing
+  location columns). No separate `locations` table; nothing yet needs one.
+- **`missionActivityMedia` kept as a real table**, not a JSON column, since
+  ordering (`sortOrder`) and a `kind` enum (image/video) are genuine
+  one-to-many needs and the codebase already uses join/child tables for
+  this shape everywhere else (`groupMembers`, `eventRegistrations`).
+
+### Actual schema (3 tables, additive migration `0004_clumsy_legion.sql`)
+
+```
+mission_activities
+  id, type (enum), status (enum: draft|pending_review|published|archived),
+  title, story, occurred_at, group_id (FK -> groups, nullable, set null),
+  place_label, latitude, longitude,
+  created_by_id (FK -> users, nullable, set null — matches members/groups
+  convention), deleted_at (soft delete), created_at, updated_at
+  indexes: type, status, group_id, occurred_at, created_by_id, deleted_at
+
+mission_activity_participants  (join: activity <-> member)
+  id, activity_id (FK cascade), member_id (FK cascade), created_at
+  unique(activity_id, member_id)
+
+mission_activity_media
+  id, activity_id (FK cascade), url, kind (image|video), sort_order,
+  created_at
+```
+
+Why each table exists, what it relates to, and delete behavior:
+
+| Table | Why it exists | Relates to | On delete of parent |
+|---|---|---|---|
+| `mission_activities` | Nothing today represents "something happened" — see audit §2. Core Feed/Timeline/Map source. | `groups` (optional), `users` (author) | Group deleted → `group_id` set null (activity survives, matches how `attendanceRecords.groupId` already behaves). User deleted → `created_by_id` set null (matches `members.createdById`/`groups.createdById`). |
+| `mission_activity_participants` | A person's Timeline needs to find every activity they were part of; many-to-many is real (one visit, several people). | `mission_activities`, `members` | Either side deleted → row cascades (matches `groupMembers`/`eventRegistrations`). |
+| `mission_activity_media` | Photo-first capture is core to the product; ordering and image/video kind are real needs, not speculative. | `mission_activities` | Activity deleted → media cascades. |
+
+### Lifecycle (explicit, enforced server-side)
+
+```
+draft ──────────┬──> pending_review ──> published ──> archived
+                └──────────────────────────────────┘
+archived ──> draft   (explicit restore, not automatic)
+```
+
+Implemented as a `STATUS_TRANSITIONS` map in `server/routes/activities.ts`
+— any status not listed as a valid next state for the current status is
+rejected with `400 VALIDATION_ERROR`. Arbitrary status *values* are
+separately rejected by the Zod enum in
+`missionActivityStatusUpdateSchema`.
+
+### Authorization (reuses existing RBAC, no new permission system)
+
+- **Create:** `super_admin`, `admin`, `staff`, `ministry_leader`,
+  `group_leader`.
+- **Read:** privileged roles (`super_admin`, `admin`, `staff`,
+  `ministry_leader`) see every activity. Everyone else sees published
+  activities, their own activities regardless of status, and — for
+  `group_leader` — activities tied to a group they actually lead (checked
+  against `groups.leaderId`/`coLeaderId`, not just their role name).
+  Anything else returns `404`, not `403`, so an unreviewed submission's
+  existence isn't leaked to someone who shouldn't see it.
+- **Edit / manage:** privileged roles, the activity's own creator, or a
+  `group_leader` who leads that activity's group.
+- **Publish specifically:** requires a privileged role or leadership of
+  the activity's group — a field worker (`group_leader` on a group they
+  don't lead, or any `CREATE_ROLES` member submitting) can move a draft to
+  `pending_review` but cannot self-publish. This directly implements the
+  brief's "AI/field submissions are draft, human review publishes" rule,
+  ahead of Mission Inbox/AI even existing, by putting the same gate on the
+  manual path.
+- **Delete (soft):** `super_admin`, `admin`, `ministry_leader` only —
+  matches `groups.ts`'s delete gating.
+- Every mutating action calls the existing `logAudit()` helper
+  (`MISSION_ACTIVITY_CREATED`, `MISSION_ACTIVITY_UPDATED`,
+  `MISSION_ACTIVITY_STATUS_CHANGED`, `MISSION_ACTIVITY_SOFT_DELETED`),
+  writing to the existing `auditLogs` table — no new audit mechanism.
+
+### API surface (`server/routes/activities.ts`, mounted at `/api/activities`)
+
+- `GET /` — list, role-filtered, supports `type`, `status`, `groupId`,
+  `memberId` (participant), `startDate`/`endDate`, `search`, pagination.
+  This is the query Feed will read from in Phase 2 — no separate Feed
+  table needed.
+- `GET /:id` — detail with joined group name, creator name, participants
+  (joined member names), and ordered media.
+- `POST /` — create (draft by default), accepts `participantMemberIds` and
+  `media` inline.
+- `PUT /:id` — update core fields and/or replace the participant/media set.
+- `PUT /:id/status` — the lifecycle transition endpoint described above.
+- `DELETE /:id` — soft delete.
+
+### Verification actually performed
+
+- `pnpm check` — passes (one real type error found and fixed: a `Set`
+  spread needing `Array.from` under this project's `tsconfig` target).
+- `pnpm test` — **125/125 pass**, including a new
+  `server/routes/activities.test.ts` (17 tests) that runs the full loop
+  against a real embedded PostgreSQL instance (PGlite, migrated with the
+  actual generated SQL — not a mock): create → persist → fetch →
+  authorization (401/403/404 cases) → group relation → participant
+  relation → two different lifecycle-transition paths (privileged
+  publish, and a genuine group-leader self-publish) → invalid-transition
+  rejection → audit log rows asserted directly against the database →
+  soft delete → post-delete 404. Two pre-existing tests in
+  `server/db/bootstrap.test.ts` needed a one-line update (hardcoded
+  migration count 4 → 5, since this change adds migration `0004`) — fixed,
+  not skipped.
+- `pnpm build` — passes (`vite build` + `esbuild` server bundle). Pre-existing
+  warnings only (undefined `VITE_ANALYTICS_*` env vars, a >500kB client
+  chunk) — both predate this change and are unrelated to it.
+- **Not tested:** a live Neon/Postgres connection. No `DATABASE_URL`
+  credential is available in this environment, and the plan's own rule is
+  not to require production credentials. PGlite is Postgres-compatible and
+  runs the same generated SQL migration, which is the strongest
+  verification available without a live database; a real Neon/Postgres run
+  is recommended before this ships to production.
+
 ## Source of truth
 
 | Domain | Source of truth (table) | Notes |
@@ -64,8 +203,9 @@ Feed, Timeline, Map, and Operations are **read models**, not new tables:
   (no activity in N days) — the same aggregation `server/routes/dashboard.ts`
   already does for metrics today, extended with these new signals.
 
-## New domain model (minimum, per the brief's own "why does it exist"
-test)
+## New domain model (original proposal — superseded by §"Phase 1 —
+implemented" above for what actually shipped; kept here as the forward
+plan for `missionSubmissions`/`followUps` in later phases)
 
 ```ts
 // shared/schema.ts additions — illustrative, not final column list

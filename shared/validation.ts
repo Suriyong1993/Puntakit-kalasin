@@ -9,6 +9,9 @@ import {
   GROUP_PRIVACIES,
   GROUP_STATUSES,
   MEMBERSHIP_STATUSES,
+  MISSION_ACTIVITY_STATUSES,
+  MISSION_ACTIVITY_TYPES,
+  MISSION_MEDIA_KINDS,
   PRAYER_CATEGORIES,
   SERVICE_TYPES,
   USER_ROLES,
@@ -244,6 +247,47 @@ export const prayerRequestInputSchema = z.object({
   isConfidential: z.boolean().default(false),
 });
 export type PrayerRequestInput = z.infer<typeof prayerRequestInputSchema>;
+
+export const missionActivityInputSchema = z.object({
+  type: z.enum(MISSION_ACTIVITY_TYPES),
+  title: z.string().trim().min(1, "กรุณากรอกหัวข้อ").max(300),
+  story: z.string().trim().max(5000).optional().or(z.literal("")),
+  occurredAt: z.coerce.date(),
+  groupId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  placeLabel: z.string().trim().max(300).optional().or(z.literal("")),
+  latitude: z.string().trim().max(50).optional().or(z.literal("")).nullable(),
+  longitude: z.string().trim().max(50).optional().or(z.literal("")).nullable(),
+  participantMemberIds: z.array(z.string().uuid()).max(200).optional().default([]),
+  media: z
+    .array(
+      z.object({
+        url: z.string().trim().url("URL สื่อไม่ถูกต้อง").max(1000),
+        kind: z.enum(MISSION_MEDIA_KINDS).default("image"),
+      })
+    )
+    .max(30)
+    .optional()
+    .default([]),
+});
+export type MissionActivityInput = z.infer<typeof missionActivityInputSchema>;
+
+export const missionActivityStatusUpdateSchema = z.object({
+  status: z.enum(MISSION_ACTIVITY_STATUSES),
+});
+export type MissionActivityStatusUpdate = z.infer<typeof missionActivityStatusUpdateSchema>;
+
+export const missionActivityQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  type: z.enum(MISSION_ACTIVITY_TYPES).optional(),
+  status: z.enum(MISSION_ACTIVITY_STATUSES).optional(),
+  groupId: z.string().optional(),
+  memberId: z.string().optional(),
+  startDate: z.string().trim().optional(),
+  endDate: z.string().trim().optional(),
+  search: z.string().trim().optional(),
+});
+export type MissionActivityQuery = z.infer<typeof missionActivityQuerySchema>;
 
 export const pushSubscriptionSchema = z.object({
   endpoint: z.string().url("Endpoint ไม่ถูกต้อง"),

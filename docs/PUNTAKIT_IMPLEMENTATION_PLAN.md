@@ -16,22 +16,40 @@ FKs) until a later, explicitly-approved deprecation step.
 
 Non-destructive, no schema change, no UI change. Safe to ship alone.
 
-## Phase 1 — Ministry Activity data layer
+## Phase 1 — Ministry Activity data layer — DONE
 
-- Add `missionActivities`, `missionActivityMedia`,
-  `missionActivityParticipants` tables (Drizzle migration via
-  `pnpm db:generate` + `pnpm db:migrate`).
-- Add `server/routes/activities.ts`: CRUD + list with filters
-  (group, person, place, date range, type), server-side RBAC and
-  `visibility` enforcement.
-- Add `shared` validation schema for activity create/update (matching the
-  existing `shared/validation.ts` pattern).
-- Tests: route tests following the existing `*.test.ts` pattern next to
-  each route module.
+Shipped on branch `claude/eloquent-archimedes-04s1kg`, not yet in a PR.
 
-No new navigation yet. No Feed UI yet. This phase makes the data layer
-real so every later UI phase reads/writes one source of truth from day
-one, instead of UI being built ahead of data and mocked in the meantime.
+- Added `mission_activities`, `mission_activity_participants`,
+  `mission_activity_media` tables — additive migration
+  `server/db/migrations/0004_clumsy_legion.sql` (3 `CREATE TABLE`s, no
+  `ALTER`/`DROP` on any existing table).
+- Added `server/routes/activities.ts`: list/detail/create/update/status
+  transition/soft-delete, filtered by group/person/type/status/date/
+  search, server-side RBAC reusing the existing `USER_ROLES` middleware
+  (no `visibility` column — see architecture doc for why).
+- Added `missionActivityInputSchema`/`missionActivityQuerySchema`/
+  `missionActivityStatusUpdateSchema` to `shared/validation.ts`.
+- Added `server/routes/activities.test.ts` (17 tests): full loop against
+  a real embedded PostgreSQL instance (PGlite) — create, persist, fetch,
+  401/403/404 authorization, group relation, participant relation, two
+  lifecycle-publish paths, invalid-transition rejection, audit log rows,
+  soft delete.
+- Fixed a pre-existing hardcoded migration count in
+  `server/db/bootstrap.test.ts` (4 → 5).
+- `pnpm check`, `pnpm test` (125/125), `pnpm build` all pass. See the
+  architecture doc's "Verification actually performed" section for what
+  was and wasn't exercised (no live Neon/Postgres — no credential
+  available in this environment).
+
+No new navigation yet. No Feed UI yet — the `GET /api/activities` list
+endpoint is the query Feed will read from in Phase 2, so Feed can be built
+directly against real data with no interim mock layer.
+
+**Deferred to later phases, on purpose (kept the schema minimal):**
+`missionSubmissions` (Mission Inbox, Phase 5), `followUps` (Phase 4), a
+`visibility` enum (not needed while status already gates draft/
+pending_review visibility), LINE/AI integration (not started).
 
 ## Phase 2 — Feed (primary "what happened" surface)
 
@@ -116,17 +134,16 @@ one, instead of UI being built ahead of data and mocked in the meantime.
 
 ## What requires explicit confirmation before proceeding
 
-Per the brief's own escalation rule ("ask only for destructive migration,
-irreversible data loss, ... major architecture replacement, fundamental
-product contradiction"):
+Approved 2026-09-24: proceed autonomously through Phases 2–7 and 9+
+without stopping for approval at each phase boundary. Per the brief's own
+escalation rule ("ask only for destructive migration, irreversible data
+loss, ... major architecture replacement, fundamental product
+contradiction"), only two points still require a stop-and-confirm:
 
-1. **Starting Phase 1** (schema migration) — first real schema change;
-   confirm the `missionActivities` shape in the architecture doc before
-   generating a migration against it.
-2. **Phase 4's data migration** of `members.status` into `followUps` —
-   touches existing member data.
-2. **Phase 8's navigation restructuring** — the one user-facing,
-   highly visible IA change; confirm final structure first.
+1. **Phase 4's data migration** of `members.status` into `followUps` —
+   touches existing member data, not additive.
+2. **Phase 8's navigation restructuring** — the one user-facing, highly
+   visible IA change; confirm final structure first.
 
-Everything else in Phases 1–7, 9+ is additive and can proceed once Phase 1
-is confirmed, without a stop-and-ask at every step.
+Everything else in Phases 2–7, 9+ is additive and proceeds without asking
+again, continuing straight through phase boundaries.

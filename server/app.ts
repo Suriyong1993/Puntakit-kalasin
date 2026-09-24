@@ -2,6 +2,7 @@ import express, { type ErrorRequestHandler } from "express";
 import cookieParser from "cookie-parser";
 import { sql } from "drizzle-orm";
 import { authRouter } from "./routes/auth";
+import { activitiesRouter } from "./routes/activities";
 import { membersRouter } from "./routes/members";
 import { announcementsRouter } from "./routes/announcements";
 import { eventsRouter } from "./routes/events";
@@ -27,6 +28,7 @@ export function createApp() {
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/members", membersRouter);
   app.use("/api/groups", groupsRouter);
+  app.use("/api/activities", activitiesRouter);
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/me", portalRouter);
   app.use("/api/announcements", announcementsRouter);
