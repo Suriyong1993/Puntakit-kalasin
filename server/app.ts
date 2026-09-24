@@ -11,6 +11,7 @@ import { dashboardRouter } from "./routes/dashboard";
 import { groupsRouter } from "./routes/groups";
 import { attendanceRouter } from "./routes/attendance";
 import { portalRouter } from "./routes/portal";
+import { activitiesRouter } from "./routes/activities";
 import { requestIdMiddleware } from "./middleware/requestId";
 import { AppError } from "./lib/errors";
 import { getDb } from "./db/client";
@@ -29,6 +30,7 @@ export function createApp() {
   app.use("/api/groups", groupsRouter);
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/me", portalRouter);
+  app.use("/api/activities", activitiesRouter);
   app.use("/api/announcements", announcementsRouter);
   app.use("/api/events", eventsRouter);
   app.use("/api/ministries", ministriesRouter);
@@ -36,7 +38,10 @@ export function createApp() {
 
   // Liveness Check
   app.get("/api/health", (_req, res) => {
-    res.json({ success: true, data: { status: "ok", timestamp: new Date().toISOString() } });
+    res.json({
+      success: true,
+      data: { status: "ok", timestamp: new Date().toISOString() },
+    });
   });
 
   // Readiness Check (verifies DB connectivity)
@@ -58,7 +63,8 @@ export function createApp() {
         error: {
           code: "DATABASE_UNAVAILABLE",
           message: "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้",
-          details: process.env.NODE_ENV !== "production" ? [String(err)] : undefined,
+          details:
+            process.env.NODE_ENV !== "production" ? [String(err)] : undefined,
         },
       });
     }
@@ -95,8 +101,12 @@ export function createApp() {
       success: false,
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message: "เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้งหรือติดต่อผู้ดูแล",
-        details: process.env.NODE_ENV !== "production" ? [{ message: String(err) }] : undefined,
+        message:
+          "เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้งหรือติดต่อผู้ดูแล",
+        details:
+          process.env.NODE_ENV !== "production"
+            ? [{ message: String(err) }]
+            : undefined,
       },
     });
   };

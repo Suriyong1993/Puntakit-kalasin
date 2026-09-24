@@ -20,13 +20,15 @@ const MANAGED_KEYS = [
 ] as const;
 
 /** Number of `.sql` files in server/db/migrations (drizzle journal entries). */
-const MIGRATION_COUNT = 4;
+const MIGRATION_COUNT = 5;
 
 const originalEnv = { ...process.env };
 const tempDirs: string[] = [];
 const silentLogger = { log: (): void => {}, warn: (): void => {} };
 
-function setEnv(values: Partial<Record<(typeof MANAGED_KEYS)[number], string | undefined>>): void {
+function setEnv(
+  values: Partial<Record<(typeof MANAGED_KEYS)[number], string | undefined>>
+): void {
   for (const key of MANAGED_KEYS) delete process.env[key];
   for (const [key, value] of Object.entries(values)) {
     if (value !== undefined) process.env[key] = value;
@@ -34,7 +36,9 @@ function setEnv(values: Partial<Record<(typeof MANAGED_KEYS)[number], string | u
 }
 
 function makeTempDataDir(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "puntakit-bootstrap-test-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "puntakit-bootstrap-test-")
+  );
   tempDirs.push(root);
   return path.join(root, "nested", ".db_data");
 }
@@ -74,7 +78,13 @@ describe("PGlite local bootstrap", () => {
     expect(result.ranMigrations).toBe(true);
     expect(result.verification?.appliedMigrations).toBe(MIGRATION_COUNT);
     expect(result.verification?.tables).toEqual(
-      expect.arrayContaining(["members", "groups", "group_members", "attendance_records", "users"]),
+      expect.arrayContaining([
+        "members",
+        "groups",
+        "group_members",
+        "attendance_records",
+        "users",
+      ])
     );
 
     // The migrated schema is usable through the shared Drizzle schema/client.
@@ -113,26 +123,29 @@ describe("PGlite local bootstrap", () => {
     await client.closeDatabase();
   }, 120_000);
 
-  it(
-    "writes the PGlite data directory into PGLITE_DATA_DIR",
-    async () => {
-      const dataDir = makeTempDataDir();
-      setEnv({ NODE_ENV: "development", DATABASE_DRIVER: "pglite", PGLITE_DATA_DIR: dataDir });
-      const { client } = await loadModules();
+  it("writes the PGlite data directory into PGLITE_DATA_DIR", async () => {
+    const dataDir = makeTempDataDir();
+    setEnv({
+      NODE_ENV: "development",
+      DATABASE_DRIVER: "pglite",
+      PGLITE_DATA_DIR: dataDir,
+    });
+    const { client } = await loadModules();
 
-      expect(client.getDatabaseConfig()).toMatchObject({ driver: "pglite", pgliteDataDir: dataDir });
+    expect(client.getDatabaseConfig()).toMatchObject({
+      driver: "pglite",
+      pgliteDataDir: dataDir,
+    });
 
-      const handle = client.getDatabaseHandle();
-      expect(handle.driver).toBe("pglite");
-      if (handle.driver !== "pglite") return; // narrows the union for TypeScript
-      await handle.client.waitReady;
+    const handle = client.getDatabaseHandle();
+    expect(handle.driver).toBe("pglite");
+    if (handle.driver !== "pglite") return; // narrows the union for TypeScript
+    await handle.client.waitReady;
 
-      expect(fs.existsSync(path.join(dataDir, "PG_VERSION"))).toBe(true);
+    expect(fs.existsSync(path.join(dataDir, "PG_VERSION"))).toBe(true);
 
-      await client.closeDatabase();
-    },
-    120_000,
-  );
+    await client.closeDatabase();
+  }, 120_000);
 });
 
 describe("remote driver bootstrap policy", () => {

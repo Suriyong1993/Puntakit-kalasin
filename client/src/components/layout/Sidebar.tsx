@@ -5,6 +5,7 @@ import {
   CalendarDays,
   HeartHandshake,
   Home as HomeIcon,
+  ListChecks,
   Megaphone,
   Settings,
   Sparkles,
@@ -32,7 +33,8 @@ export const navGroups: NavGroup[] = [
   {
     name: "เมนูหลัก",
     items: [
-      { label: "หน้าหลัก", path: "/", icon: HomeIcon },
+      { label: "กิจกรรมพันธกิจ", path: "/feed", icon: HomeIcon },
+      { label: "การดำเนินงาน", path: "/operations", icon: ListChecks },
       { label: "แอพสมาชิก (PWA)", path: "/app", icon: Sparkles, badge: "PWA" },
       { label: "สมาชิก", path: "/members", icon: Users },
       { label: "กลุ่มแคร์", path: "/groups", icon: UsersRound },
@@ -98,7 +100,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Navigation Groups */}
         <div className="flex flex-col flex-1 px-4 py-4 space-y-6">
-          {navGroups.map((group) => (
+          {navGroups.map(group => (
             <div key={group.name}>
               <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
                 {group.name}
@@ -123,7 +125,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                         <Icon
                           size={ICON_SIZE.md}
                           className={`transition-colors ${
-                            isActive ? "text-blue-400" : "text-slate-400 group-hover:text-white"
+                            isActive
+                              ? "text-blue-400"
+                              : "text-slate-400 group-hover:text-white"
                           }`}
                         />
                         <span>{label}</span>
@@ -146,7 +150,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <div className="rounded-xl bg-slate-800/60 p-3.5 text-center border border-slate-700/50">
             <div className="flex items-center justify-center gap-1.5 text-amber-400 mb-1">
               <Sparkles size={ICON_SIZE.xs} />
-              <span className="text-[11px] font-semibold tracking-wide">PUNTAKIT KALASIN</span>
+              <span className="text-[11px] font-semibold tracking-wide">
+                PUNTAKIT KALASIN
+              </span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed font-light italic">
               "รักพระเจ้า • รักผู้คน • เปลี่ยนแปลงชุมชน"
