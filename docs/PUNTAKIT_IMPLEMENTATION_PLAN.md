@@ -282,10 +282,27 @@ Manually verified live: seeded the same four kinds of rows through the
 real API, loaded `/`, and confirmed all three stat chips and both list
 panels show the real seeded data, not placeholders.
 
-## Phase 7 — Map
+## Phase 7 — Map — BLOCKED on a production credential
 
-- Wire `client/src/components/Map.tsx` (confirm current usage first) to
-  `missionActivities`/`groups` location data, respecting `visibility`.
+Confirmed on inspection: `client/src/components/Map.tsx` is a Google
+Maps JavaScript API wrapper (`MapView`, marker/places/geocoding/routes
+helpers) and is currently unused anywhere in `client/src` (`grep` for its
+import returns nothing). Wiring it to `missionActivities`/`groups`
+location data requires a Google Maps API key
+(`VITE_GOOGLE_MAPS_API_KEY` or similar) — grepped `.env.example`,
+`client/src/const.ts`, and `vite.config.ts`: none is configured
+anywhere in this repo.
+
+Per the plan's own escalation rule ("stop only for ... production
+credential requirement"), this phase stops here rather than faking a map
+integration that can't actually be verified without a real key. Nothing
+was built for this phase. To unblock: provide a Google Maps API key
+(scoped to the Maps JavaScript API, with the domain(s) this app runs on
+allow-listed) as `VITE_GOOGLE_MAPS_API_KEY`, and this phase can proceed
+the same way Phases 1–6 did — real schema/API work already in place
+(`mission_activities.latitude`/`longitude`/`placeLabel`,
+`groups.latitude`/`longitude`) needs no changes; only the client map
+surface and its query need building.
 
 ## Phase 8 — Navigation restructuring
 
