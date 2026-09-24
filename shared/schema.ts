@@ -392,6 +392,182 @@ export const pushSubscriptions = pgTable(
   ]
 );
 
+export const MISSION_ACTIVITY_TYPES = [
+  "house_mission",
+  "mission_visit",
+  "bible_study",
+  "prayer",
+  "worship",
+  "fellowship",
+  "testimony",
+  "evangelism",
+  "pastoral_visit",
+  "outreach",
+  "ministry_update",
+  "other",
+] as const;
+export type MissionActivityType = (typeof MISSION_ACTIVITY_TYPES)[number];
+
+export const MISSION_ACTIVITY_STATUSES = [
+  "draft",
+  "pending_review",
+  "published",
+  "archived",
+] as const;
+export type MissionActivityStatus = (typeof MISSION_ACTIVITY_STATUSES)[number];
+
+export const MISSION_MEDIA_KINDS = ["image", "video"] as const;
+export type MissionMediaKind = (typeof MISSION_MEDIA_KINDS)[number];
+
+// Mission Activity is the core Ministry OS object: one record of "something
+// happened," reused (never duplicated) by Feed, Person/Group Timeline, Map,
+// and Operations. See docs/PUNTAKIT_PRODUCT_ARCHITECTURE.md.
+export const missionActivities = pgTable(
+  "mission_activities",
+  {
+    id: id(),
+    type: text("type", { enum: MISSION_ACTIVITY_TYPES }).notNull(),
+    status: text("status", { enum: MISSION_ACTIVITY_STATUSES })
+      .notNull()
+      .default("draft"),
+    title: text("title").notNull(),
+    story: text("story"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+    groupId: text("group_id").references(() => groups.id, { onDelete: "set null" }),
+    placeLabel: text("place_label"),
+    latitude: text("latitude"),
+    longitude: text("longitude"),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("mission_activities_type_idx").on(table.type),
+    index("mission_activities_status_idx").on(table.status),
+    index("mission_activities_group_id_idx").on(table.groupId),
+    index("mission_activities_occurred_at_idx").on(table.occurredAt),
+    index("mission_activities_created_by_id_idx").on(table.createdById),
+    index("mission_activities_deleted_at_idx").on(table.deletedAt),
+  ]
+);
+
+export const missionActivityParticipants = pgTable(
+  "mission_activity_participants",
+  {
+    id: id(),
+    activityId: text("activity_id")
+      .notNull()
+      .references(() => missionActivities.id, { onDelete: "cascade" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("mission_activity_participants_activity_member_uniq").on(
+      table.activityId,
+      table.memberId
+    ),
+    index("mission_activity_participants_activity_id_idx").on(table.activityId),
+    index("mission_activity_participants_member_id_idx").on(table.memberId),
+  ]
+);
+
+export const missionActivityMedia = pgTable(
+  "mission_activity_media",
+  {
+    id: id(),
+    activityId: text("activity_id")
+      .notNull()
+      .references(() => missionActivities.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    kind: text("kind", { enum: MISSION_MEDIA_KINDS }).notNull().default("image"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("mission_activity_media_activity_id_idx").on(table.activityId)]
+);
+
+export const FOLLOW_UP_STATUSES = ["open", "in_progress", "completed", "cancelled"] as const;
+export type FollowUpStatus = (typeof FOLLOW_UP_STATUSES)[number];
+
+// Follow-up: "what needs to happen next," attached to a person and/or a
+// group, optionally traced back to the activity that raised it. Deliberately
+// separate from members.status (a two-state pastoral flag on the person) —
+// see docs/PUNTAKIT_PRODUCT_ARCHITECTURE.md for why they are not merged.
+export const followUps = pgTable(
+  "follow_ups",
+  {
+    id: id(),
+    status: text("status", { enum: FOLLOW_UP_STATUSES }).notNull().default("open"),
+    title: text("title").notNull(),
+    note: text("note"),
+    subjectMemberId: text("subject_member_id").references(() => members.id, { onDelete: "cascade" }),
+    subjectGroupId: text("subject_group_id").references(() => groups.id, { onDelete: "cascade" }),
+    activityId: text("activity_id").references(() => missionActivities.id, { onDelete: "set null" }),
+    ownerId: text("owner_id").references(() => users.id, { onDelete: "set null" }),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("follow_ups_status_idx").on(table.status),
+    index("follow_ups_subject_member_id_idx").on(table.subjectMemberId),
+    index("follow_ups_subject_group_id_idx").on(table.subjectGroupId),
+    index("follow_ups_activity_id_idx").on(table.activityId),
+    index("follow_ups_owner_id_idx").on(table.ownerId),
+    index("follow_ups_due_at_idx").on(table.dueAt),
+  ]
+);
+
+export const MISSION_SUBMISSION_STATUSES = [
+  "new",
+  "reviewing",
+  "needs_info",
+  "approved",
+  "rejected",
+] as const;
+export type MissionSubmissionStatus = (typeof MISSION_SUBMISSION_STATUSES)[number];
+
+export const MISSION_SUBMISSION_SOURCES = ["manual", "line", "import", "system"] as const;
+export type MissionSubmissionSource = (typeof MISSION_SUBMISSION_SOURCES)[number];
+
+// Mission Inbox: raw field input that is NOT yet official ministry data.
+// A submission is promoted into a mission_activities row (always as
+// "draft") only once a human sets it to "approved" and explicitly
+// publishes it — it is never auto-published. No LINE adapter exists yet;
+// `source` reserves room for one without committing to it now. See
+// docs/PUNTAKIT_PRODUCT_ARCHITECTURE.md.
+export const missionSubmissions = pgTable(
+  "mission_submissions",
+  {
+    id: id(),
+    status: text("status", { enum: MISSION_SUBMISSION_STATUSES }).notNull().default("new"),
+    source: text("source", { enum: MISSION_SUBMISSION_SOURCES }).notNull().default("manual"),
+    rawText: text("raw_text"),
+    rawMediaUrls: text("raw_media_urls"),
+    submittedByLabel: text("submitted_by_label"),
+    reviewNote: text("review_note"),
+    publishedActivityId: text("published_activity_id").references(() => missionActivities.id, {
+      onDelete: "set null",
+    }),
+    reviewedById: text("reviewed_by_id").references(() => users.id, { onDelete: "set null" }),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("mission_submissions_status_idx").on(table.status),
+    index("mission_submissions_source_idx").on(table.source),
+    index("mission_submissions_published_activity_id_idx").on(table.publishedActivityId),
+    index("mission_submissions_created_at_idx").on(table.createdAt),
+  ]
+);
+
 export type User = typeof users.$inferSelect;
 export type UserSession = typeof userSessions.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
@@ -406,3 +582,8 @@ export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type PrayerRequest = typeof prayerRequests.$inferSelect;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type MissionActivity = typeof missionActivities.$inferSelect;
+export type MissionActivityParticipant = typeof missionActivityParticipants.$inferSelect;
+export type MissionActivityMedia = typeof missionActivityMedia.$inferSelect;
+export type FollowUp = typeof followUps.$inferSelect;
+export type MissionSubmission = typeof missionSubmissions.$inferSelect;

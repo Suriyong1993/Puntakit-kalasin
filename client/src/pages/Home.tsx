@@ -5,11 +5,14 @@ import {
   BarChart3,
   Building2,
   CalendarDays,
+  Camera,
   CheckCircle2,
   ChevronRight,
   Clock,
   Heart,
   HeartHandshake,
+  Inbox as InboxIcon,
+  ListTodo,
   Megaphone,
   Plus,
   Sparkles,
@@ -82,6 +85,46 @@ interface ChurchEvent {
   status: string;
 }
 
+interface OperationsSubmission {
+  id: string;
+  status: string;
+  rawText: string | null;
+  createdAt: string;
+}
+
+interface OperationsFollowUp {
+  id: string;
+  title: string;
+  dueAt: string | null;
+  subjectMemberName: string | null;
+  subjectGroupName: string | null;
+}
+
+interface OperationsInactiveGroup {
+  id: string;
+  name: string;
+}
+
+interface OperationsActivity {
+  id: string;
+  title: string;
+  status: string;
+  occurredAt: string;
+  groupName: string | null;
+}
+
+interface OperationsData {
+  pendingSubmissionsCount: number;
+  pendingSubmissions: OperationsSubmission[];
+  openFollowUpsCount: number;
+  overdueFollowUpsCount: number;
+  overdueFollowUps: OperationsFollowUp[];
+  inactiveGroups: OperationsInactiveGroup[];
+  recentActivity: OperationsActivity[];
+}
+
+const OPERATIONS_ROLES = ["super_admin", "admin", "staff", "ministry_leader"];
+
 // Discipleship Journey Steps (single blue-family palette per design.md — avoid rainbow)
 const journeySteps = [
   { n: "1", title: "พบคน", detail: "สร้างความสัมพันธ์และมิตรภาพ", icon: Users, color: "text-blue-600 bg-blue-50 border-blue-200" },
@@ -99,7 +142,10 @@ export default function Home() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [groups, setGroups] = useState<CareGroup[]>([]);
   const [events, setEvents] = useState<ChurchEvent[]>([]);
+  const [operations, setOperations] = useState<OperationsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const canSeeOperations = Boolean(user && OPERATIONS_ROLES.includes(user.role));
 
   // Redirect member role directly to Member PWA
   useEffect(() => {
@@ -113,22 +159,26 @@ export default function Home() {
     let mounted = true;
     setIsLoading(true);
 
-    Promise.allSettled([
+    const requests: [Promise<DashboardSummary>, Promise<CareGroup[]>, Promise<ChurchEvent[]>, Promise<OperationsData> | Promise<null>] = [
       api.get<DashboardSummary>("/api/dashboard/summary"),
       api.get<CareGroup[]>("/api/groups"),
       api.get<ChurchEvent[]>("/api/events"),
-    ]).then(([sumRes, grpRes, evtRes]) => {
+      canSeeOperations ? api.get<OperationsData>("/api/dashboard/operations") : Promise.resolve(null),
+    ];
+
+    Promise.allSettled(requests).then(([sumRes, grpRes, evtRes, opsRes]) => {
       if (!mounted) return;
       if (sumRes.status === "fulfilled") setSummary(sumRes.value);
       if (grpRes.status === "fulfilled" && Array.isArray(grpRes.value)) setGroups(grpRes.value);
       if (evtRes.status === "fulfilled" && Array.isArray(evtRes.value)) setEvents(evtRes.value);
+      if (opsRes.status === "fulfilled" && opsRes.value) setOperations(opsRes.value);
       setIsLoading(false);
     });
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [canSeeOperations]);
 
   const totalMembers = summary?.totalMembers ?? 0;
   const newThisMonth = summary?.newThisMonth ?? 0;
@@ -185,6 +235,113 @@ export default function Home() {
           </Link>
         </div>
       </div>
+
+      {/* Operations: real aggregates over Mission Activity / Follow-up / Mission Inbox —
+          what's waiting, what needs attention, what happened. Privileged roles only,
+          matching the server-side gate on /api/dashboard/operations. */}
+      {canSeeOperations && operations && (
+        <div className="mb-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4">
+            <Link
+              href="/inbox"
+              className="tailadmin-card p-4 flex items-center gap-3 hover:-translate-y-0.5 transition-transform duration-200"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 flex-shrink-0">
+                <InboxIcon size={ICON_SIZE.md} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl font-bold text-slate-800">{operations.pendingSubmissionsCount}</div>
+                <div className="text-[11px] text-slate-500 truncate">รอตรวจสอบในกล่องข้อมูลนำเข้า</div>
+              </div>
+            </Link>
+
+            <Link
+              href="/follow-up"
+              className="tailadmin-card p-4 flex items-center gap-3 hover:-translate-y-0.5 transition-transform duration-200"
+            >
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl flex-shrink-0 ${
+                  operations.overdueFollowUpsCount > 0 ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-600"
+                }`}
+              >
+                <ListTodo size={ICON_SIZE.md} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl font-bold text-slate-800">
+                  {operations.openFollowUpsCount}
+                  {operations.overdueFollowUpsCount > 0 && (
+                    <span className="text-xs font-semibold text-rose-600 ml-1">
+                      ({operations.overdueFollowUpsCount} เลยกำหนด)
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-slate-500 truncate">รายการติดตามที่ยังไม่เสร็จ</div>
+              </div>
+            </Link>
+
+            <Link
+              href="/groups"
+              className="tailadmin-card p-4 flex items-center gap-3 hover:-translate-y-0.5 transition-transform duration-200"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 flex-shrink-0">
+                <Clock size={ICON_SIZE.md} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl font-bold text-slate-800">{operations.inactiveGroups.length}</div>
+                <div className="text-[11px] text-slate-500 truncate">กลุ่มที่ไม่มีกิจกรรม 14 วันล่าสุด</div>
+              </div>
+            </Link>
+          </div>
+
+          {(operations.recentActivity.length > 0 || operations.overdueFollowUps.length > 0) && (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {operations.recentActivity.length > 0 && (
+                <div className="tailadmin-card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <Camera size={13} /> กิจกรรมพันธกิจล่าสุด
+                    </h3>
+                    <Link href="/feed" className="text-[11px] font-semibold text-blue-600 hover:underline">
+                      ดูฟีดทั้งหมด
+                    </Link>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {operations.recentActivity.slice(0, 4).map((a) => (
+                      <li key={a.id} className="text-xs text-slate-600 flex items-center justify-between gap-2">
+                        <span className="truncate">{a.title}</span>
+                        <span className="text-[10px] text-slate-400 flex-shrink-0">{a.groupName ?? "-"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {operations.overdueFollowUps.length > 0 && (
+                <div className="tailadmin-card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xs font-bold text-rose-600 flex items-center gap-1.5">
+                      <AlertCircle size={13} /> ติดตามเลยกำหนด
+                    </h3>
+                    <Link href="/follow-up" className="text-[11px] font-semibold text-blue-600 hover:underline">
+                      ดูทั้งหมด
+                    </Link>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {operations.overdueFollowUps.slice(0, 4).map((f) => (
+                      <li key={f.id} className="text-xs text-slate-600 flex items-center justify-between gap-2">
+                        <span className="truncate">{f.title}</span>
+                        <span className="text-[10px] text-slate-400 flex-shrink-0">
+                          {f.subjectMemberName ?? f.subjectGroupName ?? "-"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* TailAdmin 4-Card KPI Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">

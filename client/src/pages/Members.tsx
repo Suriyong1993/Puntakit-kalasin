@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ActivityTimeline } from "@/components/ActivityTimeline";
 import {
   AlertCircle,
   CalendarDays,
@@ -895,6 +896,39 @@ export default function Members() {
                 <p style={{ margin: 0, fontSize: 12, color: "#594827", lineHeight: 1.5 }}>{selectedMember.notes}</p>
               </div>
             )}
+
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <strong style={{ color: "var(--ink)", fontSize: 12 }}>กิจกรรมพันธกิจล่าสุด</strong>
+                <button
+                  type="button"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "var(--blue)",
+                    background: "none",
+                    border: "1px dashed #b9d3ec",
+                    borderRadius: 10,
+                    padding: "4px 10px",
+                    cursor: "pointer",
+                  }}
+                  onClick={async () => {
+                    try {
+                      await api.post("/api/follow-ups", {
+                        title: `ติดตาม: ${selectedMember.name}`,
+                        subjectMemberId: selectedMember.id,
+                      });
+                      toast.success("สร้างรายการติดตามแล้ว");
+                    } catch (err) {
+                      toast.error(err instanceof ApiError ? err.message : "สร้างรายการติดตามไม่สำเร็จ");
+                    }
+                  }}
+                >
+                  + สร้างรายการติดตาม
+                </button>
+              </div>
+              <ActivityTimeline subjectType="member" subjectId={selectedMember.id} />
+            </div>
 
             <div className="modal-actions" style={{ marginTop: 20 }}>
               <button type="button" className="cancel-button" onClick={() => setSelectedMember(null)}>

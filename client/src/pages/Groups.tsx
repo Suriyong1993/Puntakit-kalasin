@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ActivityTimeline } from "@/components/ActivityTimeline";
 import {
   AlertCircle,
   Calendar,
@@ -980,6 +981,13 @@ export default function Groups() {
                 </table>
               </div>
             )}
+
+            <div style={{ marginTop: "16px" }}>
+              <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8, fontSize: 12 }}>
+                กิจกรรมพันธกิจล่าสุดของกลุ่ม
+              </strong>
+              <ActivityTimeline subjectType="group" subjectId={activeGroup.id} />
+            </div>
 
             <div className="modal-actions" style={{ marginTop: "16px" }}>
               <button className="cancel-button" onClick={() => setMembersModalOpen(false)}>

@@ -20,7 +20,7 @@ const MANAGED_KEYS = [
 ] as const;
 
 /** Number of `.sql` files in server/db/migrations (drizzle journal entries). */
-const MIGRATION_COUNT = 4;
+const MIGRATION_COUNT = 7;
 
 const originalEnv = { ...process.env };
 const tempDirs: string[] = [];

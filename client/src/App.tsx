@@ -6,6 +6,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Feed from "./pages/Feed";
+import FollowUps from "./pages/FollowUps";
+import Inbox from "./pages/Inbox";
 import Members from "./pages/Members";
 import Groups from "./pages/Groups";
 import Attendance from "./pages/Attendance";
@@ -65,6 +68,21 @@ function Router() {
       <Route path="/">
         <ProtectedRoute>
           <Home />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/feed">
+        <ProtectedRoute>
+          <Feed />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/follow-up">
+        <ProtectedRoute>
+          <FollowUps />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/inbox">
+        <ProtectedRoute>
+          <Inbox />
         </ProtectedRoute>
       </Route>
       <Route path="/members">
