@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { Server } from "node:http";
 import { createApp } from "../app";
 import { requireRole } from "../middleware/auth";
+import { canExportAttendance, isSelfAttendanceRole } from "./attendance";
 import {
   attendanceInputSchema,
   attendanceQuerySchema,
@@ -194,6 +195,25 @@ describe("Attendance API & Security Tests", () => {
       const err = next.mock.calls[0][0];
       expect(err.statusCode).toBe(403);
       expect(err.code).toBe("FORBIDDEN");
+    });
+  });
+
+  describe("Attendance privacy policy", () => {
+    it("allows exports only for privileged operational roles", () => {
+      expect(canExportAttendance("super_admin")).toBe(true);
+      expect(canExportAttendance("admin")).toBe(true);
+      expect(canExportAttendance("ministry_leader")).toBe(true);
+      expect(canExportAttendance("group_leader")).toBe(false);
+      expect(canExportAttendance("staff")).toBe(false);
+      expect(canExportAttendance("member")).toBe(false);
+      expect(canExportAttendance("viewer")).toBe(false);
+    });
+
+    it("limits member and viewer attendance actions to self-service flows", () => {
+      expect(isSelfAttendanceRole("member")).toBe(true);
+      expect(isSelfAttendanceRole("viewer")).toBe(true);
+      expect(isSelfAttendanceRole("group_leader")).toBe(false);
+      expect(isSelfAttendanceRole("admin")).toBe(false);
     });
   });
 });

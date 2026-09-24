@@ -4,6 +4,7 @@ import { getDb } from "../db/client";
 import {
   attendanceRecords,
   groups,
+  groupMembers,
   members,
   users,
   type AttendanceRecord,
@@ -25,6 +26,105 @@ export const attendanceRouter = Router();
 
 attendanceRouter.use(requireAuth);
 
+export function canExportAttendance(role: string): boolean {
+  return ["super_admin", "admin", "ministry_leader"].includes(role);
+}
+
+export function isSelfAttendanceRole(role: string): boolean {
+  return role === "member" || role === "viewer";
+}
+
+async function getLinkedMemberId(userId: string): Promise<string | null> {
+  const db = getDb();
+  const [member] = await db
+    .select({ id: members.id })
+    .from(members)
+    .where(and(eq(members.userId, userId), isNull(members.deletedAt)))
+    .limit(1);
+  return member?.id ?? null;
+}
+
+async function canManageGroup(req: Request, groupId: string): Promise<boolean> {
+  if (["super_admin", "admin", "ministry_leader"].includes(req.user!.role)) return true;
+
+  if (req.user!.role !== "group_leader") return false;
+
+  const db = getDb();
+  const [group] = await db
+    .select({ leaderId: groups.leaderId, coLeaderId: groups.coLeaderId })
+    .from(groups)
+    .where(and(eq(groups.id, groupId), isNull(groups.deletedAt)))
+    .limit(1);
+
+  if (!group) return false;
+  if (group.leaderId === req.user!.id || group.coLeaderId === req.user!.id) return true;
+
+  const memberId = await getLinkedMemberId(req.user!.id);
+  if (!memberId) return false;
+
+  const [membership] = await db
+    .select({ id: groupMembers.id })
+    .from(groupMembers)
+    .where(
+      and(
+        eq(groupMembers.groupId, groupId),
+        eq(groupMembers.memberId, memberId),
+        eq(groupMembers.status, "active"),
+        inArray(groupMembers.role, ["leader", "assistant_leader"]),
+      ),
+    )
+    .limit(1);
+
+  return Boolean(membership);
+}
+
+async function assertAttendanceWriteAccess(
+  req: Request,
+  groupId: string | null | undefined,
+  memberId: string,
+  selfOnly = false,
+): Promise<void> {
+  const role = req.user!.role;
+  const linkedMemberId = await getLinkedMemberId(req.user!.id);
+
+  if (isSelfAttendanceRole(role)) {
+    if (!linkedMemberId || linkedMemberId !== memberId || !selfOnly) {
+      throw new ForbiddenError("คุณไม่มีสิทธิ์บันทึก Attendance ของสมาชิกคนนี้");
+    }
+    return;
+  }
+
+  if (role === "group_leader") {
+    if (!groupId || !(await canManageGroup(req, groupId))) {
+      throw new ForbiddenError("คุณไม่มีสิทธิ์บันทึก Attendance ของกลุ่มนี้");
+    }
+    return;
+  }
+
+  if (!["super_admin", "admin", "ministry_leader", "staff"].includes(role)) {
+    throw new ForbiddenError("คุณไม่มีสิทธิ์บันทึก Attendance");
+  }
+}
+
+async function assertAttendanceReadAccess(req: Request, groupId?: string, memberId?: string): Promise<void> {
+  const role = req.user!.role;
+  if (["super_admin", "admin", "ministry_leader", "staff"].includes(role)) return;
+
+  const linkedMemberId = await getLinkedMemberId(req.user!.id);
+  if (isSelfAttendanceRole(role)) {
+    if (!linkedMemberId || memberId !== linkedMemberId) {
+      throw new ForbiddenError("คุณไม่มีสิทธิ์ดูข้อมูล Attendance นี้");
+    }
+    return;
+  }
+
+  if (role === "group_leader") {
+    if (!groupId || !(await canManageGroup(req, groupId))) {
+      throw new ForbiddenError("คุณไม่มีสิทธิ์ดูข้อมูล Attendance ของกลุ่มนี้");
+    }
+  }
+}
+
 // 1. GET / - List attendance records with filtering and pagination
 attendanceRouter.get("/", async (req, res, next) => {
   try {
@@ -36,7 +136,11 @@ attendanceRouter.get("/", async (req, res, next) => {
       );
     }
 
-    const { startDate, endDate, serviceType, groupId, memberId, status, page, limit } = parsed.data;
+    let { startDate, endDate, serviceType, groupId, memberId, status, page, limit } = parsed.data;
+    if (isSelfAttendanceRole(req.user!.role)) {
+      memberId = await getLinkedMemberId(req.user!.id) ?? undefined;
+    }
+    await assertAttendanceReadAccess(req, groupId, memberId);
     const offset = (page - 1) * limit;
     const db = getDb();
     const conditions = [];
@@ -128,6 +232,7 @@ attendanceRouter.post("/check-in", async (req, res, next) => {
     }
 
     const { date, serviceType, groupId, eventId, memberId, status, checkInMethod, notes } = parsed.data;
+    await assertAttendanceWriteAccess(req, groupId, memberId, checkInMethod === "self_qr");
     const db = getDb();
 
     // Verify member exists
@@ -238,6 +343,9 @@ attendanceRouter.post("/bulk", async (req, res, next) => {
     }
 
     const { date, serviceType, groupId, eventId, records } = parsed.data;
+    if (!groupId || !(await canManageGroup(req, groupId))) {
+      throw new ForbiddenError("คุณไม่มีสิทธิ์บันทึก Attendance แบบกลุ่มนี้");
+    }
     const db = getDb();
     const checkDate = new Date(date);
     const dayStart = new Date(checkDate);
@@ -363,6 +471,12 @@ attendanceRouter.post("/qr-scan", async (req, res, next) => {
     if (!member) {
       throw new NotFoundError("ไม่พบข้อมูลสมาชิกจากรหัส QR ที่สแกน");
     }
+    await assertAttendanceWriteAccess(
+      req,
+      groupId,
+      member.id,
+      isSelfAttendanceRole(req.user!.role),
+    );
 
     const checkDate = date ? new Date(date) : new Date();
     const dayStart = new Date(checkDate);
@@ -452,6 +566,12 @@ attendanceRouter.get("/absentees", async (req, res, next) => {
     }
 
     const { threshold, serviceType, groupId } = parsed.data;
+    if (
+      !canExportAttendance(req.user!.role) &&
+      !(req.user!.role === "group_leader" && groupId && (await canManageGroup(req, groupId)))
+    ) {
+      throw new ForbiddenError("คุณไม่มีสิทธิ์ดูรายชื่อสมาชิกที่ขาดการเข้าร่วม");
+    }
     const db = getDb();
 
     // 1. Find the distinct recent N service dates for this service type
@@ -642,7 +762,20 @@ attendanceRouter.get("/summary", async (_req, res, next) => {
 // 7. GET /export - Export attendance records as UTF-8 CSV
 attendanceRouter.get("/export", async (req, res, next) => {
   try {
+    const { groupId } = req.query;
+    if (
+      !["super_admin", "admin", "ministry_leader"].includes(req.user!.role) &&
+      !(req.user!.role === "group_leader" &&
+        typeof groupId === "string" &&
+        (await canManageGroup(req, groupId)))
+    ) {
+      throw new ForbiddenError("คุณไม่มีสิทธิ์ Export ข้อมูล Attendance");
+    }
     const db = getDb();
+    const exportConditions = [];
+    if (typeof groupId === "string" && groupId.length > 0) {
+      exportConditions.push(eq(attendanceRecords.groupId, groupId));
+    }
     const rows = await db
       .select({
         date: attendanceRecords.date,
@@ -661,6 +794,7 @@ attendanceRouter.get("/export", async (req, res, next) => {
       .innerJoin(members, eq(attendanceRecords.memberId, members.id))
       .leftJoin(groups, eq(attendanceRecords.groupId, groups.id))
       .leftJoin(users, eq(attendanceRecords.checkedInBy, users.id))
+      .where(exportConditions.length ? and(...exportConditions) : undefined)
       .orderBy(desc(attendanceRecords.date))
       .limit(5000);
 
