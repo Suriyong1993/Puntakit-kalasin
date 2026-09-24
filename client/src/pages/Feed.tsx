@@ -28,6 +28,12 @@ interface GroupOption {
   area: string | null;
 }
 
+interface MemberOption {
+  id: string;
+  name: string;
+  nickname: string | null;
+}
+
 const FILTERS: Array<{ value: MissionActivityType | "all"; label: string }> = [
   { value: "all", label: "ทั้งหมด" },
   { value: "house_mission", label: "พันธกิจบ้าน" },
@@ -47,6 +53,10 @@ function localDateTimeValue() {
 export default function Feed() {
   const [activities, setActivities] = useState<FeedActivity[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
+  const [members, setMembers] = useState<MemberOption[]>([]);
+  const [selectedParticipantIds, setSelectedParticipantIds] = useState<
+    string[]
+  >([]);
   const [meta, setMeta] = useState<ApiMeta | null>(null);
   const [activeType, setActiveType] = useState<MissionActivityType | "all">(
     "all"
@@ -71,6 +81,10 @@ export default function Feed() {
       .get<GroupOption[]>("/api/groups")
       .then(setGroups)
       .catch(() => setGroups([]));
+    api
+      .getWithMeta<MemberOption[]>("/api/members?limit=100")
+      .then(response => setMembers(response.data ?? []))
+      .catch(() => setMembers([]));
   }, []);
 
   useEffect(() => {
@@ -128,7 +142,7 @@ export default function Feed() {
         groupId: form.groupId || null,
         source: "manual",
         visibility: form.groupId ? "group" : "private",
-        participants: [],
+        participants: selectedParticipantIds,
         media: [],
       });
       toast.success("บันทึกกิจกรรมแล้ว รอผู้ดูแลตรวจสอบก่อนเผยแพร่");
@@ -140,6 +154,7 @@ export default function Feed() {
         groupId: "",
         locationText: "",
       });
+      setSelectedParticipantIds([]);
       setShowComposer(false);
       setRefreshKey(value => value + 1);
     } catch (err) {
@@ -277,6 +292,33 @@ export default function Feed() {
                   placeholder="เช่น บ้านแม่กุล หรือ ตลาดสดเมืองกาฬสินธุ์"
                   className="h-10 w-full rounded-xl border border-[#E4ECF4] bg-white px-3 text-sm outline-none focus:border-[#2F6FCC] focus:ring-2 focus:ring-[#2F6FCC]/15"
                 />
+              </label>
+              <label className="space-y-2 text-sm font-medium text-[#17324D] md:col-span-2">
+                ผู้มีส่วนร่วม
+                <select
+                  multiple
+                  value={selectedParticipantIds}
+                  onChange={event =>
+                    setSelectedParticipantIds(
+                      Array.from(
+                        event.target.selectedOptions,
+                        option => option.value
+                      )
+                    )
+                  }
+                  className="min-h-28 w-full rounded-xl border border-[#E4ECF4] bg-white px-3 py-2 text-sm outline-none focus:border-[#2F6FCC] focus:ring-2 focus:ring-[#2F6FCC]/15"
+                  aria-label="เลือกผู้มีส่วนร่วมในกิจกรรม"
+                >
+                  {members.map(member => (
+                    <option key={member.id} value={member.id}>
+                      {member.name}
+                      {member.nickname ? ` (${member.nickname})` : ""}
+                    </option>
+                  ))}
+                </select>
+                <span className="block text-xs font-normal text-[#6B7C93]">
+                  กด Ctrl หรือ Command เพื่อเลือกหลายคน
+                </span>
               </label>
               <label className="space-y-2 text-sm font-medium text-[#17324D] md:col-span-2">
                 เรื่องราว
