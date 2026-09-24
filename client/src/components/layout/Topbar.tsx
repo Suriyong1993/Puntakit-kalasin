@@ -33,15 +33,22 @@ export function Topbar({ onMenu }: TopbarProps) {
   const { user, logout } = useAuth();
   const [, navigate] = useLocation();
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click or Escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -109,9 +116,6 @@ export function Topbar({ onMenu }: TopbarProps) {
           onClick={() => toast.info("ไม่มีการแจ้งเตือนใหม่")}
         >
           <Bell size={ICON_SIZE.md} />
-          <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
-            0
-          </span>
         </button>
 
         {/* User Profile Dropdown */}
@@ -143,7 +147,7 @@ export function Topbar({ onMenu }: TopbarProps) {
 
           {/* TailAdmin Dropdown Popover */}
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg z-50 origin-top-right animate-in fade-in zoom-in-95 duration-150 ease-(--ease-out)">
               {/* User Info Header */}
               <div className="border-b border-slate-100 px-3 py-2.5">
                 <p className="text-xs font-semibold text-slate-800 truncate">

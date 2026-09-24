@@ -79,7 +79,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-[#1C2434] text-slate-300 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-[#1C2434] text-slate-300 transition-transform duration-250 ease-(--ease-drawer) lg:static lg:translate-x-0 ${
           open ? "translate-x-0 shadow-lg" : "-translate-x-full"
         }`}
         aria-label="เมนูหลัก"
@@ -109,11 +109,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   return (
                     <button
                       key={label}
+                      aria-current={isActive ? "page" : undefined}
                       onClick={() => {
                         onClose();
                         navigate(path);
                       }}
-                      className={`group relative flex items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-200 text-left ${
+                      className={`group relative flex items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors duration-150 text-left ${
                         isActive
                           ? "bg-blue-600/20 text-blue-400 font-semibold shadow-xs border-l-4 border-blue-500 pl-2.5"
                           : "text-slate-300 hover:bg-slate-800/80 hover:text-white"

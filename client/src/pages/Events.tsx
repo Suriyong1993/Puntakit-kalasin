@@ -1,3 +1,4 @@
+import { Modal, ModalTitle } from "@/components/Modal";
 import { useState } from "react";
 import { AlertCircle, CalendarDays, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -236,66 +237,64 @@ export default function Events() {
       </section>
 
       {formOpen && (
-        <div className="modal-backdrop" onClick={() => setFormOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 14px" }}>{editing ? "แก้ไขกิจกรรม" : "เพิ่มกิจกรรม"}</h3>
-            <form className="form-grid" onSubmit={handleSubmit}>
-              <label className="full-field">
-                ชื่อกิจกรรม
-                <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-              </label>
-              <label>
-                วันเวลา
-                <input
-                  type="datetime-local"
-                  required
-                  value={form.eventDate}
-                  onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
-                />
-              </label>
-              <label>
-                สถานที่
-                <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-              </label>
-              <label>
-                ประเภท
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value as Event["category"] })}
-                >
-                  <option value="worship">นมัสการ</option>
-                  <option value="activity">กิจกรรม</option>
-                  <option value="meeting">ประชุม</option>
-                  <option value="other">อื่นๆ</option>
-                </select>
-              </label>
-              <label>
-                สถานะ
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as Event["status"] })}>
-                  <option value="scheduled">กำหนดการ</option>
-                  <option value="cancelled">ยกเลิก</option>
-                  <option value="completed">เสร็จสิ้น</option>
-                </select>
-              </label>
-              <label className="full-field">
-                รายละเอียด
-                <textarea
-                  rows={4}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
-              </label>
-              <div className="modal-actions full-field">
-                <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
-                  ยกเลิก
-                </button>
-                <button type="submit" className="primary-action" disabled={submitting}>
-                  {submitting ? "กำลังบันทึก..." : "บันทึก"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Modal onClose={() => setFormOpen(false)}>
+          <ModalTitle asChild><h3 style={{ margin: "0 0 14px" }}>{editing ? "แก้ไขกิจกรรม" : "เพิ่มกิจกรรม"}</h3></ModalTitle>
+          <form className="form-grid" onSubmit={handleSubmit}>
+            <label className="full-field">
+              ชื่อกิจกรรม
+              <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            </label>
+            <label>
+              วันเวลา
+              <input
+                type="datetime-local"
+                required
+                value={form.eventDate}
+                onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
+              />
+            </label>
+            <label>
+              สถานที่
+              <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+            </label>
+            <label>
+              ประเภท
+              <select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value as Event["category"] })}
+              >
+                <option value="worship">นมัสการ</option>
+                <option value="activity">กิจกรรม</option>
+                <option value="meeting">ประชุม</option>
+                <option value="other">อื่นๆ</option>
+              </select>
+            </label>
+            <label>
+              สถานะ
+              <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as Event["status"] })}>
+                <option value="scheduled">กำหนดการ</option>
+                <option value="cancelled">ยกเลิก</option>
+                <option value="completed">เสร็จสิ้น</option>
+              </select>
+            </label>
+            <label className="full-field">
+              รายละเอียด
+              <textarea
+                rows={4}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+            </label>
+            <div className="modal-actions full-field">
+              <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
+                ยกเลิก
+              </button>
+              <button type="submit" className="primary-action" disabled={submitting}>
+                {submitting ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
 
       {deleteTarget && (

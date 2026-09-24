@@ -1,3 +1,4 @@
+import { Modal, ModalTitle } from "@/components/Modal";
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
@@ -610,312 +611,308 @@ export default function Members() {
 
       {/* Create / Edit Modal */}
       {formOpen && (
-        <div className="modal-backdrop" onClick={() => setFormOpen(false)}>
-          <div className="modal-card modal-wide" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-heading">
-              <h2>{editing ? "แก้ไขข้อมูลสมาชิก" : "เพิ่มสมาชิกใหม่"}</h2>
-              <button onClick={() => setFormOpen(false)}>
-                <X size={ICON_SIZE.sm} />
+        <Modal onClose={() => setFormOpen(false)} className="modal-wide">
+          <div className="modal-heading">
+            <ModalTitle>{editing ? "แก้ไขข้อมูลสมาชิก" : "เพิ่มสมาชิกใหม่"}</ModalTitle>
+            <button onClick={() => setFormOpen(false)} aria-label="ปิด">
+              <X size={ICON_SIZE.sm} />
+            </button>
+          </div>
+
+          {duplicateWarning && (
+            <div
+              style={{
+                background: "#fff2d9",
+                color: "#a05b10",
+                padding: "8px 12px",
+                borderRadius: 8,
+                fontSize: 12,
+                marginBottom: 14,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <AlertCircle size={16} />
+              <span>{duplicateWarning}</span>
+            </div>
+          )}
+
+          <form className="form-grid" onSubmit={handleSubmit}>
+            {/* Section 1: ข้อมูลพื้นฐาน */}
+            <label>
+              ชื่อ-นามสกุล *
+              <input
+                required
+                placeholder="เช่น สมชาย สุขเกษม"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </label>
+            <label>
+              ชื่อเล่น
+              <input
+                placeholder="เช่น ต้น"
+                value={form.nickname}
+                onChange={(e) => setForm({ ...form, nickname: e.target.value })}
+              />
+            </label>
+            <label>
+              เพศ
+              <select
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value as Gender })}
+              >
+                <option value="">-- ไม่ระบุ --</option>
+                <option value="male">ชาย</option>
+                <option value="female">หญิง</option>
+                <option value="other">อื่นๆ</option>
+              </select>
+            </label>
+            <label>
+              วันเกิด
+              <input
+                type="date"
+                value={form.birthDate}
+                onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+              />
+            </label>
+
+            {/* Section 2: การติดต่อ */}
+            <label>
+              เบอร์โทรศัพท์
+              <input
+                placeholder="081-234-5678"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </label>
+            <label>
+              อีเมล
+              <input
+                type="email"
+                placeholder="member@email.com"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </label>
+            <label>
+              LINE ID
+              <input
+                placeholder="ไอดีไลน์สำหรับติดต่อ"
+                value={form.lineId}
+                onChange={(e) => setForm({ ...form, lineId: e.target.value })}
+              />
+            </label>
+            <label>
+              สถานะสมาชิก
+              <select
+                value={form.membershipStatus}
+                onChange={(e) =>
+                  setForm({ ...form, membershipStatus: e.target.value as MembershipStatus })
+                }
+              >
+                <option value="visitor">ผู้สนใจ/เยี่ยมเยียน</option>
+                <option value="active">สมาชิกประจำ</option>
+                <option value="candidate">ผู้เตรียมรับเชื่อ</option>
+                <option value="transferred">ย้ายคริสตจักร</option>
+                <option value="inactive">ขาดการติดต่อ</option>
+              </select>
+            </label>
+            <label className="full-field">
+              ที่อยู่ปัจจุบัน
+              <input
+                placeholder="บ้านเลขที่ หมู่บ้าน ตำบล อำเภอ จังหวัด"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+              />
+            </label>
+
+            {/* Section 3: พันธกิจ & กลุ่ม */}
+            <label>
+              พื้นที่ (Area)
+              <input
+                placeholder="เช่น อ.เมืองกาฬสินธุ์"
+                value={form.area}
+                onChange={(e) => setForm({ ...form, area: e.target.value })}
+              />
+            </label>
+            <label>
+              กลุ่มย่อย (Cell Group)
+              <input
+                placeholder="เช่น กลุ่มบ้านสันติสุข"
+                value={form.group}
+                onChange={(e) => setForm({ ...form, group: e.target.value })}
+              />
+            </label>
+            <label>
+              สถานะการดูแล
+              <select
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value as Member["status"] })}
+              >
+                <option value="ต้องติดตาม">ต้องติดตาม</option>
+                <option value="ติดตามแล้ว">ติดตามแล้ว</option>
+              </select>
+            </label>
+            <label>
+              บทบาทในคริสตจักร
+              <input
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+              />
+            </label>
+
+            {/* Section 4: ผู้ติดต่อฉุกเฉิน */}
+            <label>
+              ผู้ติดต่อฉุกเฉิน
+              <input
+                placeholder="ชื่อ-นามสกุล"
+                value={form.emergencyContactName}
+                onChange={(e) => setForm({ ...form, emergencyContactName: e.target.value })}
+              />
+            </label>
+            <label>
+              เบอร์โทรฉุกเฉิน
+              <input
+                placeholder="เบอร์โทรติดต่อฉุกเฉิน"
+                value={form.emergencyContactPhone}
+                onChange={(e) => setForm({ ...form, emergencyContactPhone: e.target.value })}
+              />
+            </label>
+
+            {/* Section 5: PDPA & หมายเหตุภายใน */}
+            <label className="full-field" style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <input
+                type="checkbox"
+                style={{ width: "auto" }}
+                checked={form.consentGiven}
+                onChange={(e) => setForm({ ...form, consentGiven: e.target.checked })}
+              />
+              <span>ยินยอมให้คริสตจักรเก็บรวบรวมและใช้ข้อมูลส่วนบุคคลตามนโยบายคุ้มครองข้อมูล (PDPA Consent)</span>
+            </label>
+
+            <label className="full-field">
+              บันทึกฝ่ายอภิบาล (Pastoral Notes - เฉพาะเจ้าหน้าที่)
+              <textarea
+                rows={3}
+                placeholder="ข้อมูลคำอธิษฐาน ความต้องการฝ่ายวิญญาณ หรือบันทึกการเยี่ยมเยียน..."
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
+            </label>
+
+            <div className="modal-actions full-field">
+              <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
+                ยกเลิก
+              </button>
+              <button type="submit" className="primary-action" disabled={submitting}>
+                {submitting ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
               </button>
             </div>
-
-            {duplicateWarning && (
-              <div
-                style={{
-                  background: "#fff2d9",
-                  color: "#a05b10",
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  fontSize: 12,
-                  marginBottom: 14,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <AlertCircle size={16} />
-                <span>{duplicateWarning}</span>
-              </div>
-            )}
-
-            <form className="form-grid" onSubmit={handleSubmit}>
-              {/* Section 1: ข้อมูลพื้นฐาน */}
-              <label>
-                ชื่อ-นามสกุล *
-                <input
-                  required
-                  placeholder="เช่น สมชาย สุขเกษม"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-              </label>
-              <label>
-                ชื่อเล่น
-                <input
-                  placeholder="เช่น ต้น"
-                  value={form.nickname}
-                  onChange={(e) => setForm({ ...form, nickname: e.target.value })}
-                />
-              </label>
-              <label>
-                เพศ
-                <select
-                  value={form.gender}
-                  onChange={(e) => setForm({ ...form, gender: e.target.value as Gender })}
-                >
-                  <option value="">-- ไม่ระบุ --</option>
-                  <option value="male">ชาย</option>
-                  <option value="female">หญิง</option>
-                  <option value="other">อื่นๆ</option>
-                </select>
-              </label>
-              <label>
-                วันเกิด
-                <input
-                  type="date"
-                  value={form.birthDate}
-                  onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
-                />
-              </label>
-
-              {/* Section 2: การติดต่อ */}
-              <label>
-                เบอร์โทรศัพท์
-                <input
-                  placeholder="081-234-5678"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                />
-              </label>
-              <label>
-                อีเมล
-                <input
-                  type="email"
-                  placeholder="member@email.com"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                />
-              </label>
-              <label>
-                LINE ID
-                <input
-                  placeholder="ไอดีไลน์สำหรับติดต่อ"
-                  value={form.lineId}
-                  onChange={(e) => setForm({ ...form, lineId: e.target.value })}
-                />
-              </label>
-              <label>
-                สถานะสมาชิก
-                <select
-                  value={form.membershipStatus}
-                  onChange={(e) =>
-                    setForm({ ...form, membershipStatus: e.target.value as MembershipStatus })
-                  }
-                >
-                  <option value="visitor">ผู้สนใจ/เยี่ยมเยียน</option>
-                  <option value="active">สมาชิกประจำ</option>
-                  <option value="candidate">ผู้เตรียมรับเชื่อ</option>
-                  <option value="transferred">ย้ายคริสตจักร</option>
-                  <option value="inactive">ขาดการติดต่อ</option>
-                </select>
-              </label>
-              <label className="full-field">
-                ที่อยู่ปัจจุบัน
-                <input
-                  placeholder="บ้านเลขที่ หมู่บ้าน ตำบล อำเภอ จังหวัด"
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                />
-              </label>
-
-              {/* Section 3: พันธกิจ & กลุ่ม */}
-              <label>
-                พื้นที่ (Area)
-                <input
-                  placeholder="เช่น อ.เมืองกาฬสินธุ์"
-                  value={form.area}
-                  onChange={(e) => setForm({ ...form, area: e.target.value })}
-                />
-              </label>
-              <label>
-                กลุ่มย่อย (Cell Group)
-                <input
-                  placeholder="เช่น กลุ่มบ้านสันติสุข"
-                  value={form.group}
-                  onChange={(e) => setForm({ ...form, group: e.target.value })}
-                />
-              </label>
-              <label>
-                สถานะการดูแล
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value as Member["status"] })}
-                >
-                  <option value="ต้องติดตาม">ต้องติดตาม</option>
-                  <option value="ติดตามแล้ว">ติดตามแล้ว</option>
-                </select>
-              </label>
-              <label>
-                บทบาทในคริสตจักร
-                <input
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
-                />
-              </label>
-
-              {/* Section 4: ผู้ติดต่อฉุกเฉิน */}
-              <label>
-                ผู้ติดต่อฉุกเฉิน
-                <input
-                  placeholder="ชื่อ-นามสกุล"
-                  value={form.emergencyContactName}
-                  onChange={(e) => setForm({ ...form, emergencyContactName: e.target.value })}
-                />
-              </label>
-              <label>
-                เบอร์โทรฉุกเฉิน
-                <input
-                  placeholder="เบอร์โทรติดต่อฉุกเฉิน"
-                  value={form.emergencyContactPhone}
-                  onChange={(e) => setForm({ ...form, emergencyContactPhone: e.target.value })}
-                />
-              </label>
-
-              {/* Section 5: PDPA & หมายเหตุภายใน */}
-              <label className="full-field" style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <input
-                  type="checkbox"
-                  style={{ width: "auto" }}
-                  checked={form.consentGiven}
-                  onChange={(e) => setForm({ ...form, consentGiven: e.target.checked })}
-                />
-                <span>ยินยอมให้คริสตจักรเก็บรวบรวมและใช้ข้อมูลส่วนบุคคลตามนโยบายคุ้มครองข้อมูล (PDPA Consent)</span>
-              </label>
-
-              <label className="full-field">
-                บันทึกฝ่ายอภิบาล (Pastoral Notes - เฉพาะเจ้าหน้าที่)
-                <textarea
-                  rows={3}
-                  placeholder="ข้อมูลคำอธิษฐาน ความต้องการฝ่ายวิญญาณ หรือบันทึกการเยี่ยมเยียน..."
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                />
-              </label>
-
-              <div className="modal-actions full-field">
-                <button type="button" className="cancel-button" onClick={() => setFormOpen(false)}>
-                  ยกเลิก
-                </button>
-                <button type="submit" className="primary-action" disabled={submitting}>
-                  {submitting ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          </form>
+        </Modal>
       )}
 
       {/* Member Detailed Profile View */}
       {selectedMember && (
-        <div className="modal-backdrop" onClick={() => setSelectedMember(null)}>
-          <div className="modal-card modal-wide" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-heading">
-              <h2>ข้อมูลสมาชิกโดยละเอียด</h2>
-              <button onClick={() => setSelectedMember(null)}>
-                <X size={ICON_SIZE.sm} />
-              </button>
-            </div>
+        <Modal onClose={() => setSelectedMember(null)} className="modal-wide">
+          <div className="modal-heading">
+            <ModalTitle>ข้อมูลสมาชิกโดยละเอียด</ModalTitle>
+            <button onClick={() => setSelectedMember(null)} aria-label="ปิด">
+              <X size={ICON_SIZE.sm} />
+            </button>
+          </div>
 
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              padding: "16px",
+              background: "#f4f8fc",
+              borderRadius: 14,
+              marginBottom: 16,
+            }}
+          >
             <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 16,
-                padding: "16px",
-                background: "#f4f8fc",
-                borderRadius: 14,
-                marginBottom: 16,
-              }}
+              className={`member-avatar ${toneFor(selectedMember.name)}`}
+              style={{ width: 56, height: 56, fontSize: 24, borderRadius: 16 }}
             >
-              <div
-                className={`member-avatar ${toneFor(selectedMember.name)}`}
-                style={{ width: 56, height: 56, fontSize: 24, borderRadius: 16 }}
-              >
-                {selectedMember.name.slice(0, 1)}
-              </div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: "0 0 4px", fontSize: 18, color: "var(--ink)" }}>
-                  {selectedMember.name} {selectedMember.nickname ? `(${selectedMember.nickname})` : ""}
-                </h3>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                  <span className="role-chip blue">{selectedMember.role}</span>
-                  <span className="role-chip green">
-                    {MEMBERSHIP_STATUS_LABELS[selectedMember.membershipStatus]?.label || selectedMember.membershipStatus}
-                  </span>
-                  <span className={`status-chip ${selectedMember.status === "ติดตามแล้ว" ? "good" : "attention"}`}>
-                    {selectedMember.status}
-                  </span>
-                  {selectedMember.consentGiven && (
-                    <span style={{ fontSize: 10, color: "#1e9b68", display: "flex", alignItems: "center", gap: 3 }}>
-                      <ShieldCheck size={12} /> ยินยอม PDPA แล้ว
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {qrCodeDataUrl && (
-                <div style={{ textAlign: "center", background: "#fff", padding: "8px", borderRadius: "12px", border: "1px solid #d9e6f3", flexShrink: 0 }}>
-                  <img src={qrCodeDataUrl} alt="Member QR Code" style={{ width: "80px", height: "80px", display: "block" }} />
-                  <div style={{ fontSize: "9px", color: "#6a7e93", marginTop: "3px", fontWeight: 600 }}>Personal QR</div>
-                </div>
-              )}
+              {selectedMember.name.slice(0, 1)}
             </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, fontSize: 12 }}>
-              <div style={{ background: "#fff", border: "1px solid #edf2f6", borderRadius: 12, padding: 12 }}>
-                <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8 }}>ข้อมูลการติดต่อ</strong>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>เบอร์โทร: <b>{selectedMember.phone || "ไม่มีข้อมูล"}</b></p>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>อีเมล: <b>{selectedMember.email || "ไม่มีข้อมูล"}</b></p>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>LINE ID: <b>{selectedMember.lineId || "ไม่มีข้อมูล"}</b></p>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>ที่อยู่: <b>{selectedMember.address || "ไม่มีข้อมูล"}</b></p>
-              </div>
-
-              <div style={{ background: "#fff", border: "1px solid #edf2f6", borderRadius: 12, padding: 12 }}>
-                <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8 }}>ข้อมูลคริสตจักร & ฉุกเฉิน</strong>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>พื้นที่: <b>{selectedMember.area || "-"}</b></p>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>กลุ่มย่อย: <b>{selectedMember.group || "ยังไม่มีกลุ่ม"}</b></p>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>วันที่เข้าร่วม: <b>{formatDate(selectedMember.joinedAt)}</b></p>
-                <p style={{ margin: "4px 0", color: "#60758c" }}>ผู้ติดต่อฉุกเฉิน: <b>{selectedMember.emergencyContactName ? `${selectedMember.emergencyContactName} (${selectedMember.emergencyContactPhone || "-"})` : "ไม่มีข้อมูล"}</b></p>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: "0 0 4px", fontSize: 18, color: "var(--ink)" }}>
+                {selectedMember.name} {selectedMember.nickname ? `(${selectedMember.nickname})` : ""}
+              </h3>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                <span className="role-chip blue">{selectedMember.role}</span>
+                <span className="role-chip green">
+                  {MEMBERSHIP_STATUS_LABELS[selectedMember.membershipStatus]?.label || selectedMember.membershipStatus}
+                </span>
+                <span className={`status-chip ${selectedMember.status === "ติดตามแล้ว" ? "good" : "attention"}`}>
+                  {selectedMember.status}
+                </span>
+                {selectedMember.consentGiven && (
+                  <span style={{ fontSize: 10, color: "#1e9b68", display: "flex", alignItems: "center", gap: 3 }}>
+                    <ShieldCheck size={12} /> ยินยอม PDPA แล้ว
+                  </span>
+                )}
               </div>
             </div>
 
-            {selectedMember.notes && (
-              <div style={{ marginTop: 14, background: "#fdfbf7", border: "1px solid #f0e6d2", borderRadius: 12, padding: 12 }}>
-                <strong style={{ display: "block", color: "#9a6a16", marginBottom: 4, fontSize: 11 }}>บันทึกฝ่ายอภิบาล (Pastoral Care Notes)</strong>
-                <p style={{ margin: 0, fontSize: 12, color: "#594827", lineHeight: 1.5 }}>{selectedMember.notes}</p>
+            {qrCodeDataUrl && (
+              <div style={{ textAlign: "center", background: "#fff", padding: "8px", borderRadius: "12px", border: "1px solid #d9e6f3", flexShrink: 0 }}>
+                <img src={qrCodeDataUrl} alt="Member QR Code" style={{ width: "80px", height: "80px", display: "block" }} />
+                <div style={{ fontSize: "9px", color: "#6a7e93", marginTop: "3px", fontWeight: 600 }}>Personal QR</div>
               </div>
             )}
+          </div>
 
-            <div className="modal-actions" style={{ marginTop: 20 }}>
-              <button type="button" className="cancel-button" onClick={() => setSelectedMember(null)}>
-                ปิดหน้าต่าง
-              </button>
-              {canManage && (
-                <button
-                  type="button"
-                  className="primary-action"
-                  onClick={() => {
-                    const target = selectedMember;
-                    setSelectedMember(null);
-                    openEdit(target);
-                  }}
-                >
-                  <Pencil size={ICON_SIZE.sm} /> แก้ไขข้อมูลนี้
-                </button>
-              )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, fontSize: 12 }}>
+            <div style={{ background: "#fff", border: "1px solid #edf2f6", borderRadius: 12, padding: 12 }}>
+              <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8 }}>ข้อมูลการติดต่อ</strong>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>เบอร์โทร: <b>{selectedMember.phone || "ไม่มีข้อมูล"}</b></p>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>อีเมล: <b>{selectedMember.email || "ไม่มีข้อมูล"}</b></p>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>LINE ID: <b>{selectedMember.lineId || "ไม่มีข้อมูล"}</b></p>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>ที่อยู่: <b>{selectedMember.address || "ไม่มีข้อมูล"}</b></p>
+            </div>
+
+            <div style={{ background: "#fff", border: "1px solid #edf2f6", borderRadius: 12, padding: 12 }}>
+              <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8 }}>ข้อมูลคริสตจักร & ฉุกเฉิน</strong>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>พื้นที่: <b>{selectedMember.area || "-"}</b></p>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>กลุ่มย่อย: <b>{selectedMember.group || "ยังไม่มีกลุ่ม"}</b></p>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>วันที่เข้าร่วม: <b>{formatDate(selectedMember.joinedAt)}</b></p>
+              <p style={{ margin: "4px 0", color: "#60758c" }}>ผู้ติดต่อฉุกเฉิน: <b>{selectedMember.emergencyContactName ? `${selectedMember.emergencyContactName} (${selectedMember.emergencyContactPhone || "-"})` : "ไม่มีข้อมูล"}</b></p>
             </div>
           </div>
-        </div>
+
+          {selectedMember.notes && (
+            <div style={{ marginTop: 14, background: "#fdfbf7", border: "1px solid #f0e6d2", borderRadius: 12, padding: 12 }}>
+              <strong style={{ display: "block", color: "#9a6a16", marginBottom: 4, fontSize: 11 }}>บันทึกฝ่ายอภิบาล (Pastoral Care Notes)</strong>
+              <p style={{ margin: 0, fontSize: 12, color: "#594827", lineHeight: 1.5 }}>{selectedMember.notes}</p>
+            </div>
+          )}
+
+          <div className="modal-actions" style={{ marginTop: 20 }}>
+            <button type="button" className="cancel-button" onClick={() => setSelectedMember(null)}>
+              ปิดหน้าต่าง
+            </button>
+            {canManage && (
+              <button
+                type="button"
+                className="primary-action"
+                onClick={() => {
+                  const target = selectedMember;
+                  setSelectedMember(null);
+                  openEdit(target);
+                }}
+              >
+                <Pencil size={ICON_SIZE.sm} /> แก้ไขข้อมูลนี้
+              </button>
+            )}
+          </div>
+        </Modal>
       )}
 
       {/* Confirm Soft Delete */}
