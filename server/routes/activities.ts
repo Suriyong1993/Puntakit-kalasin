@@ -275,6 +275,13 @@ activitiesRouter.get("/", async (req, res, next) => {
         createdById: missionActivities.createdById,
         createdByName: users.name,
         createdAt: missionActivities.createdAt,
+        // Feed is photo-first: cheapest way to get one ordered thumbnail per
+        // row without a second round-trip or duplicating media data.
+        thumbnailUrl: sql<string | null>`(
+          select ${missionActivityMedia.url} from ${missionActivityMedia}
+          where ${missionActivityMedia.activityId} = ${missionActivities.id}
+          order by ${missionActivityMedia.sortOrder} asc limit 1
+        )`,
       })
       .from(missionActivities)
       .leftJoin(groups, eq(missionActivities.groupId, groups.id))

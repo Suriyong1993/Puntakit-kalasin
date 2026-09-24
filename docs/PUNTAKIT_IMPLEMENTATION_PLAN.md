@@ -51,20 +51,77 @@ directly against real data with no interim mock layer.
 `visibility` enum (not needed while status already gates draft/
 pending_review visibility), LINE/AI integration (not started).
 
-## Phase 2 — Feed (primary "what happened" surface)
+## Phase 2 — Feed — DONE (palette rollout deferred, see below)
 
-- New page `client/src/pages/Feed.tsx`: chronological, filterable list
-  over `missionActivities`, photo-first cards, links out to
-  person/group/place.
-- Capture flow: mobile-first, full-screen create form (photo + type +
-  group + people + story), following the brief's "sheets/full-screen
-  mobile flows, not shrunk desktop forms" instruction.
-- Wire `/feed` route; keep `/` (Home) as-is until Phase 6 (Operations)
-  actually needs the slot.
-- Apply the warm palette (burnt orange / vanilla / warm ivory / charcoal)
-  as the token update in `client/src/index.css` `:root`, since Feed is the
-  first genuinely new surface and the natural place to validate the new
-  visual language before rolling it across the whole app.
+Shipped on branch `claude/eloquent-archimedes-04s1kg`, not yet in a PR.
+
+- New page `client/src/pages/Feed.tsx`: chronological, filterable
+  (type/status) grid over `GET /api/activities`, photo-first cards
+  (thumbnail, type/status badges, group or place, author, story snippet),
+  reusing existing `AppLayout`/`CardGridSkeleton`/`ApiError` patterns —
+  no new client architecture introduced.
+- Capture flow: a full-width `Sheet` (mobile-first — covers the full
+  viewport width on phone, a right-hand panel on desktop) with type,
+  title, story, occurred-at, optional group, place label, a participant
+  checklist (from `/api/members`), and media as URL entries (no file
+  upload infra exists yet, so photo capture is a URL field for now, not a
+  camera integration — flagged as a real gap, not silently skipped).
+- Status actions on each card (submit for review / publish / archive /
+  restore) call `PUT /api/activities/:id/status` directly — the server
+  is the actual authority; the client just hides actions that are
+  obviously never valid (e.g. no "publish" on an archived card) and lets
+  the server 403 the rest.
+- Added a single new sidebar entry ("ฟีดกิจกรรม" → `/feed`) — this is
+  additive, not the Phase 8 restructuring; the rest of the nav is
+  untouched.
+- List query extended with a correlated-subquery `thumbnailUrl` (first
+  media row by `sortOrder`) so Feed cards are photo-first without a
+  second round trip per card.
+
+**Deliberately deviated from the original plan on one point: did not
+apply the warm palette.** The plan's original text called for swapping
+`:root` tokens as part of this phase. On inspection, that's not a
+Feed-scoped change — this app's CSS custom properties (`--navy`, `--blue`,
+etc.) are global and already used by every existing page, so redefining
+them would instantly restyle the entire app, not just Feed. Doing that
+without a human able to look at it live (the person who owns this repo
+was asleep for this phase) is the kind of visually risky, hard-to-verify-
+blind change this plan's own quality bar ("run the actual application...
+fix problems introduced by your work") argues against. Feed instead uses
+the existing navy/blue design system as-is. The palette swap stays
+scheduled for Phase 8, when it can be reviewed live in one pass together
+with the navigation restructuring.
+
+**Real bug found and fixed while visually verifying this phase:** the
+installed shadcn/ui `Sheet` (and by the same mechanism, `Dialog`)
+component renders with a fully transparent background in this app,
+because `client/src/index.css` never defines the standard shadcn tokens
+(`--background`, `--foreground`, `--popover`, `--border`, etc.) that
+`bg-background` and friends resolve to — this codebase uses its own
+`--navy`/`--blue`/`--surface` token set instead. That's very likely why
+every existing page (see `Announcements.tsx`) rolls its own
+`.modal-backdrop`/`.modal-card` CSS instead of using the installed
+`Dialog`/`Sheet` primitives — they'd have looked broken. Fixed locally in
+`Feed.tsx` with an explicit `bg-white` on `SheetContent`. The systemic gap
+(shadcn tokens undefined app-wide) is real and worth fixing centrally, but
+is a design-token change outside this phase's scope — flagged as a
+follow-up, not fixed globally here.
+
+**Verification actually performed:** `pnpm check`, `pnpm test` (125/125,
+unchanged — no new automated tests added for this UI phase, see note
+below), `pnpm build` all pass. Additionally, actually ran the app: seeded
+a local PGlite database and an admin user, started `pnpm dev`, and drove
+it with a headless Chromium (Playwright, the pre-installed browser) at
+both a 1440×900 desktop viewport and a 390×844 mobile viewport — logged
+in, opened Feed, opened the capture sheet, submitted a real activity,
+confirmed it appeared in the list as a draft, changed its status to
+published through the UI, and confirmed the status filter and badge
+updated. This is what caught the transparent-Sheet bug above; screenshots
+are not committed to the repo (they're verification artifacts, not
+product assets). No automated browser test (e.g. Playwright in CI) was
+added — this phase was UI-focused and manually verified end to end, but a
+repeatable UI regression test is not yet part of the test suite, which is
+a real gap.
 
 ## Phase 3 — Timeline + Person/Group detail integration
 

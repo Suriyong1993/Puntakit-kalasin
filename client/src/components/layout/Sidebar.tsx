@@ -3,6 +3,7 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
+  Camera,
   HeartHandshake,
   Home as HomeIcon,
   Megaphone,
@@ -33,6 +34,7 @@ export const navGroups: NavGroup[] = [
     name: "เมนูหลัก",
     items: [
       { label: "หน้าหลัก", path: "/", icon: HomeIcon },
+      { label: "ฟีดกิจกรรม", path: "/feed", icon: Camera, badge: "ใหม่" },
       { label: "แอพสมาชิก (PWA)", path: "/app", icon: Sparkles, badge: "PWA" },
       { label: "สมาชิก", path: "/members", icon: Users },
       { label: "กลุ่มแคร์", path: "/groups", icon: UsersRound },
