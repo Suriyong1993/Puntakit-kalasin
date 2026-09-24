@@ -135,10 +135,7 @@ function visibilityCondition(req: Request) {
 }
 
 async function canManageGroupActivity(req: Request, groupId: string | null) {
-  if (!groupId)
-    return (
-      isOperationalRole(req.user!.role) || req.user!.role === "group_leader"
-    );
+  if (!groupId) return isOperationalRole(req.user!.role);
   if (isOperationalRole(req.user!.role)) return true;
 
   const db = getDb();
@@ -485,12 +482,10 @@ activitiesRouter.post("/", async (req, res, next) => {
     });
 
     const row = await getActivityRow(db, created.id);
-    res
-      .status(201)
-      .json({
-        success: true,
-        data: row ? await hydrateActivity(db, row) : created,
-      });
+    res.status(201).json({
+      success: true,
+      data: row ? await hydrateActivity(db, row) : created,
+    });
   } catch (err) {
     next(err);
   }
@@ -665,7 +660,10 @@ activitiesRouter.post(
       const db = getDb();
       const existing = await getActivityRow(db, req.params.id);
       if (!existing) throw new NotFoundError("ไม่พบกิจกรรมที่ต้องการเก็บถาวร");
-      if (!(await canManageGroupActivity(req, existing.groupId))) {
+      if (
+        !(await canManageGroupActivity(req, existing.groupId)) &&
+        existing.createdById !== req.user!.id
+      ) {
         throw new ForbiddenError("คุณไม่มีสิทธิ์เก็บถาวรกิจกรรมนี้");
       }
 
