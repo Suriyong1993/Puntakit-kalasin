@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ActivityTimeline } from "@/components/ActivityTimeline";
 import {
   AlertCircle,
   CalendarDays,
@@ -895,6 +896,13 @@ export default function Members() {
                 <p style={{ margin: 0, fontSize: 12, color: "#594827", lineHeight: 1.5 }}>{selectedMember.notes}</p>
               </div>
             )}
+
+            <div style={{ marginTop: 14 }}>
+              <strong style={{ display: "block", color: "var(--ink)", marginBottom: 8, fontSize: 12 }}>
+                กิจกรรมพันธกิจล่าสุด
+              </strong>
+              <ActivityTimeline subjectType="member" subjectId={selectedMember.id} />
+            </div>
 
             <div className="modal-actions" style={{ marginTop: 20 }}>
               <button type="button" className="cancel-button" onClick={() => setSelectedMember(null)}>

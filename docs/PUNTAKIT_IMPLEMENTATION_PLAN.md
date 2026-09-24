@@ -123,14 +123,33 @@ added — this phase was UI-focused and manually verified end to end, but a
 repeatable UI regression test is not yet part of the test suite, which is
 a real gap.
 
-## Phase 3 — Timeline + Person/Group detail integration
+## Phase 3 — Timeline + Person/Group detail integration — DONE
 
-- Reusable `<ActivityTimeline subjectType="person|group|place" subjectId>`
-  component, rendered inline on existing Member detail and Group detail
-  views (progressive disclosure: Overview tab default, Activity tab on
-  demand).
-- No new top-level nav item (per architecture doc — Timeline is a lens,
-  not a page).
+Shipped on branch `claude/eloquent-archimedes-04s1kg`, not yet in a PR.
+
+- Added `client/src/components/ActivityTimeline.tsx`: `subjectType`
+  (`"member" | "group"`) + `subjectId` → queries `GET /api/activities`
+  with `memberId=`/`groupId=` — the same Phase 1 endpoint Feed uses, no
+  new backend route and no new data. This is a pure read lens, exactly as
+  the architecture doc specified ("Timeline is a lens, not a page").
+- Rendered inline in the existing Member detail modal
+  (`client/src/pages/Members.tsx`, under "กิจกรรมพันธกิจล่าสุด") and the
+  existing Group members modal (`client/src/pages/Groups.tsx`, under
+  "กิจกรรมพันธกิจล่าสุดของกลุ่ม") — both pre-existing modals, not new
+  pages. No `place`/Place-entity subject type: Phase 1 kept location as
+  columns on the activity, not a Place entity, so there is no Place
+  detail view yet for a Place timeline to attach to. Adding it later is
+  additive, not a redesign of this component.
+- No new top-level nav item — matches the architecture doc.
+
+**Verification:** `pnpm check`, `pnpm test` (125/125, unchanged), `pnpm
+build` all pass. Manually verified live: seeded a group, a member, and one
+mission activity linking both via the real API in the same authenticated
+browser session, then opened the Member detail modal and the Group
+members modal and confirmed the same activity renders correctly in both
+— proving the "one activity, reused by every lens" rule from the
+architecture doc, not just asserted but actually observed across two
+different surfaces.
 
 ## Phase 4 — Follow-up
 
