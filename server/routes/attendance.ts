@@ -26,6 +26,14 @@ export const attendanceRouter = Router();
 
 attendanceRouter.use(requireAuth);
 
+export function canExportAttendance(role: string): boolean {
+  return ["super_admin", "admin", "ministry_leader"].includes(role);
+}
+
+export function isSelfAttendanceRole(role: string): boolean {
+  return role === "member" || role === "viewer";
+}
+
 async function getLinkedMemberId(userId: string): Promise<string | null> {
   const db = getDb();
   const [member] = await db
@@ -79,7 +87,7 @@ async function assertAttendanceWriteAccess(
   const role = req.user!.role;
   const linkedMemberId = await getLinkedMemberId(req.user!.id);
 
-  if (role === "member" || role === "viewer") {
+  if (isSelfAttendanceRole(role)) {
     if (!linkedMemberId || linkedMemberId !== memberId || !selfOnly) {
       throw new ForbiddenError("คุณไม่มีสิทธิ์บันทึก Attendance ของสมาชิกคนนี้");
     }
@@ -103,7 +111,7 @@ async function assertAttendanceReadAccess(req: Request, groupId?: string, member
   if (["super_admin", "admin", "ministry_leader", "staff"].includes(role)) return;
 
   const linkedMemberId = await getLinkedMemberId(req.user!.id);
-  if (role === "member" || role === "viewer") {
+  if (isSelfAttendanceRole(role)) {
     if (!linkedMemberId || memberId !== linkedMemberId) {
       throw new ForbiddenError("คุณไม่มีสิทธิ์ดูข้อมูล Attendance นี้");
     }
@@ -129,7 +137,7 @@ attendanceRouter.get("/", async (req, res, next) => {
     }
 
     let { startDate, endDate, serviceType, groupId, memberId, status, page, limit } = parsed.data;
-    if (req.user!.role === "member" || req.user!.role === "viewer") {
+    if (isSelfAttendanceRole(req.user!.role)) {
       memberId = await getLinkedMemberId(req.user!.id) ?? undefined;
     }
     await assertAttendanceReadAccess(req, groupId, memberId);
@@ -467,7 +475,7 @@ attendanceRouter.post("/qr-scan", async (req, res, next) => {
       req,
       groupId,
       member.id,
-      req.user!.role === "member" || req.user!.role === "viewer",
+      isSelfAttendanceRole(req.user!.role),
     );
 
     const checkDate = date ? new Date(date) : new Date();
@@ -559,7 +567,7 @@ attendanceRouter.get("/absentees", async (req, res, next) => {
 
     const { threshold, serviceType, groupId } = parsed.data;
     if (
-      !["super_admin", "admin", "ministry_leader"].includes(req.user!.role) &&
+      !canExportAttendance(req.user!.role) &&
       !(req.user!.role === "group_leader" && groupId && (await canManageGroup(req, groupId)))
     ) {
       throw new ForbiddenError("คุณไม่มีสิทธิ์ดูรายชื่อสมาชิกที่ขาดการเข้าร่วม");

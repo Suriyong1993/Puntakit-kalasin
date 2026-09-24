@@ -111,8 +111,12 @@ function maskGroupLocation<T extends { privacy?: string; meetingLocation?: strin
   };
 }
 
+export function canViewFullGroupRosterRole(role: string): boolean {
+  return ["super_admin", "admin", "ministry_leader"].includes(role);
+}
+
 function canViewFullGroupRoster(req: Request): boolean {
-  return ["super_admin", "admin", "ministry_leader"].includes(req.user!.role);
+  return canViewFullGroupRosterRole(req.user!.role);
 }
 
 function canViewMemberContacts(req: Request, group: { leaderId: string | null; coLeaderId: string | null }): boolean {

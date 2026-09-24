@@ -9,6 +9,7 @@ import {
   groupQuerySchema,
 } from "../../shared/validation";
 import type { UserRole } from "../../shared/schema";
+import { canViewFullGroupRosterRole } from "./groups";
 
 describe("Groups API & Security Tests", () => {
   let server: Server;
@@ -235,6 +236,18 @@ describe("Groups API & Security Tests", () => {
       const forGroupMember = simulateMaskLocation(privateGroup, "member", true);
       expect(forGroupMember.latitude).toBe("16.4100");
       expect(forGroupMember.meetingLocation).toBe("บ้านพักส่วนตัว 55 ม.4 ต.ยางตลาด");
+    });
+  });
+
+  describe("Group roster privacy policy", () => {
+    it("only grants full-roster access to operational leadership roles", () => {
+      expect(canViewFullGroupRosterRole("super_admin")).toBe(true);
+      expect(canViewFullGroupRosterRole("admin")).toBe(true);
+      expect(canViewFullGroupRosterRole("ministry_leader")).toBe(true);
+      expect(canViewFullGroupRosterRole("group_leader")).toBe(false);
+      expect(canViewFullGroupRosterRole("staff")).toBe(false);
+      expect(canViewFullGroupRosterRole("member")).toBe(false);
+      expect(canViewFullGroupRosterRole("viewer")).toBe(false);
     });
   });
 
