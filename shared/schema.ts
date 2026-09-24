@@ -523,6 +523,51 @@ export const followUps = pgTable(
   ]
 );
 
+export const MISSION_SUBMISSION_STATUSES = [
+  "new",
+  "reviewing",
+  "needs_info",
+  "approved",
+  "rejected",
+] as const;
+export type MissionSubmissionStatus = (typeof MISSION_SUBMISSION_STATUSES)[number];
+
+export const MISSION_SUBMISSION_SOURCES = ["manual", "line", "import", "system"] as const;
+export type MissionSubmissionSource = (typeof MISSION_SUBMISSION_SOURCES)[number];
+
+// Mission Inbox: raw field input that is NOT yet official ministry data.
+// A submission is promoted into a mission_activities row (always as
+// "draft") only once a human sets it to "approved" and explicitly
+// publishes it — it is never auto-published. No LINE adapter exists yet;
+// `source` reserves room for one without committing to it now. See
+// docs/PUNTAKIT_PRODUCT_ARCHITECTURE.md.
+export const missionSubmissions = pgTable(
+  "mission_submissions",
+  {
+    id: id(),
+    status: text("status", { enum: MISSION_SUBMISSION_STATUSES }).notNull().default("new"),
+    source: text("source", { enum: MISSION_SUBMISSION_SOURCES }).notNull().default("manual"),
+    rawText: text("raw_text"),
+    rawMediaUrls: text("raw_media_urls"),
+    submittedByLabel: text("submitted_by_label"),
+    reviewNote: text("review_note"),
+    publishedActivityId: text("published_activity_id").references(() => missionActivities.id, {
+      onDelete: "set null",
+    }),
+    reviewedById: text("reviewed_by_id").references(() => users.id, { onDelete: "set null" }),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("mission_submissions_status_idx").on(table.status),
+    index("mission_submissions_source_idx").on(table.source),
+    index("mission_submissions_published_activity_id_idx").on(table.publishedActivityId),
+    index("mission_submissions_created_at_idx").on(table.createdAt),
+  ]
+);
+
 export type User = typeof users.$inferSelect;
 export type UserSession = typeof userSessions.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
@@ -541,3 +586,4 @@ export type MissionActivity = typeof missionActivities.$inferSelect;
 export type MissionActivityParticipant = typeof missionActivityParticipants.$inferSelect;
 export type MissionActivityMedia = typeof missionActivityMedia.$inferSelect;
 export type FollowUp = typeof followUps.$inferSelect;
+export type MissionSubmission = typeof missionSubmissions.$inferSelect;

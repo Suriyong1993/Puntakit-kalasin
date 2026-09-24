@@ -13,6 +13,7 @@ import {
   MISSION_ACTIVITY_STATUSES,
   MISSION_ACTIVITY_TYPES,
   MISSION_MEDIA_KINDS,
+  MISSION_SUBMISSION_STATUSES,
   PRAYER_CATEGORIES,
   SERVICE_TYPES,
   USER_ROLES,
@@ -330,6 +331,37 @@ export const followUpQuerySchema = z.object({
     .transform((val) => val === "true"),
 });
 export type FollowUpQuery = z.infer<typeof followUpQuerySchema>;
+
+export const missionSubmissionInputSchema = z.object({
+  rawText: z.string().trim().max(5000).optional().or(z.literal("")),
+  rawMediaUrls: z.array(z.string().trim().url().max(1000)).max(30).optional().default([]),
+  submittedByLabel: z.string().trim().max(200).optional().or(z.literal("")),
+});
+export type MissionSubmissionInput = z.infer<typeof missionSubmissionInputSchema>;
+
+export const missionSubmissionStatusUpdateSchema = z.object({
+  status: z.enum(MISSION_SUBMISSION_STATUSES),
+  reviewNote: z.string().trim().max(2000).optional().or(z.literal("")),
+});
+export type MissionSubmissionStatusUpdate = z.infer<typeof missionSubmissionStatusUpdateSchema>;
+
+export const missionSubmissionQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  status: z.enum(MISSION_SUBMISSION_STATUSES).optional(),
+});
+export type MissionSubmissionQuery = z.infer<typeof missionSubmissionQuerySchema>;
+
+export const missionSubmissionPublishSchema = z.object({
+  type: z.enum(MISSION_ACTIVITY_TYPES),
+  title: z.string().trim().min(1, "กรุณากรอกหัวข้อ").max(300),
+  story: z.string().trim().max(5000).optional().or(z.literal("")),
+  occurredAt: z.coerce.date(),
+  groupId: z.string().uuid().optional().or(z.literal("")).nullable(),
+  placeLabel: z.string().trim().max(300).optional().or(z.literal("")),
+  includeRawMedia: z.boolean().optional().default(true),
+});
+export type MissionSubmissionPublishInput = z.infer<typeof missionSubmissionPublishSchema>;
 
 export const pushSubscriptionSchema = z.object({
   endpoint: z.string().url("Endpoint ไม่ถูกต้อง"),

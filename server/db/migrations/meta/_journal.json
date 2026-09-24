@@ -43,6 +43,13 @@
       "when": 1790271255833,
       "tag": "0005_secret_warstar",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790271714892,
+      "tag": "0006_sweet_zzzax",
+      "breakpoints": true
     }
   ]
 }

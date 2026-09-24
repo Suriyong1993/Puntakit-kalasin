@@ -200,16 +200,55 @@ from a real Feed card, confirmed the new item and a separately-seeded
 overdue item both render correctly on `/follow-up` (desktop and mobile),
 with working status-transition buttons.
 
-## Phase 5 — Mission Inbox
+## Phase 5 — Mission Inbox — DONE
 
-- Add `missionSubmissions` table + `server/routes/submissions.ts`.
-- Add `/inbox` page: queue UI with new/reviewing/needs-info/approved/
-  rejected states; "Publish" action promotes a submission into a
-  `missionActivities` row.
-- No LINE adapter in this phase — manual submission entry only (e.g. an
-  admin pastes what came in over LINE today). The `source` enum already
-  reserves the `line` value for when a real channel/credential exists;
-  do not fake an integration in the meantime.
+Shipped on branch `claude/eloquent-archimedes-04s1kg`, not yet in a PR.
+
+- Added `mission_submissions` table (additive migration
+  `server/db/migrations/0006_sweet_zzzax.sql`, one new table): `status`
+  (`new/reviewing/needs_info/approved/rejected`), `source` (`manual` now,
+  `line`/`import`/`system` reserved), `rawText`, `rawMediaUrls` (JSON
+  text — deliberately not a media table, since a submission is transient
+  pre-publish input, not the long-term Activity media model),
+  `submittedByLabel`, `reviewNote`, `publishedActivityId`, `reviewedById`/
+  `reviewedAt`, `createdById`.
+- Added `server/lib/missionActivity.ts` (`insertMissionActivity`,
+  `insertMissionActivityMedia`) — the one piece of genuinely shared logic
+  between the direct-create path (`activities.ts`) and the Inbox publish
+  path (`submissions.ts`), so both ultimately write the *same* activity
+  table the same way rather than diverging.
+- Added `server/routes/submissions.ts`: anyone in the same `CREATE_ROLES`
+  set as activities can submit raw input (this is the "type up what came
+  over LINE today" manual path — no LINE adapter exists). Only
+  `REVIEW_ROLES` (`super_admin/admin/staff/ministry_leader`) can move a
+  submission through the review lifecycle (explicit transition map:
+  `new → reviewing/rejected`, `reviewing → needs_info/approved/rejected/
+  new`, `needs_info → reviewing/rejected`, `rejected → new` to resubmit)
+  or publish it. `POST /:id/publish` only works from `approved`, only
+  once (checked via `publishedActivityId`), and always creates the
+  Mission Activity as `draft` — publishing from Inbox is never a second
+  way to skip the Activity's own publish gate.
+- Added `client/src/pages/Inbox.tsx` at `/inbox` (new sidebar entry,
+  additive): a capture sheet for raw text + media-by-URL + a submitter
+  label, and a queue view with inline review actions gated client-side by
+  role (server re-checks regardless) plus a publish sheet that maps raw
+  input into the same structured fields Feed's capture form uses.
+- **No LINE adapter, exactly as planned.** `source` stays `"manual"` for
+  everything created in this phase; the enum already reserves `"line"`
+  for when a real channel/credential exists.
+
+**Verification:** `pnpm check`, `pnpm test` (153/153 — 15 new tests in
+`server/routes/submissions.test.ts`, same real-PGlite full-loop pattern:
+submit → persist → fetch → 401/403/404 → full review lifecycle including
+a rejected-role-gate case and an invalid-transition case → publish →
+confirms the created activity is real, is `status: "draft"`, and carries
+the raw media as real `mission_activity_media` rows → refuses a second
+publish of the same submission → audit rows), `pnpm build` all pass.
+Another mechanical fix in `server/db/bootstrap.test.ts` (6 → 7). Manually
+verified live end to end: captured a raw submission through the UI,
+walked it through reviewing → approved, published it, confirmed the
+resulting activity — media included — appears correctly on `/feed` as a
+draft.
 
 ## Phase 6 — Operations (replaces ad hoc dashboard framing)
 
