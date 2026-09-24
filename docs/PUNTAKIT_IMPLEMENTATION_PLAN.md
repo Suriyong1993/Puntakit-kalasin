@@ -250,12 +250,37 @@ walked it through reviewing → approved, published it, confirmed the
 resulting activity — media included — appears correctly on `/feed` as a
 draft.
 
-## Phase 6 — Operations (replaces ad hoc dashboard framing)
+## Phase 6 — Operations — DONE
 
-- Evolve `server/routes/dashboard.ts` and `Home.tsx` into an Operations
-  surface: submissions waiting for review, open/overdue follow-ups,
-  groups with no recent activity, recent activity, upcoming events —
-  all real aggregates over Phase 1–5 tables, no fabricated scores.
+Shipped on branch `claude/eloquent-archimedes-04s1kg`, not yet in a PR.
+No new migration this phase — read-only aggregates over Phase 1–5 tables.
+
+- Added `GET /api/dashboard/operations` to `server/routes/dashboard.ts`,
+  gated to the same privileged roles that review Inbox submissions
+  (`super_admin/admin/staff/ministry_leader`) since it exists to surface
+  exactly the otherwise-hidden queue those roles need: pending Inbox
+  submissions (count + latest 5), open/overdue follow-ups (counts + the 5
+  most overdue, joined to their subject name and owner), groups with no
+  Mission Activity in the last 14 days (a real `NOT IN` subquery against
+  `mission_activities`, not a fabricated "health score"), the 5 most
+  recent activities, and upcoming scheduled events. Every number is a
+  `count()`/row from a real table — nothing invented.
+- Evolved `client/src/pages/Home.tsx` (still at `/` — the sidebar label
+  and route stay as-is; renaming it is Phase 8's job, not this one) with
+  an Operations section: three stat chips linking to `/inbox`,
+  `/follow-up`, and `/groups`, plus a two-column recent-activity /
+  overdue-follow-up panel. Fetched only for privileged roles, matching
+  the server-side gate — a `member`/`group_leader` sees the existing
+  dashboard unchanged.
+
+**Verification:** `pnpm check`, `pnpm test` (156/156 — 3 new tests in
+`server/routes/dashboard.test.ts`: 401/403 checks, plus one seeding a
+pending submission, an overdue follow-up, an active group with a recent
+activity, and an inactive group without one, then asserting each shows
+up — or correctly doesn't — in the response), `pnpm build` all pass.
+Manually verified live: seeded the same four kinds of rows through the
+real API, loaded `/`, and confirmed all three stat chips and both list
+panels show the real seeded data, not placeholders.
 
 ## Phase 7 — Map
 
