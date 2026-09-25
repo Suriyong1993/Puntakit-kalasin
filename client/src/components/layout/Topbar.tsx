@@ -4,12 +4,11 @@ import {
   LogOut,
   Menu,
   Moon,
-  Search,
   Sparkles,
   Sun,
   UserRound,
-  X,
 } from "lucide-react";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
@@ -30,7 +29,6 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 export function Topbar({ onMenu }: TopbarProps) {
-  const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
@@ -40,7 +38,10 @@ export function Topbar({ onMenu }: TopbarProps) {
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setMenuOpen(false);
       }
     }
@@ -53,13 +54,6 @@ export function Topbar({ onMenu }: TopbarProps) {
     toast.success("ออกจากระบบแล้ว");
     setMenuOpen(false);
     navigate("/login");
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    // Navigate to members search with query
-    navigate(`/members?search=${encodeURIComponent(query.trim())}`);
   };
 
   const roleText = (user?.role && ROLE_LABEL[user.role]) || "ผู้ใช้งาน";
@@ -76,32 +70,7 @@ export function Topbar({ onMenu }: TopbarProps) {
           <Menu size={ICON_SIZE.lg} />
         </button>
 
-        {/* Global search */}
-        <form onSubmit={handleSearchSubmit} className="relative w-full">
-          <div className="relative flex items-center">
-            <span className="pointer-events-none absolute left-4 text-slate-400">
-              <Search size={ICON_SIZE.sm} />
-            </span>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="ค้นหาสมาชิก กิจกรรม หรือกลุ่มแคร์..."
-              className="h-11 w-full rounded-[var(--radius-pill)] border border-slate-200 bg-slate-50/70 py-2 pl-11 pr-9 text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition-all focus:border-[var(--color-primary-focus)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-focus)]/20"
-              aria-label="ค้นหา"
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="absolute right-3 text-slate-400 hover:text-slate-600"
-                aria-label="ล้างการค้นหา"
-              >
-                <X size={ICON_SIZE.xs} />
-              </button>
-            )}
-          </div>
-        </form>
+        <GlobalSearch variant="compact" />
       </div>
 
       {/* Right section: Notifications + Profile */}
@@ -110,10 +79,16 @@ export function Topbar({ onMenu }: TopbarProps) {
           type="button"
           onClick={() => toggleTheme?.()}
           className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-sm)] border border-slate-200 bg-slate-50/60 text-slate-600 transition-colors hover:bg-slate-100 hover:text-[var(--color-primary)]"
-          aria-label={theme === "dark" ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด"}
+          aria-label={
+            theme === "dark" ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด"
+          }
           title={theme === "dark" ? "โหมดสว่าง" : "โหมดมืด"}
         >
-          {theme === "dark" ? <Sun size={ICON_SIZE.md} /> : <Moon size={ICON_SIZE.md} />}
+          {theme === "dark" ? (
+            <Sun size={ICON_SIZE.md} />
+          ) : (
+            <Moon size={ICON_SIZE.md} />
+          )}
         </button>
         {/* Notification Button */}
         <button
@@ -130,7 +105,7 @@ export function Topbar({ onMenu }: TopbarProps) {
         {/* User Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => setMenuOpen(v => !v)}
             className="flex items-center gap-2.5 rounded-[var(--radius-sm)] p-1.5 transition-colors hover:bg-slate-100 sm:px-3 sm:py-2"
             aria-expanded={menuOpen}
             aria-haspopup="true"
@@ -186,7 +161,10 @@ export function Topbar({ onMenu }: TopbarProps) {
                   onClick={() => setMenuOpen(false)}
                   className="flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-xs font-medium text-[var(--color-primary)] hover:bg-[var(--color-canvas-soft)] transition-colors"
                 >
-                  <Sparkles size={ICON_SIZE.sm} className="text-[var(--color-primary)]" />
+                  <Sparkles
+                    size={ICON_SIZE.sm}
+                    className="text-[var(--color-primary)]"
+                  />
                   <span>สลับไปหน้าแอพสมาชิก (PWA)</span>
                 </Link>
               </div>
