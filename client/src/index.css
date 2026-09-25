@@ -2450,3 +2450,106 @@ button {
 .tailadmin-card-body {
   padding: 1.5rem;
 }
+
+/* Refreshed discovery hero and cross-page motion surfaces. */
+.discovery-hero {
+  position: relative;
+  min-height: 310px;
+  isolation: isolate;
+  background: #e8f4ff;
+  border: 1px solid #d8e9f8;
+  box-shadow: 0 12px 32px rgba(36, 92, 146, 0.08);
+}
+.discovery-hero:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.78) 0 8%, transparent 28%), radial-gradient(circle at 76% 92%, rgba(108, 175, 226, 0.2) 0 12%, transparent 36%);
+}
+.discovery-hero-art {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 0 52%;
+  background-image: linear-gradient(90deg, #e8f4ff 0%, rgba(232, 244, 255, 0.55) 25%, rgba(232, 244, 255, 0.04) 66%), url("/manus-storage/puntakit-hero_d9170436.png");
+  background-position: center right;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.9;
+}
+.member-page-hero,
+.events-page-hero {
+  position: relative;
+  overflow: hidden;
+  background: #eaf5ff;
+}
+.member-page-hero::after,
+.events-page-hero::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  bottom: -90px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: rgba(126, 191, 235, 0.22);
+  pointer-events: none;
+}
+[data-scroll-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 520ms cubic-bezier(0.23, 1, 0.32, 1), transform 520ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+[data-scroll-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (max-width: 640px) {
+  .discovery-hero { min-height: 390px; }
+  .discovery-hero-art { inset: auto 0 0; height: 145px; opacity: 0.45; background-position: center bottom; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-reveal] { opacity: 1; transform: none; transition: none; }
+}
+
+/* Shared dark palette for the refreshed Home, Members and Events surfaces. */
+.dark body,
+.dark #root { background: #0f1b2d; color: #e5eefb; }
+.dark .topbar { background: #14243a; border-color: #263b57; }
+.dark .tailadmin-card,
+.dark .event-surface { background-color: #17283f; border-color: #2a4564; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18); }
+.dark .discovery-hero,
+.dark .member-page-hero,
+.dark .events-page-hero { background: #183554; border-color: #2d5277; }
+.dark .discovery-hero::after,
+.dark .member-page-hero::after,
+.dark .events-page-hero::after { background: rgba(84, 145, 201, 0.2); }
+.dark .discovery-hero-art { background-image: linear-gradient(90deg, #183554 0%, rgba(24, 53, 84, 0.65) 28%, rgba(24, 53, 84, 0.08) 72%), url("/manus-storage/puntakit-hero_d9170436.png"); opacity: 0.62; }
+.dark .discovery-hero h1,
+.dark .member-page-hero h1,
+.dark .events-page-hero h1,
+.dark .tailadmin-card h2,
+.dark .tailadmin-card h3,
+.dark .event-surface h3,
+.dark .text-slate-800 { color: #edf5ff !important; }
+.dark .text-slate-700,
+.dark .text-slate-600 { color: #c6d5e8 !important; }
+.dark .text-slate-500,
+.dark .text-slate-400 { color: #91a7c1 !important; }
+.dark .bg-white,
+.dark .bg-white\/80 { background-color: #1b304a !important; }
+.dark .bg-slate-50,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/75 { background-color: #14263d !important; }
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-200\/80 { border-color: #29425f !important; }
+.dark input,
+.dark select,
+.dark textarea { background-color: #14263d; border-color: #2d4b6c; color: #e5eefb; }
+.dark input::placeholder,
+.dark textarea::placeholder { color: #7890ad; }
+.dark .member-page-hero .bg-white\/80,
+.dark .events-page-hero .bg-white\/80,
+.dark .discovery-hero .bg-white\/80 { color: #cfe5ff; }

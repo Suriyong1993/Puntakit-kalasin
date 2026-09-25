@@ -122,16 +122,16 @@ export default function Events() {
   return (
     <AppLayout>
       {/* Page Heading */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="events-page-hero mb-6 flex flex-col gap-5 rounded-[24px] border border-blue-100 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-            WORSHIP &amp; ACTIVITIES • การนมัสการและกิจกรรม
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-700">
+            <CalendarDays size={13} /> ACTIVITY PULSE
           </span>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+          <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-[#173b70] sm:text-3xl">
             การนมัสการ / กิจกรรม
           </h1>
-          <p className="text-xs text-slate-500">
-            จัดตารางการนมัสการและกิจกรรมของคริสตจักร
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-600 sm:text-sm">
+            ดูกิจกรรมล่าสุดและวางแผนการมีส่วนร่วมของคริสตจักรในมุมมองเดียว
           </p>
         </div>
         {isAdmin && (
@@ -144,7 +144,7 @@ export default function Events() {
         )}
       </div>
 
-      <section className="tailadmin-card p-5 sm:p-6">
+      <section className="tailadmin-card overflow-hidden border-blue-100 p-5 shadow-[0_12px_32px_rgba(36,92,146,0.07)] sm:p-6">
         {isLoading ? (
           <CardGridSkeleton count={6} />
         ) : error ? (
@@ -168,15 +168,15 @@ export default function Events() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {items.map((ev) => (
               <div
-                className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="event-surface group flex flex-col justify-between rounded-2xl border border-blue-100 bg-white p-5 shadow-[0_8px_24px_rgba(36,92,146,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_14px_30px_rgba(36,92,146,0.12)]"
                 key={ev.id}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-slate-800 text-base leading-snug">{ev.title}</h3>
+                    <div className="min-w-0"><span className="mb-2 inline-flex rounded-lg bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">{CATEGORY_LABEL[ev.category]}</span><h3 className="font-bold text-slate-800 text-base leading-snug">{ev.title}</h3></div>
                     <span
                       className={`flex-shrink-0 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
                         ev.status === "cancelled"
@@ -205,11 +205,6 @@ export default function Events() {
                         <span className="truncate">{ev.location}</span>
                       </div>
                     )}
-                    <div className="pt-1">
-                      <span className="inline-block rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
-                        {CATEGORY_LABEL[ev.category]}
-                      </span>
-                    </div>
                   </div>
                 </div>
 

@@ -280,20 +280,21 @@ export default function Members() {
 
   const followedUpCount = members.filter((m) => m.status === "ติดตามแล้ว").length;
   const needFollowUpCount = members.filter((m) => m.status === "ต้องติดตาม").length;
+  const areaOptions = Array.from(new Set(members.map((member) => member.area).filter(Boolean))) as string[];
 
   return (
     <AppLayout>
       {/* Page Heading */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="member-page-hero mb-6 flex flex-col gap-5 rounded-[24px] border border-blue-100 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-            CHURCH MEMBERS • ทะเบียนสมาชิก
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-700">
+            <Users size={13} /> CHURCH MEMBERS
           </span>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+          <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-[#173b70] sm:text-3xl">
             จัดการสมาชิก
           </h1>
-          <p className="text-xs text-slate-500">
-            ข้อมูลสมาชิก การจัดกลุ่มย่อย และกระบวนการติดตามความเชื่อ
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-600 sm:text-sm">
+            ค้นหา ดูแล และเชื่อมโยงสมาชิกกับกลุ่มย่อยได้จากพื้นที่เดียว
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -388,16 +389,16 @@ export default function Members() {
       </div>
 
       {/* TailAdmin Table Card */}
-      <section className="tailadmin-card overflow-hidden">
+      <section className="tailadmin-card overflow-hidden border-blue-100 shadow-[0_12px_32px_rgba(36,92,146,0.07)]">
         {/* Toolbar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 border-b border-blue-100 bg-[#f7fbff] p-4 sm:p-5">
           <div className="relative flex-1 min-w-[240px]">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
               <Search size={ICON_SIZE.sm} />
             </span>
             <input
               type="text"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-9 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-blue-100 bg-white py-3 pl-10 pr-9 text-xs text-slate-800 shadow-[0_6px_18px_rgba(36,92,146,0.05)] placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 sm:text-sm"
               placeholder="ค้นหาชื่อ, ชื่อเล่น, เบอร์โทร หรืออีเมล..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -411,6 +412,18 @@ export default function Members() {
                 <X size={ICON_SIZE.xs} />
               </button>
             )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-500">พื้นที่:</span>
+            <select
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              className="rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+            >
+              <option value="ทั้งหมด">ทุกพื้นที่</option>
+              {areaOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
           </div>
 
           <div className="flex items-center gap-2">

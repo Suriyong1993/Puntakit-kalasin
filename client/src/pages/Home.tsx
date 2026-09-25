@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   ArrowRight,
+  ArrowUpRight,
   BarChart3,
+  BookOpen,
   Building2,
   CalendarDays,
   Camera,
+  Compass,
   CheckCircle2,
   ChevronRight,
   Clock,
@@ -13,8 +16,10 @@ import {
   HeartHandshake,
   Inbox as InboxIcon,
   ListTodo,
+  MapPin,
   Megaphone,
   Plus,
+  Search,
   Sparkles,
   TrendingUp,
   UserCheck,
@@ -125,6 +130,26 @@ interface OperationsData {
 
 const OPERATIONS_ROLES = ["super_admin", "admin", "staff", "ministry_leader"];
 
+function AnimatedNumber({ value }: { value: number }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const start = performance.now();
+    const duration = 850;
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(Math.round(value * eased));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+
+  return <>{displayValue.toLocaleString()}</>;
+}
+
 // Discipleship Journey Steps (single blue-family palette per design.md — avoid rainbow)
 const journeySteps = [
   { n: "1", title: "พบคน", detail: "สร้างความสัมพันธ์และมิตรภาพ", icon: Users, color: "text-blue-600 bg-blue-50 border-blue-200" },
@@ -138,7 +163,9 @@ const journeySteps = [
 export default function Home() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
+  const pageRef = useRef<HTMLDivElement>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [groups, setGroups] = useState<CareGroup[]>([]);
   const [events, setEvents] = useState<ChurchEvent[]>([]);
@@ -201,39 +228,103 @@ export default function Home() {
   const activeGroupsCount = groups.filter((g) => g.status === "active").length || groups.length;
   const upcomingEvents = events.filter((e) => e.status === "scheduled").slice(0, 3);
 
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!root) return;
+    const items = root.querySelectorAll<HTMLElement>("[data-scroll-reveal]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -36px 0px" }
+    );
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+
+  const handleSearch = () => {
+    const query = searchQuery.trim();
+    navigate(query ? `/members?search=${encodeURIComponent(query)}` : "/members");
+  };
+
   return (
     <AppLayout>
-      {/* Top Welcome & Quick Actions Bar */}
+      <div ref={pageRef}>
+      {/* Reference-inspired discovery hero: search first, prices never appear here. */}
+      <section data-scroll-reveal className="discovery-hero mb-7 overflow-hidden rounded-[24px]">
+        <div className="discovery-hero-art" aria-hidden="true" />
+        <div className="relative z-10 max-w-2xl px-6 py-8 sm:px-10 sm:py-10">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold tracking-wide text-blue-800 backdrop-blur-sm">
+            <Sparkles size={13} /> PUNTAKIT KALASIN
+          </div>
+          <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-[#173b70] sm:text-[42px]">
+            ค้นพบผู้คนและพันธกิจ
+            <span className="block text-[#2f6fcc]">ที่กำลังเติบโตไปด้วยกัน</span>
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">
+            สวัสดีครับ {user?.name ?? "ทีมงานพันธกิจ"} — ค้นหาสมาชิก กลุ่มแคร์
+            และกิจกรรมของคริสตจักรได้จากที่เดียว
+          </p>
+          <form
+            className="mt-6 flex max-w-xl items-center gap-2 rounded-2xl border border-white/80 bg-white p-2 shadow-[0_12px_30px_rgba(23,59,112,0.12)]"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleSearch();
+            }}
+          >
+            <Search className="ml-2 shrink-0 text-slate-400" size={20} />
+            <input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+              placeholder="ค้นหาชื่อสมาชิก กลุ่ม หรือพื้นที่..."
+              aria-label="ค้นหาสมาชิก กลุ่ม หรือพื้นที่"
+            />
+            <button type="submit" className="rounded-xl bg-[#2f6fcc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#235cb0] active:scale-[.98]">
+              ค้นหา
+            </button>
+          </form>
+        </div>
+      </section>
+
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-blue-600">
-            <Sparkles size={ICON_SIZE.xs} />
-            <span>PUNTAKIT KALASIN DASHBOARD</span>
+            <MapPin size={ICON_SIZE.xs} />
+            <span>สำรวจพื้นที่พันธกิจของคุณ</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
-            สวัสดีครับ, {user?.name ?? "ทีมงานพันธกิจ"} 👋
-          </h1>
-          <p className="text-xs text-slate-500">
-            ภาพรวมการบริหารสมาชิกและพันธกิจคริสตจักรประจำวัน
-          </p>
+          <p className="mt-1 text-xs text-slate-500">เข้าถึงข้อมูลสำคัญได้อย่างรวดเร็วจากทางลัดด้านล่าง</p>
         </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/members" className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-blue-700">
+            <UserPlus size={ICON_SIZE.sm} /> จัดการสมาชิก
+          </Link>
+          <Link href="/groups" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+            <UsersRound size={ICON_SIZE.sm} className="text-slate-500" /> กลุ่มแคร์
+          </Link>
+        </div>
+      </div>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/members"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
-          >
-            <UserPlus size={ICON_SIZE.sm} />
-            <span>จัดการสมาชิก</span>
-          </Link>
-          <Link
-            href="/groups"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-          >
-            <UsersRound size={ICON_SIZE.sm} className="text-slate-500" />
-            <span>กลุ่มแคร์</span>
-          </Link>
-        </div>
+      <div data-scroll-reveal className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {[
+          { href: "/members", icon: Users, title: "สมาชิกของเรา", detail: "ดูแลความสัมพันธ์และการติดตาม", tint: "bg-blue-50 text-blue-700" },
+          { href: "/groups", icon: Compass, title: "กลุ่มแคร์", detail: "เชื่อมโยงผู้คนในชุมชน", tint: "bg-emerald-50 text-emerald-700" },
+          { href: "/events", icon: BookOpen, title: "กิจกรรมและการนมัสการ", detail: "ดูตารางและสิ่งที่กำลังจะเกิดขึ้น", tint: "bg-amber-50 text-amber-700" },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link key={item.href} href={item.href} className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(36,92,146,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(36,92,146,0.1)]">
+              <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${item.tint}`}><Icon size={20} /></span>
+              <span className="min-w-0 flex-1"><strong className="block text-sm text-slate-800">{item.title}</strong><span className="mt-0.5 block truncate text-[11px] text-slate-500">{item.detail}</span></span>
+              <ArrowUpRight size={17} className="shrink-0 text-slate-300 transition group-hover:text-blue-600" />
+            </Link>
+          );
+        })}
       </div>
 
       {/* Operations: real aggregates over Mission Activity / Follow-up / Mission Inbox —
@@ -359,14 +450,14 @@ export default function Home() {
             {isLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{totalMembers.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800"><AnimatedNumber value={totalMembers} /></span>
             )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-xs">
             <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-600">
               <TrendingUp size={12} />
-              +{newThisMonth} คน
+              +<AnimatedNumber value={newThisMonth} /> คน
             </span>
             <span className="text-slate-400">เพิ่มขึ้นเดือนนี้</span>
           </div>
@@ -386,7 +477,7 @@ export default function Home() {
             {isLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{activeMembers.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800"><AnimatedNumber value={activeMembers} /></span>
             )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
@@ -412,7 +503,7 @@ export default function Home() {
             {isLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{followedUp.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800"><AnimatedNumber value={followedUp} /></span>
             )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
@@ -436,7 +527,7 @@ export default function Home() {
             {isLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <span className="text-2xl sm:text-3xl font-bold text-slate-800">{needFollowUp.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-slate-800"><AnimatedNumber value={needFollowUp} /></span>
             )}
             <span className="text-xs text-slate-500 font-medium">คน</span>
           </div>
@@ -457,8 +548,51 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Latest activity and important announcements */}
+      <section data-scroll-reveal className="mb-7 grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_.85fr]">
+        <div className="tailadmin-card overflow-hidden border-blue-100">
+          <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-600"><CalendarDays size={13} /> Activity pulse</span>
+              <h2 className="mt-1 text-lg font-bold text-slate-800">กิจกรรมล่าสุด</h2>
+              <p className="text-xs text-slate-500">สิ่งที่กำลังเกิดขึ้นในคริสตจักรและกลุ่มแคร์</p>
+            </div>
+            <Link href="/events" className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50">ดูทั้งหมด <ArrowRight size={13} /></Link>
+          </div>
+          <div className="grid gap-2 p-4 sm:grid-cols-3 sm:p-5">
+            {upcomingEvents.length > 0 ? upcomingEvents.map((event) => (
+              <Link key={event.id} href="/events" className="group rounded-2xl bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:bg-blue-50">
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700"><CalendarDays size={17} /></div>
+                <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-800 group-hover:text-blue-700">{event.title}</p>
+                <p className="mt-2 text-[11px] text-slate-500">{new Date(event.eventDate).toLocaleDateString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+              </Link>
+            )) : <div className="col-span-full rounded-2xl bg-slate-50 p-6 text-center text-xs text-slate-400">ยังไม่มีกิจกรรมที่กำหนดไว้</div>}
+          </div>
+        </div>
+
+        <div className="tailadmin-card overflow-hidden border-amber-100">
+          <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-600"><Megaphone size={13} /> Keep in touch</span>
+              <h2 className="mt-1 text-lg font-bold text-slate-800">ประกาศสำคัญ</h2>
+              <p className="text-xs text-slate-500">ข่าวสารที่ทีมงานอยากให้คุณไม่พลาด</p>
+            </div>
+            <Link href="/announcements" className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50">ทั้งหมด <ArrowRight size={13} /></Link>
+          </div>
+          <div className="divide-y divide-slate-100 px-5 sm:px-6">
+            {summary?.recentAnnouncements?.length ? summary.recentAnnouncements.slice(0, 3).map((announcement) => (
+              <Link key={announcement.id} href="/announcements" className="group flex items-center gap-3 py-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><Megaphone size={16} /></span>
+                <span className="min-w-0 flex-1"><strong className="block truncate text-sm font-semibold text-slate-800 group-hover:text-blue-700">{announcement.title}</strong><span className="mt-1 block text-[11px] text-slate-400">{new Date(announcement.publishDate).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span></span>
+                <ChevronRight size={15} className="shrink-0 text-slate-300 group-hover:text-blue-600" />
+              </Link>
+            )) : <div className="py-8 text-center text-xs text-slate-400">ยังไม่มีประกาศสำคัญในขณะนี้</div>}
+          </div>
+        </div>
+      </section>
+
       {/* Main Grid: Chart + Vision Banner (Left 2/3) & Recent Activity (Right 1/3) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div data-scroll-reveal className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Left 2 Columns */}
         <div className="lg:col-span-2 space-y-6">
           {/* Church Vision Banner */}
@@ -691,7 +825,7 @@ export default function Home() {
       </div>
 
       {/* Discipleship Journey (6 Steps) - TailAdmin Modern Grid */}
-      <div className="tailadmin-card p-6 mb-6">
+      <div data-scroll-reveal className="tailadmin-card p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base font-bold text-slate-800">
@@ -730,6 +864,7 @@ export default function Home() {
             );
           })}
         </div>
+      </div>
       </div>
     </AppLayout>
   );

@@ -3,8 +3,10 @@ import {
   ChevronDown,
   LogOut,
   Menu,
+  Moon,
   Search,
   Sparkles,
+  Sun,
   UserRound,
   X,
 } from "lucide-react";
@@ -13,6 +15,7 @@ import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface TopbarProps {
   onMenu: () => void;
@@ -31,6 +34,7 @@ export function Topbar({ onMenu }: TopbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [, navigate] = useLocation();
 
   // Close dropdown on outside click
@@ -102,6 +106,15 @@ export function Topbar({ onMenu }: TopbarProps) {
 
       {/* Right section: Notifications + Profile */}
       <div className="flex items-center gap-2 sm:gap-4">
+        <button
+          type="button"
+          onClick={() => toggleTheme?.()}
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50/60 text-slate-600 transition-colors hover:bg-slate-100 hover:text-blue-600"
+          aria-label={theme === "dark" ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด"}
+          title={theme === "dark" ? "โหมดสว่าง" : "โหมดมืด"}
+        >
+          {theme === "dark" ? <Sun size={ICON_SIZE.md} /> : <Moon size={ICON_SIZE.md} />}
+        </button>
         {/* Notification Button */}
         <button
           className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50/60 text-slate-600 transition-colors hover:bg-slate-100 hover:text-blue-600"
