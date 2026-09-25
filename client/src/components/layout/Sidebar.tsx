@@ -85,7 +85,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-[#1C2434] text-slate-300 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-[var(--color-dark-surface)] text-slate-300 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
           open ? "translate-x-0 shadow-lg" : "-translate-x-full"
         }`}
         aria-label="เมนูหลัก"
@@ -119,9 +119,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                         onClose();
                         navigate(path);
                       }}
-                      className={`group relative flex items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-200 text-left ${
+                      className={`group relative flex items-center justify-between rounded-[var(--radius-sm)] px-3.5 py-2.5 text-sm font-medium transition-all duration-200 text-left ${
                         isActive
-                          ? "bg-blue-600/20 text-blue-400 font-semibold shadow-xs border-l-4 border-blue-500 pl-2.5"
+                          ? "bg-[var(--color-primary-on-dark)]/15 text-[var(--color-primary-on-dark)] font-semibold border-l-4 border-[var(--color-primary-on-dark)] pl-2.5"
                           : "text-slate-300 hover:bg-slate-800/80 hover:text-white"
                       }`}
                     >
@@ -129,13 +129,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                         <Icon
                           size={ICON_SIZE.md}
                           className={`transition-colors ${
-                            isActive ? "text-blue-400" : "text-slate-400 group-hover:text-white"
+                            isActive ? "text-[var(--color-primary-on-dark)]" : "text-slate-400 group-hover:text-white"
                           }`}
                         />
                         <span>{label}</span>
                       </div>
                       {badge && (
-                        <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-blue-300">
+                        <span className="rounded-[var(--radius-xs)] bg-[var(--color-primary-on-dark)]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--color-primary-on-dark)]">
                           {badge}
                         </span>
                       )}
