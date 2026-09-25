@@ -11,6 +11,7 @@ import FollowUps from "./pages/FollowUps";
 import Inbox from "./pages/Inbox";
 import Members from "./pages/Members";
 import Groups from "./pages/Groups";
+import MapPage from "./pages/Map";
 import Attendance from "./pages/Attendance";
 import Announcements from "./pages/Announcements";
 import Events from "./pages/Events";
@@ -93,6 +94,11 @@ function Router() {
       <Route path="/groups">
         <ProtectedRoute>
           <Groups />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/map">
+        <ProtectedRoute>
+          <MapPage />
         </ProtectedRoute>
       </Route>
       <Route path="/attendance">
