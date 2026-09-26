@@ -1,6 +1,6 @@
-import { bootstrapDatabase } from "../db/bootstrap";
-import { closeDatabase, getDatabaseConfig } from "../db/client";
-import { DatabaseConfigurationError } from "../db/config";
+import { bootstrapDatabase } from "../db/bootstrap.js";
+import { closeDatabase, getDatabaseConfig } from "../db/client.js";
+import { DatabaseConfigurationError } from "../db/config.js";
 
 /**
  * `pnpm db:migrate` — driver-aware migration / local bootstrap.

@@ -1,6 +1,6 @@
 import type { Request } from "express";
-import { getDb } from "../db/client";
-import { auditLogs } from "../../shared/schema";
+import { getDb } from "../db/client.js";
+import { auditLogs } from "../../shared/schema.js";
 
 export interface LogAuditOptions {
   req?: Request;

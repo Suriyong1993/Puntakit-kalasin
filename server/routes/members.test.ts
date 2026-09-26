@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { Server } from "node:http";
-import { createApp } from "../app";
-import { requireRole } from "../middleware/auth";
-import { memberInputSchema, memberQuerySchema } from "../../shared/validation";
-import type { Member, UserRole } from "../../shared/schema";
+import { createApp } from "../app.js";
+import { requireRole } from "../middleware/auth.js";
+import { memberInputSchema, memberQuerySchema } from "../../shared/validation.js";
+import type { Member, UserRole } from "../../shared/schema.js";
 
 describe("Members API & Security Integration Tests", () => {
   let server: Server;

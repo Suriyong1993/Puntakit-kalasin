@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { and, desc, eq, gte, ilike, inArray, isNull, lte, or, sql } from "drizzle-orm";
-import { getDb } from "../db/client";
+import { getDb } from "../db/client.js";
 import {
   attendanceRecords,
   groups,
@@ -9,17 +9,17 @@ import {
   type AttendanceRecord,
   type AttendanceStatus,
   type ServiceType,
-} from "../../shared/schema";
+} from "../../shared/schema.js";
 import {
   attendanceInputSchema,
   attendanceQuerySchema,
   bulkAttendanceInputSchema,
   consecutiveAbsenceQuerySchema,
   qrCheckInSchema,
-} from "../../shared/validation";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { logAudit } from "../lib/audit";
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../lib/errors";
+} from "../../shared/validation.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { logAudit } from "../lib/audit.js";
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../lib/errors.js";
 
 export const attendanceRouter = Router();
 

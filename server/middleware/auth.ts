@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
 import { and, eq, isNull } from "drizzle-orm";
-import { AUTH_COOKIE_NAME, hashToken, verifyAuthToken, type JwtPayload } from "../lib/auth";
-import { getDb } from "../db/client";
-import { users, userSessions, type UserRole } from "../../shared/schema";
-import { ForbiddenError, UnauthorizedError } from "../lib/errors";
+import { AUTH_COOKIE_NAME, hashToken, verifyAuthToken, type JwtPayload } from "../lib/auth.js";
+import { getDb } from "../db/client.js";
+import { users, userSessions, type UserRole } from "../../shared/schema.js";
+import { ForbiddenError, UnauthorizedError } from "../lib/errors.js";
 
 export interface AuthenticatedUser {
   id: string;

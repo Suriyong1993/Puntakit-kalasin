@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { and, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
-import { getDb } from "../db/client";
+import { getDb } from "../db/client.js";
 import {
   announcements,
   attendanceRecords,
@@ -13,16 +13,16 @@ import {
   pushSubscriptions,
   users,
   type Member,
-} from "../../shared/schema";
+} from "../../shared/schema.js";
 import {
   eventRegistrationSchema,
   memberProfileUpdateSchema,
   prayerRequestInputSchema,
   pushSubscriptionSchema,
-} from "../../shared/validation";
-import { requireAuth } from "../middleware/auth";
-import { logAudit } from "../lib/audit";
-import { ConflictError, NotFoundError, ValidationError } from "../lib/errors";
+} from "../../shared/validation.js";
+import { requireAuth } from "../middleware/auth.js";
+import { logAudit } from "../lib/audit.js";
+import { ConflictError, NotFoundError, ValidationError } from "../lib/errors.js";
 
 export const portalRouter = Router();
 

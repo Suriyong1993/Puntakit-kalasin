@@ -1,10 +1,10 @@
-import { getDb } from "../db/client";
+import { getDb } from "../db/client.js";
 import {
   missionActivityMedia,
   missionActivities,
   type MissionActivityType,
   type MissionMediaKind,
-} from "../../shared/schema";
+} from "../../shared/schema.js";
 
 export interface CreateMissionActivityFields {
   type: MissionActivityType;

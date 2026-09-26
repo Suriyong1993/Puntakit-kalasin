@@ -17,7 +17,7 @@ import {
   PRAYER_CATEGORIES,
   SERVICE_TYPES,
   USER_ROLES,
-} from "./schema";
+} from "./schema.js";
 
 export const memberInputSchema = z.object({
   name: z.string().trim().min(1, "กรุณากรอกชื่อ").max(200),

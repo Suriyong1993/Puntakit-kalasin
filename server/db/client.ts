@@ -7,13 +7,13 @@ import postgres, { type Options as PostgresJsOptions } from "postgres";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as schema from "../../shared/schema";
+import * as schema from "../../shared/schema.js";
 import {
   resolveDatabaseConfig,
   type DatabaseConfig,
   type DatabaseDriver,
   type PostgresConnectionOptions,
-} from "./config";
+} from "./config.js";
 
 /**
  * Canonical database type used across the server. Every driver exposes the same

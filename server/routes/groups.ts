@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { and, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
-import { getDb } from "../db/client";
+import { getDb } from "../db/client.js";
 import {
   attendanceRecords,
   groups,
@@ -9,16 +9,16 @@ import {
   users,
   type Group,
   type GroupMember,
-} from "../../shared/schema";
+} from "../../shared/schema.js";
 import {
   groupInputSchema,
   groupMemberInputSchema,
   groupMemberUpdateSchema,
   groupQuerySchema,
-} from "../../shared/validation";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { logAudit } from "../lib/audit";
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../lib/errors";
+} from "../../shared/validation.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { logAudit } from "../lib/audit.js";
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../lib/errors.js";
 
 export const groupsRouter = Router();
 

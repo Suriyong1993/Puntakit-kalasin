@@ -7,7 +7,7 @@ import {
   resolvePgliteDataDir,
   resolvePostgresConnectionOptions,
   type DatabaseConfig,
-} from "./config";
+} from "./config.js";
 
 const NEON_URL =
   "postgresql://user:secret@ep-cool-lab-123456-pooler.ap-southeast-1.aws.neon.tech/puntakit?sslmode=require";

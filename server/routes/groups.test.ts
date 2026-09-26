@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { Server } from "node:http";
-import { createApp } from "../app";
-import { requireRole } from "../middleware/auth";
+import { createApp } from "../app.js";
+import { requireRole } from "../middleware/auth.js";
 import {
   groupInputSchema,
   groupMemberInputSchema,
   groupMemberUpdateSchema,
   groupQuerySchema,
-} from "../../shared/validation";
-import type { UserRole } from "../../shared/schema";
+} from "../../shared/validation.js";
+import type { UserRole } from "../../shared/schema.js";
 
 describe("Groups API & Security Tests", () => {
   let server: Server;

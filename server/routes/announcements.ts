@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { desc, eq } from "drizzle-orm";
-import { getDb } from "../db/client";
-import { announcements } from "../../shared/schema";
-import { announcementInputSchema } from "../../shared/validation";
-import { requireAdmin, requireAuth } from "../middleware/auth";
+import { getDb } from "../db/client.js";
+import { announcements } from "../../shared/schema.js";
+import { announcementInputSchema } from "../../shared/validation.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 
 export const announcementsRouter = Router();
 

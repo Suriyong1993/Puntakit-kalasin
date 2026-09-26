@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Server } from "node:http";
-import { createApp } from "../app";
+import { createApp } from "../app.js";
 import {
   eventRegistrationSchema,
   memberProfileUpdateSchema,
   prayerRequestInputSchema,
   pushSubscriptionSchema,
-} from "../../shared/validation";
+} from "../../shared/validation.js";
 
 describe("Member Portal & PWA Security Tests", () => {
   let server: Server;

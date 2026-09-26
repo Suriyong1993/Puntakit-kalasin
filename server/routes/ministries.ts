@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { desc, eq } from "drizzle-orm";
-import { getDb } from "../db/client";
-import { ministries } from "../../shared/schema";
-import { ministryInputSchema } from "../../shared/validation";
-import { requireAdmin, requireAuth } from "../middleware/auth";
+import { getDb } from "../db/client.js";
+import { ministries } from "../../shared/schema.js";
+import { ministryInputSchema } from "../../shared/validation.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 
 export const ministriesRouter = Router();
 
