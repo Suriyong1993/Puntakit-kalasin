@@ -37,8 +37,10 @@ function ensureBootstrap(): Promise<unknown> {
 export default async function handler(req: Request, res: Response): Promise<void> {
   // /api/health is a pure liveness probe (process is up) and must not depend
   // on the database. Kick the bootstrap off in the background so migrations
-  // still run on cold start, but never gate this route on it.
-  if (req.url === "/api/health") {
+  // still run on cold start, but never gate this route on it. Use the pathname
+  // (not raw url) because vercel.json's rewrite appends ?path=... to requests.
+  const { pathname } = new URL(req.url ?? "/", "http://localhost");
+  if (pathname === "/api/health") {
     void ensureBootstrap().catch((err: unknown) => {
       console.error("[api] database bootstrap failed:", err);
     });
