@@ -17,20 +17,30 @@ export const USER_ROLES = [
 ] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
-export const users = pgTable("users", {
-  id: id(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  name: text("name").notNull(),
-  role: text("role", { enum: USER_ROLES })
-    .notNull()
-    .default("member"),
-  status: text("status", { enum: ["active", "suspended"] })
-    .notNull()
-    .default("active"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const users = pgTable(
+  "users",
+  {
+    id: id(),
+    email: text("email").notNull().unique(),
+    /** Clerk user id (user_...). Set once the account is linked to Clerk. */
+    clerkId: text("clerk_id").unique(),
+    /**
+     * Legacy bcrypt hash kept only so pre-Clerk sessions/imports keep working.
+     * Null once the account is Clerk-only. New accounts authenticate via Clerk.
+     */
+    passwordHash: text("password_hash"),
+    name: text("name").notNull(),
+    role: text("role", { enum: USER_ROLES })
+      .notNull()
+      .default("member"),
+    status: text("status", { enum: ["active", "suspended"] })
+      .notNull()
+      .default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("users_clerk_id_idx").on(table.clerkId)]
+);
 
 export const userSessions = pgTable(
   "user_sessions",

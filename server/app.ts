@@ -1,6 +1,7 @@
 import express, { type ErrorRequestHandler } from "express";
 import cookieParser from "cookie-parser";
 import { sql } from "drizzle-orm";
+import { clerkMiddleware } from "@clerk/express";
 import { authRouter } from "./routes/auth.js";
 import { activitiesRouter } from "./routes/activities.js";
 import { followUpsRouter } from "./routes/followUps.js";
@@ -15,6 +16,7 @@ import { groupsRouter } from "./routes/groups.js";
 import { attendanceRouter } from "./routes/attendance.js";
 import { portalRouter } from "./routes/portal.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
+import { isClerkConfigured } from "./lib/clerkAuth.js";
 import { AppError } from "./lib/errors.js";
 import { getDb } from "./db/client.js";
 
@@ -24,6 +26,14 @@ export function createApp() {
   app.use(requestIdMiddleware);
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
+
+  // Clerk session verification. Runs on every request so protected routes can
+  // read `getAuth(req)`; it only attaches auth state and never rejects by
+  // itself. Disabled entirely when CLERK_SECRET_KEY is absent (local tests,
+  // legacy deployments) so the legacy JWT path keeps working unchanged.
+  if (isClerkConfigured()) {
+    app.use(clerkMiddleware());
+  }
 
   // API Routes
   app.use("/api/auth", authRouter);
@@ -42,7 +52,10 @@ export function createApp() {
 
   // Liveness Check
   app.get("/api/health", (_req, res) => {
-    res.json({ success: true, data: { status: "ok", timestamp: new Date().toISOString() } });
+    res.json({
+      success: true,
+      data: { status: "ok", timestamp: new Date().toISOString() },
+    });
   });
 
   // Readiness Check (verifies DB connectivity)
@@ -64,7 +77,8 @@ export function createApp() {
         error: {
           code: "DATABASE_UNAVAILABLE",
           message: "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้",
-          details: process.env.NODE_ENV !== "production" ? [String(err)] : undefined,
+          details:
+            process.env.NODE_ENV !== "production" ? [String(err)] : undefined,
         },
       });
     }
@@ -101,8 +115,12 @@ export function createApp() {
       success: false,
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message: "เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้งหรือติดต่อผู้ดูแล",
-        details: process.env.NODE_ENV !== "production" ? [{ message: String(err) }] : undefined,
+        message:
+          "เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้งหรือติดต่อผู้ดูแล",
+        details:
+          process.env.NODE_ENV !== "production"
+            ? [{ message: String(err) }]
+            : undefined,
       },
     });
   };

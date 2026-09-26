@@ -120,37 +120,12 @@ export default function MemberProfile() {
     }
   };
 
+  // Password management moved to Clerk (the legacy /api/auth/change-password
+  // endpoint was removed). Members manage their password from the Clerk
+  // account button in the top bar.
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentPassword) {
-      toast.error("กรุณากรอกรหัสผ่านปัจจุบัน");
-      return;
-    }
-    if (newPassword.length < 8) {
-      toast.error("รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 8 ตัวอักษร");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error("รหัสผ่านใหม่และการยืนยันไม่ตรงกัน");
-      return;
-    }
-
-    setChangingPassword(true);
-    try {
-      await api.post("/api/auth/change-password", {
-        currentPassword,
-        newPassword,
-      });
-      toast.success("เปลี่ยนรหัสผ่านเรียบร้อยแล้ว");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setShowPasswordSection(false);
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "เปลี่ยนรหัสผ่านไม่สำเร็จ");
-    } finally {
-      setChangingPassword(false);
-    }
+    toast.info("กรุณาจัดการรหัสผ่านจากปุ่มบัญชีมุมขวาบน (Clerk)");
   };
 
   const handleSubscribePush = async () => {

@@ -9,12 +9,17 @@ import {
   UserRound,
 } from "lucide-react";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import { UserButton } from "@clerk/react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { ICON_SIZE } from "@/lib/icon-sizes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+
+// Clerk mode renders <UserButton /> (sign-out, profile, sessions); the legacy
+// dropdown below stays for builds without a Clerk publishable key.
+const clerkEnabled = Boolean(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 
 interface TopbarProps {
   onMenu: () => void;
@@ -102,7 +107,10 @@ export function Topbar({ onMenu }: TopbarProps) {
           </span>
         </button>
 
-        {/* User Profile Dropdown */}
+        {/* User Profile (Clerk) */}
+        {clerkEnabled ? (
+          <UserButton />
+        ) : (
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setMenuOpen(v => !v)}
@@ -182,6 +190,7 @@ export function Topbar({ onMenu }: TopbarProps) {
             </div>
           )}
         </div>
+        )}
       </div>
     </header>
   );

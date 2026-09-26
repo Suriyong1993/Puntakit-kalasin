@@ -20,6 +20,8 @@
     "db:seed-admin": "dotenv -e .env.local -- tsx server/scripts/seed-admin.ts"
   },
   "dependencies": {
+    "@clerk/express": "^2.1.72",
+    "@clerk/react": "^6.17.2",
     "@electric-sql/pglite": "^0.5.8",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.1.0",

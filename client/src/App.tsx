@@ -1,10 +1,12 @@
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/sonner";
+import { ClerkProvider } from "@clerk/react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import ClerkSignInPage from "./pages/ClerkSignInPage";
 import Home from "./pages/Home";
 import Feed from "./pages/Feed";
 import FollowUps from "./pages/FollowUps";
@@ -23,6 +25,13 @@ import ComingSoon from "./pages/ComingSoon";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 
+// Clerk mode is active when a publishable key is configured at build time.
+// Without it the app keeps the legacy cookie/JWT flow (see AuthContext).
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as
+  | string
+  | undefined;
+const clerkEnabled = Boolean(CLERK_PUBLISHABLE_KEY);
+
 // Member PWA Pages
 import MemberHome from "./pages/member/MemberHome";
 import MemberEvents from "./pages/member/MemberEvents";
@@ -33,7 +42,7 @@ import MemberProfile from "./pages/member/MemberProfile";
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
+      <Route path="/login" component={clerkEnabled ? ClerkSignInPage : Login} />
 
       {/* Public legal routes (accessible without login) */}
       <Route path="/privacy" component={Privacy} />
@@ -160,12 +169,14 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light" switchable>
-        <AuthProvider>
-          <Router />
-          <Toaster />
-        </AuthProvider>
-      </ThemeProvider>
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+        <ThemeProvider defaultTheme="light" switchable>
+          <AuthProvider>
+            <Router />
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
+      </ClerkProvider>
     </ErrorBoundary>
   );
 }

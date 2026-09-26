@@ -5,6 +5,15 @@ import type { UserRole } from "../../shared/schema.js";
 
 export const AUTH_COOKIE_NAME = "puntakit_session";
 
+/** Local user identity attached to authenticated requests (see middleware/auth.ts). */
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  sessionId?: string;
+}
+
 export interface JwtPayload {
   sub: string;
   email: string;
@@ -20,7 +29,9 @@ function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("JWT_SECRET is not set. Add it to your environment before starting the server.");
+      throw new Error(
+        "JWT_SECRET is not set. Add it to your environment before starting the server."
+      );
     }
     return "puntakit-dev-jwt-secret-do-not-use-in-production-123456789";
   }
@@ -31,7 +42,10 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
 }
 
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
 

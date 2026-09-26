@@ -121,3 +121,9 @@ client/public/__manus__/version.json
 #   npx skills experimental_install
 .claude/
 agent/
+
+# Ruflo local secrets and runtime data
+.env.*.local
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
