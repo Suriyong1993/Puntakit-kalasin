@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, ListTree, MapPin, RotateCw, Users } from "lucide-react";
 import { Link } from "wouter";
+import {
+  MarkerClusterer,
+  type Cluster,
+  type Renderer as ClusterRenderer,
+} from "@googlemaps/markerclusterer";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MapView } from "@/components/Map";
 import { Button } from "@/components/ui/button";
@@ -46,6 +51,48 @@ const STATUS_LABELS: Record<
 
 // Chalasin, Thailand — used only to center the map when no group has coordinates yet.
 const FALLBACK_CENTER = { lat: 16.4322, lng: 103.5061 };
+
+// A visible V2-styled dot wrapped in an invisible, larger hit area so the marker
+// reads as a normal map pin but still meets the 44px touch-target minimum.
+const PIN_HIT_SIZE = 44;
+
+function createPinElement({
+  visibleSize,
+  label,
+}: {
+  visibleSize: number;
+  label?: string;
+}) {
+  const hitSize = Math.max(PIN_HIT_SIZE, visibleSize);
+  const hit = document.createElement("div");
+  hit.style.cssText = `width:${hitSize}px;height:${hitSize}px;display:flex;align-items:center;justify-content:center;cursor:pointer;`;
+
+  const dot = document.createElement("div");
+  // Inline style, not a CSS class: these divs are handed to the Google Maps SDK,
+  // which mounts them outside Tailwind's stylesheet scan. CSS custom properties
+  // still cascade to them normally since they're appended into the page's DOM tree.
+  dot.style.cssText = `width:${visibleSize}px;height:${visibleSize}px;border-radius:var(--radius-circle);background:var(--color-primary);border:2px solid var(--color-on-dark);box-shadow:0 1px 4px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:var(--color-on-dark);font-family:"Prompt",system-ui,sans-serif;font-weight:600;font-size:${visibleSize >= 40 ? 13 : 11}px;line-height:1;`;
+  if (label) dot.textContent = label;
+
+  hit.appendChild(dot);
+  return hit;
+}
+
+// Custom renderer so clusters use V2 tokens instead of the library's default
+// hardcoded red/blue SVG circles.
+const groupClusterRenderer: ClusterRenderer = {
+  render({ count, position }: Cluster) {
+    const label = count > 99 ? "99+" : String(count);
+    const visibleSize = Math.min(56, 32 + Math.log2(count) * 6);
+    const content = createPinElement({ visibleSize, label });
+    content.setAttribute("role", "button");
+    content.setAttribute(
+      "aria-label",
+      `${count.toLocaleString("th-TH")} กลุ่มแคร์ในบริเวณนี้ แตะเพื่อขยาย`
+    );
+    return new google.maps.marker.AdvancedMarkerElement({ position, content });
+  },
+};
 
 interface MapGroup {
   id: string;
@@ -130,6 +177,16 @@ function GroupDetailBody({ group }: { group: MapGroup }) {
         <p className="type-body text-[var(--color-ink)]">{group.description}</p>
       )}
       <dl className="space-y-2">
+        {group.area && (
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="type-caption text-[var(--color-body-muted)]">
+              พื้นที่
+            </dt>
+            <dd className="type-caption-strong text-[var(--color-ink)]">
+              {group.area}
+            </dd>
+          </div>
+        )}
         {group.leaderName && (
           <div className="flex items-baseline justify-between gap-4">
             <dt className="type-caption text-[var(--color-body-muted)]">
@@ -184,8 +241,13 @@ export default function MapPage() {
   const [view, setView] = useState<"map" | "list">("map");
   const [mapError, setMapError] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<MapGroup | null>(null);
+  // Toggling to list view unmounts <MapView>; switching back mounts a fresh map
+  // instance. An incrementing id (not a boolean) makes the marker effect below
+  // re-run on every such remount, not just the first one.
+  const [mapInstanceId, setMapInstanceId] = useState(0);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const mapRef = useRef<google.maps.Map | null>(null);
+  const clustererRef = useRef<MarkerClusterer | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -241,6 +303,13 @@ export default function MapPage() {
   const handleMapReady = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
     setMapError(null);
+    // Default onClusterClick already fits the map to the cluster's bounds,
+    // which is exactly the "click a cluster to zoom into its area" behavior.
+    clustererRef.current = new MarkerClusterer({
+      map,
+      renderer: groupClusterRenderer,
+    });
+    setMapInstanceId(id => id + 1);
   }, []);
 
   const handleMapError = useCallback(() => {
@@ -248,49 +317,53 @@ export default function MapPage() {
     setView("list");
   }, []);
 
-  // Redraw markers whenever the map becomes ready or the filtered set changes.
+  // Tear down the clusterer's own map listeners on unmount; MapView owns the map instance itself.
+  useEffect(() => {
+    return () => {
+      clustererRef.current?.setMap(null);
+    };
+  }, []);
+
+  // Redraw markers whenever the map (re)mounts or the filtered set changes.
+  // mapInstanceId (not mapRef, a ref, which wouldn't trigger a re-run) makes this
+  // fire correctly regardless of whether the data or the map instance arrives first.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !window.google?.maps?.marker) return;
+    const clusterer = clustererRef.current;
+    if (!map || !clusterer || !window.google?.maps?.marker) return;
 
-    for (const marker of markersRef.current) marker.map = null;
+    clusterer.clearMarkers();
     markersRef.current = [];
 
     const bounds = new window.google.maps.LatLngBounds();
-    let hasAny = false;
+    const newMarkers: google.maps.marker.AdvancedMarkerElement[] = [];
 
     for (const group of withCoordinates) {
       const lat = Number(group.latitude);
       const lng = Number(group.longitude);
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
 
-      // Inline style, not a CSS class: this div is handed to the Google Maps SDK,
-      // which mounts it outside Tailwind's stylesheet scan. CSS custom properties
-      // still cascade to it normally since it's appended into the page's DOM tree.
-      const pin = document.createElement("div");
-      pin.setAttribute(
-        "style",
-        "width:28px;height:28px;border-radius:var(--radius-circle);background:var(--color-primary);border:2px solid var(--color-on-dark);box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;"
-      );
+      const position = { lat, lng };
       const marker = new window.google.maps.marker.AdvancedMarkerElement({
-        map,
-        position: { lat, lng },
+        position,
         title: group.name,
-        content: pin,
+        content: createPinElement({ visibleSize: 28 }),
       });
-      marker.addListener("click", () => setSelectedGroup(group));
-      markersRef.current.push(marker);
-      bounds.extend({ lat, lng });
-      hasAny = true;
+      marker.addListener("gmp-click", () => setSelectedGroup(group));
+      newMarkers.push(marker);
+      bounds.extend(position);
     }
 
-    if (hasAny) {
+    markersRef.current = newMarkers;
+    clusterer.addMarkers(newMarkers);
+
+    if (newMarkers.length > 0) {
       map.fitBounds(bounds, 64);
     } else {
       map.setCenter(FALLBACK_CENTER);
       map.setZoom(11);
     }
-  }, [withCoordinates]);
+  }, [withCoordinates, mapInstanceId]);
 
   return (
     <AppLayout>
