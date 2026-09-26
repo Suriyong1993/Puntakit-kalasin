@@ -35,6 +35,17 @@ function ensureBootstrap(): Promise<unknown> {
 }
 
 export default async function handler(req: Request, res: Response): Promise<void> {
+  // /api/health is a pure liveness probe (process is up) and must not depend
+  // on the database. Kick the bootstrap off in the background so migrations
+  // still run on cold start, but never gate this route on it.
+  if (req.url === "/api/health") {
+    void ensureBootstrap().catch((err: unknown) => {
+      console.error("[api] database bootstrap failed:", err);
+    });
+    app(req, res);
+    return;
+  }
+
   try {
     await ensureBootstrap();
   } catch (err) {
