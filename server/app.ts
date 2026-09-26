@@ -1,22 +1,22 @@
 import express, { type ErrorRequestHandler } from "express";
 import cookieParser from "cookie-parser";
 import { sql } from "drizzle-orm";
-import { authRouter } from "./routes/auth";
-import { activitiesRouter } from "./routes/activities";
-import { followUpsRouter } from "./routes/followUps";
-import { submissionsRouter } from "./routes/submissions";
-import { membersRouter } from "./routes/members";
-import { announcementsRouter } from "./routes/announcements";
-import { eventsRouter } from "./routes/events";
-import { ministriesRouter } from "./routes/ministries";
-import { churchProfileRouter } from "./routes/churchProfile";
-import { dashboardRouter } from "./routes/dashboard";
-import { groupsRouter } from "./routes/groups";
-import { attendanceRouter } from "./routes/attendance";
-import { portalRouter } from "./routes/portal";
-import { requestIdMiddleware } from "./middleware/requestId";
-import { AppError } from "./lib/errors";
-import { getDb } from "./db/client";
+import { authRouter } from "./routes/auth.js";
+import { activitiesRouter } from "./routes/activities.js";
+import { followUpsRouter } from "./routes/followUps.js";
+import { submissionsRouter } from "./routes/submissions.js";
+import { membersRouter } from "./routes/members.js";
+import { announcementsRouter } from "./routes/announcements.js";
+import { eventsRouter } from "./routes/events.js";
+import { ministriesRouter } from "./routes/ministries.js";
+import { churchProfileRouter } from "./routes/churchProfile.js";
+import { dashboardRouter } from "./routes/dashboard.js";
+import { groupsRouter } from "./routes/groups.js";
+import { attendanceRouter } from "./routes/attendance.js";
+import { portalRouter } from "./routes/portal.js";
+import { requestIdMiddleware } from "./middleware/requestId.js";
+import { AppError } from "./lib/errors.js";
+import { getDb } from "./db/client.js";
 
 export function createApp() {
   const app = express();

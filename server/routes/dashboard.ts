@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { and, count, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
-import { getDb } from "../db/client";
+import { getDb } from "../db/client.js";
 import {
   announcements,
   events,
@@ -10,8 +10,8 @@ import {
   missionActivities,
   missionSubmissions,
   users,
-} from "../../shared/schema";
-import { requireAuth, requireRole } from "../middleware/auth";
+} from "../../shared/schema.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 
 export const dashboardRouter = Router();
 

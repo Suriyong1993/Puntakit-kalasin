@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { asc, eq } from "drizzle-orm";
-import { getDb } from "../db/client";
-import { events } from "../../shared/schema";
-import { eventInputSchema } from "../../shared/validation";
-import { requireAdmin, requireAuth } from "../middleware/auth";
+import { getDb } from "../db/client.js";
+import { events } from "../../shared/schema.js";
+import { eventInputSchema } from "../../shared/validation.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 
 export const eventsRouter = Router();
 

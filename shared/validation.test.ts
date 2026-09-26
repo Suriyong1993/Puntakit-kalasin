@@ -10,7 +10,7 @@ import {
   memberQuerySchema,
   ministryInputSchema,
   registerInputSchema,
-} from "./validation";
+} from "./validation.js";
 
 describe("memberInputSchema", () => {
   it("accepts a minimal valid member", () => {

@@ -1,22 +1,22 @@
 import { Router, type Request } from "express";
 import { and, count, desc, eq } from "drizzle-orm";
-import { getDb } from "../db/client";
+import { getDb } from "../db/client.js";
 import {
   missionSubmissions,
   users,
   type MissionSubmissionStatus,
   type UserRole,
-} from "../../shared/schema";
+} from "../../shared/schema.js";
 import {
   missionSubmissionInputSchema,
   missionSubmissionPublishSchema,
   missionSubmissionQuerySchema,
   missionSubmissionStatusUpdateSchema,
-} from "../../shared/validation";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { insertMissionActivity, insertMissionActivityMedia } from "../lib/missionActivity";
-import { logAudit } from "../lib/audit";
-import { ForbiddenError, NotFoundError, ValidationError } from "../lib/errors";
+} from "../../shared/validation.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { insertMissionActivity, insertMissionActivityMedia } from "../lib/missionActivity.js";
+import { logAudit } from "../lib/audit.js";
+import { ForbiddenError, NotFoundError, ValidationError } from "../lib/errors.js";
 
 export const submissionsRouter = Router();
 

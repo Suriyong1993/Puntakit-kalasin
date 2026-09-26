@@ -2,9 +2,9 @@ import express from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createApp } from "./app";
-import { bootstrapDatabase } from "./db/bootstrap";
-import { closeDatabase } from "./db/client";
+import { createApp } from "./app.js";
+import { bootstrapDatabase } from "./db/bootstrap.js";
+import { closeDatabase } from "./db/client.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

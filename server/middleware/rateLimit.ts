@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { RateLimitError } from "../lib/errors";
+import { RateLimitError } from "../lib/errors.js";
 
 interface RateLimitStore {
   count: number;

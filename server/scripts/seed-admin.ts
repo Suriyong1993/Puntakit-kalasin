@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { getDb } from "../db/client";
-import { users } from "../../shared/schema";
-import { createUser } from "../routes/auth";
+import { getDb } from "../db/client.js";
+import { users } from "../../shared/schema.js";
+import { createUser } from "../routes/auth.js";
 
 async function main() {
   const email = process.env.ADMIN_EMAIL;

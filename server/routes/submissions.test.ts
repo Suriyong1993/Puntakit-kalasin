@@ -41,9 +41,9 @@ afterAll(() => {
 describe("Mission Inbox API — full loop (real PGlite Postgres)", () => {
   let server: Server;
   let baseUrl: string;
-  let db: Awaited<ReturnType<typeof import("../db/client").getDb>>;
-  let schema: typeof import("../../shared/schema");
-  let authLib: typeof import("../lib/auth");
+  let db: Awaited<ReturnType<typeof import("../db/client.js").getDb>>;
+  let schema: typeof import("../../shared/schema.js");
+  let authLib: typeof import("../lib/auth.js");
 
   let staffCookie: string;
   let fieldWorkerCookie: string; // group_leader: can submit, cannot review/publish
@@ -56,11 +56,11 @@ describe("Mission Inbox API — full loop (real PGlite Postgres)", () => {
       PGLITE_DATA_DIR: makeTempDataDir(),
     });
 
-    const client = await import("../db/client");
-    const bootstrap = await import("../db/bootstrap");
-    schema = await import("../../shared/schema");
-    authLib = await import("../lib/auth");
-    const { createApp } = await import("../app");
+    const client = await import("../db/client.js");
+    const bootstrap = await import("../db/bootstrap.js");
+    schema = await import("../../shared/schema.js");
+    authLib = await import("../lib/auth.js");
+    const { createApp } = await import("../app.js");
 
     await bootstrap.bootstrapDatabase({ logger: { log: () => {}, warn: () => {} } });
     db = client.getDb();
@@ -96,7 +96,7 @@ describe("Mission Inbox API — full loop (real PGlite Postgres)", () => {
 
   afterAll(async () => {
     await new Promise<void>((resolve) => server.close(() => resolve()));
-    const client = await import("../db/client");
+    const client = await import("../db/client.js");
     await client.closeDatabase();
   });
 

@@ -43,8 +43,8 @@ function makeTempDataDir(): string {
 async function loadClient() {
   vi.resetModules();
   // Loaded together so the error class identity matches the client's own config module.
-  const config = await import("./config");
-  const client = await import("./client");
+  const config = await import("./config.js");
+  const client = await import("./client.js");
   return { client, config };
 }
 

@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
-import { getDb } from "../db/client";
-import { churchProfile } from "../../shared/schema";
-import { churchProfileInputSchema } from "../../shared/validation";
-import { requireAdmin, requireAuth } from "../middleware/auth";
+import { getDb } from "../db/client.js";
+import { churchProfile } from "../../shared/schema.js";
+import { churchProfileInputSchema } from "../../shared/validation.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 
 export const churchProfileRouter = Router();
 

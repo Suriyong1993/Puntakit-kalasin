@@ -41,9 +41,9 @@ function makeTempDataDir(): string {
 
 async function loadModules() {
   vi.resetModules();
-  const client = await import("./client");
-  const bootstrap = await import("./bootstrap");
-  const schema = await import("../../shared/schema");
+  const client = await import("./client.js");
+  const bootstrap = await import("./bootstrap.js");
+  const schema = await import("../../shared/schema.js");
   return { client, bootstrap, schema };
 }
 

@@ -3,9 +3,9 @@ import { migrate as migrateNeon } from "drizzle-orm/neon-http/migrator";
 import { migrate as migratePostgres } from "drizzle-orm/postgres-js/migrator";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
 import * as path from "node:path";
-import * as schema from "../../shared/schema";
-import { getDatabaseConfig, getDatabaseHandle, getDb } from "./client";
-import type { DatabaseDriver } from "./config";
+import * as schema from "../../shared/schema.js";
+import { getDatabaseConfig, getDatabaseHandle, getDb } from "./client.js";
+import type { DatabaseDriver } from "./config.js";
 
 /**
  * Driver-aware migration + schema verification.

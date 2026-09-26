@@ -1,15 +1,15 @@
 import { Router, type Request } from "express";
 import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
-import { getDb } from "../db/client";
-import { members, type Member, type UserRole } from "../../shared/schema";
+import { getDb } from "../db/client.js";
+import { members, type Member, type UserRole } from "../../shared/schema.js";
 import {
   checkDuplicateMemberSchema,
   memberInputSchema,
   memberQuerySchema,
-} from "../../shared/validation";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { logAudit } from "../lib/audit";
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../lib/errors";
+} from "../../shared/validation.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { logAudit } from "../lib/audit.js";
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../lib/errors.js";
 
 export const membersRouter = Router();
 

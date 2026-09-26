@@ -1,20 +1,20 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
-import { getDb } from "../db/client";
-import { users, userSessions, type UserRole } from "../../shared/schema";
+import { getDb } from "../db/client.js";
+import { users, userSessions, type UserRole } from "../../shared/schema.js";
 import {
   AUTH_COOKIE_NAME,
   hashPassword,
   hashToken,
   signAuthToken,
   verifyPassword,
-} from "../lib/auth";
-import { changePasswordInputSchema, loginInputSchema } from "../../shared/validation";
-import { requireAuth } from "../middleware/auth";
-import { loginRateLimiter } from "../middleware/rateLimit";
-import { logAudit } from "../lib/audit";
-import { ForbiddenError, UnauthorizedError, ValidationError } from "../lib/errors";
+} from "../lib/auth.js";
+import { changePasswordInputSchema, loginInputSchema } from "../../shared/validation.js";
+import { requireAuth } from "../middleware/auth.js";
+import { loginRateLimiter } from "../middleware/rateLimit.js";
+import { logAudit } from "../lib/audit.js";
+import { ForbiddenError, UnauthorizedError, ValidationError } from "../lib/errors.js";
 
 export const authRouter = Router();
 

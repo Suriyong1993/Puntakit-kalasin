@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { createHash } from "node:crypto";
-import type { UserRole } from "../../shared/schema";
+import type { UserRole } from "../../shared/schema.js";
 
 export const AUTH_COOKIE_NAME = "puntakit_session";
 

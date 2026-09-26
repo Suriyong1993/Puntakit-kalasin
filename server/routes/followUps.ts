@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { and, count, desc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
-import { getDb } from "../db/client";
+import { getDb } from "../db/client.js";
 import {
   followUps,
   groups,
@@ -9,16 +9,16 @@ import {
   users,
   type FollowUpStatus,
   type UserRole,
-} from "../../shared/schema";
+} from "../../shared/schema.js";
 import {
   followUpInputSchema,
   followUpQuerySchema,
   followUpStatusUpdateSchema,
   followUpUpdateSchema,
-} from "../../shared/validation";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { logAudit } from "../lib/audit";
-import { ForbiddenError, NotFoundError, ValidationError } from "../lib/errors";
+} from "../../shared/validation.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { logAudit } from "../lib/audit.js";
+import { ForbiddenError, NotFoundError, ValidationError } from "../lib/errors.js";
 
 export const followUpsRouter = Router();
 
