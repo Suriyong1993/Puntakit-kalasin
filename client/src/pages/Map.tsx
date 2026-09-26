@@ -1,11 +1,11 @@
+/// <reference types="leaflet.markercluster" />
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, ListTree, MapPin, RotateCw, Users } from "lucide-react";
 import { Link } from "wouter";
-import {
-  MarkerClusterer,
-  type Cluster,
-  type Renderer as ClusterRenderer,
-} from "@googlemaps/markerclusterer";
+import L from "leaflet";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MapView } from "@/components/Map";
 import { Button } from "@/components/ui/button";
@@ -50,13 +50,13 @@ const STATUS_LABELS: Record<
 };
 
 // Chalasin, Thailand — used only to center the map when no group has coordinates yet.
-const FALLBACK_CENTER = { lat: 16.4322, lng: 103.5061 };
+const FALLBACK_CENTER: L.LatLngLiteral = { lat: 16.4322, lng: 103.5061 };
 
 // A visible V2-styled dot wrapped in an invisible, larger hit area so the marker
 // reads as a normal map pin but still meets the 44px touch-target minimum.
 const PIN_HIT_SIZE = 44;
 
-function createPinElement({
+function pinHtml({
   visibleSize,
   label,
 }: {
@@ -64,35 +64,37 @@ function createPinElement({
   label?: string;
 }) {
   const hitSize = Math.max(PIN_HIT_SIZE, visibleSize);
-  const hit = document.createElement("div");
-  hit.style.cssText = `width:${hitSize}px;height:${hitSize}px;display:flex;align-items:center;justify-content:center;cursor:pointer;`;
-
-  const dot = document.createElement("div");
-  // Inline style, not a CSS class: these divs are handed to the Google Maps SDK,
-  // which mounts them outside Tailwind's stylesheet scan. CSS custom properties
-  // still cascade to them normally since they're appended into the page's DOM tree.
-  dot.style.cssText = `width:${visibleSize}px;height:${visibleSize}px;border-radius:var(--radius-circle);background:var(--color-primary);border:2px solid var(--color-on-dark);box-shadow:0 1px 4px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:var(--color-on-dark);font-family:"Prompt",system-ui,sans-serif;font-weight:600;font-size:${visibleSize >= 40 ? 13 : 11}px;line-height:1;`;
-  if (label) dot.textContent = label;
-
-  hit.appendChild(dot);
-  return hit;
+  const fontSize = visibleSize >= 40 ? 13 : 11;
+  // Plain inline styles, not Tailwind classes: this HTML string is handed to
+  // Leaflet, which mounts it outside Tailwind's stylesheet scan. CSS custom
+  // properties still cascade to it normally since it's appended into the
+  // page's DOM tree.
+  return `
+    <div style="width:${hitSize}px;height:${hitSize}px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      <div style="width:${visibleSize}px;height:${visibleSize}px;border-radius:var(--radius-circle);background:var(--color-primary);border:2px solid var(--color-on-dark);box-shadow:0 1px 4px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:var(--color-on-dark);font-family:'Prompt',system-ui,sans-serif;font-weight:600;font-size:${fontSize}px;line-height:1;">
+        ${label ?? ""}
+      </div>
+    </div>
+  `;
 }
 
-// Custom renderer so clusters use V2 tokens instead of the library's default
-// hardcoded red/blue SVG circles.
-const groupClusterRenderer: ClusterRenderer = {
-  render({ count, position }: Cluster) {
-    const label = count > 99 ? "99+" : String(count);
-    const visibleSize = Math.min(56, 32 + Math.log2(count) * 6);
-    const content = createPinElement({ visibleSize, label });
-    content.setAttribute("role", "button");
-    content.setAttribute(
-      "aria-label",
-      `${count.toLocaleString("th-TH")} กลุ่มแคร์ในบริเวณนี้ แตะเพื่อขยาย`
-    );
-    return new google.maps.marker.AdvancedMarkerElement({ position, content });
-  },
-};
+function pinDivIcon(options: { visibleSize: number; label?: string }) {
+  const hitSize = Math.max(PIN_HIT_SIZE, options.visibleSize);
+  return L.divIcon({
+    html: pinHtml(options),
+    className: "", // clear Leaflet's default divIcon class (white box + border)
+    iconSize: [hitSize, hitSize],
+    iconAnchor: [hitSize / 2, hitSize / 2],
+  });
+}
+
+// Custom cluster icon so clusters use V2 tokens instead of a generic plugin look.
+function createClusterIcon(cluster: L.MarkerCluster) {
+  const count = cluster.getChildCount();
+  const label = count > 99 ? "99+" : String(count);
+  const visibleSize = Math.min(56, 32 + Math.log2(count) * 6);
+  return pinDivIcon({ visibleSize, label });
+}
 
 interface MapGroup {
   id: string;
@@ -239,15 +241,14 @@ export default function MapPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"map" | "list">("map");
-  const [mapError, setMapError] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<MapGroup | null>(null);
   // Toggling to list view unmounts <MapView>; switching back mounts a fresh map
   // instance. An incrementing id (not a boolean) makes the marker effect below
   // re-run on every such remount, not just the first one.
   const [mapInstanceId, setMapInstanceId] = useState(0);
-  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const clustererRef = useRef<MarkerClusterer | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+  const mapRef = useRef<L.Map | null>(null);
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -300,28 +301,16 @@ export default function MapPage() {
   );
   const withoutCoordinates = filtered.length - withCoordinates.length;
 
-  const handleMapReady = useCallback((map: google.maps.Map) => {
+  const handleMapReady = useCallback((map: L.Map) => {
     mapRef.current = map;
-    setMapError(null);
-    // Default onClusterClick already fits the map to the cluster's bounds,
-    // which is exactly the "click a cluster to zoom into its area" behavior.
-    clustererRef.current = new MarkerClusterer({
-      map,
-      renderer: groupClusterRenderer,
+    // zoomToBoundsOnClick defaults to true, which is exactly the "click a
+    // cluster to zoom/fit into its area" behavior.
+    const clusterGroup = L.markerClusterGroup({
+      iconCreateFunction: createClusterIcon,
     });
+    map.addLayer(clusterGroup);
+    clusterGroupRef.current = clusterGroup;
     setMapInstanceId(id => id + 1);
-  }, []);
-
-  const handleMapError = useCallback(() => {
-    setMapError("แผนที่ยังไม่พร้อมใช้งานในขณะนี้ กรุณาดูรายการแทน");
-    setView("list");
-  }, []);
-
-  // Tear down the clusterer's own map listeners on unmount; MapView owns the map instance itself.
-  useEffect(() => {
-    return () => {
-      clustererRef.current?.setMap(null);
-    };
   }, []);
 
   // Redraw markers whenever the map (re)mounts or the filtered set changes.
@@ -329,39 +318,37 @@ export default function MapPage() {
   // fire correctly regardless of whether the data or the map instance arrives first.
   useEffect(() => {
     const map = mapRef.current;
-    const clusterer = clustererRef.current;
-    if (!map || !clusterer || !window.google?.maps?.marker) return;
+    const clusterGroup = clusterGroupRef.current;
+    if (!map || !clusterGroup) return;
 
-    clusterer.clearMarkers();
+    clusterGroup.clearLayers();
     markersRef.current = [];
 
-    const bounds = new window.google.maps.LatLngBounds();
-    const newMarkers: google.maps.marker.AdvancedMarkerElement[] = [];
+    const newMarkers: L.Marker[] = [];
 
     for (const group of withCoordinates) {
       const lat = Number(group.latitude);
       const lng = Number(group.longitude);
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
 
-      const position = { lat, lng };
-      const marker = new window.google.maps.marker.AdvancedMarkerElement({
-        position,
+      const marker = L.marker([lat, lng], {
+        icon: pinDivIcon({ visibleSize: 28 }),
         title: group.name,
-        content: createPinElement({ visibleSize: 28 }),
+        alt: group.name,
       });
-      marker.addListener("gmp-click", () => setSelectedGroup(group));
+      marker.on("click", () => setSelectedGroup(group));
       newMarkers.push(marker);
-      bounds.extend(position);
     }
 
     markersRef.current = newMarkers;
-    clusterer.addMarkers(newMarkers);
+    clusterGroup.addLayers(newMarkers);
 
     if (newMarkers.length > 0) {
-      map.fitBounds(bounds, 64);
+      map.fitBounds(L.featureGroup(newMarkers).getBounds(), {
+        padding: [64, 64],
+      });
     } else {
-      map.setCenter(FALLBACK_CENTER);
-      map.setZoom(11);
+      map.setView(FALLBACK_CENTER, 11);
     }
   }, [withCoordinates, mapInstanceId]);
 
@@ -386,8 +373,7 @@ export default function MapPage() {
               type="button"
               onClick={() => setView("map")}
               aria-pressed={view === "map"}
-              disabled={!!mapError}
-              className={`type-caption-strong flex h-11 items-center gap-1.5 px-4 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-primary-focus)] disabled:cursor-not-allowed disabled:opacity-40 ${
+              className={`type-caption-strong flex h-11 items-center gap-1.5 px-4 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-primary-focus)] ${
                 view === "map"
                   ? "bg-[var(--color-primary)] text-white"
                   : "text-[var(--color-body-muted)]"
@@ -491,30 +477,13 @@ export default function MapPage() {
 
         {state.status === "success" && filtered.length > 0 && (
           <>
-            {mapError && (
-              <div
-                role="status"
-                className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-hairline)] bg-[var(--color-canvas)] px-4 py-3"
-              >
-                <AlertCircle
-                  size={ICON_SIZE.md}
-                  aria-hidden="true"
-                  className="shrink-0 text-[var(--color-warning)]"
-                />
-                <p className="type-caption text-[var(--color-body-muted)]">
-                  {mapError}
-                </p>
-              </div>
-            )}
-
-            {view === "map" && !mapError && (
+            {view === "map" && (
               <>
                 <MapView
                   className="h-[420px] rounded-[var(--radius-lg)] border border-[var(--color-hairline)] sm:h-[520px]"
                   initialCenter={FALLBACK_CENTER}
                   initialZoom={11}
                   onMapReady={handleMapReady}
-                  onError={handleMapError}
                 />
                 {withoutCoordinates > 0 && (
                   <p className="type-caption text-[var(--color-body-muted)]">

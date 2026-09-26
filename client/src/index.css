@@ -119,6 +119,16 @@
   .type-caption-strong { font-size: 14px; font-weight: 600; line-height: 1.45; }
   .type-fine { font-size: 12px; font-weight: 400; line-height: 1.4; }
 }
+
+/* Leaflet's own zoom control buttons default to 26px (30px in its "touch" variant),
+   under the V2 44px touch-target minimum. Attribution text is left at its
+   conventional small size — that's required copyright text, not an app control. */
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 44px !important;
+}
 /* Base element rules live in the base layer so Tailwind utilities on shared
    primitives (text size, weight, borders) are not overridden by unlayered CSS. */
 @layer base {
