@@ -1,4 +1,6 @@
+import type { Request, Response } from "express";
 import { createApp } from "../server/app.js";
+import { bootstrapDatabase } from "../server/db/bootstrap.js";
 
 // Vercel Serverless Function entrypoint: handles every /api/* request via
 // vercel.json's rewrite and hands it to the shared Express app (same routes
@@ -11,4 +13,42 @@ import { createApp } from "../server/app.js";
 // single-segment route (matches /api/health, not /api/auth/me) for this
 // project — the explicit rewrite below is the reliable way to route every
 // /api/* request to one Express app regardless of path depth.
-export default createApp();
+
+const app = createApp();
+
+// Run the database bootstrap (schema verification + migrations) once per
+// lambda instance before serving traffic. With DB_AUTO_MIGRATE unset this
+// only verifies; remote drivers (neon/postgres) migrate only when
+// DB_AUTO_MIGRATE=true, matching server/index.ts behaviour on self-hosted
+// deployments. Failures return the standard 503 contract instead of crashing
+// the function, and are retried on the next invocation.
+let bootstrapPromise: Promise<unknown> | null = null;
+
+function ensureBootstrap(): Promise<unknown> {
+  if (!bootstrapPromise) {
+    bootstrapPromise = bootstrapDatabase().catch((err: unknown) => {
+      bootstrapPromise = null; // allow a retry on the next cold start
+      throw err;
+    });
+  }
+  return bootstrapPromise;
+}
+
+export default async function handler(req: Request, res: Response): Promise<void> {
+  try {
+    await ensureBootstrap();
+  } catch (err) {
+    console.error("[api] database bootstrap failed:", err);
+    res.status(503).json({
+      success: false,
+      error: {
+        code: "DATABASE_UNAVAILABLE",
+        message: "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้",
+        details: process.env.NODE_ENV !== "production" ? [String(err)] : undefined,
+      },
+    });
+    return;
+  }
+
+  app(req, res);
+}
