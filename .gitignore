@@ -127,3 +127,7 @@ agent/
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+.vercel
+.env
+.env.*
+!.env.example
