@@ -4,45 +4,149 @@
 
 :root {
   font-family: "Prompt", system-ui, sans-serif;
-  color: #17324d;
-  background: #f4f8fc;
+  color: #1d1d1f;
+  background: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --navy: #173b70;
-  --blue: #2f6fcc;
-  --ink: #17324d;
-  --muted: #6b7c93;
-  --line: #e4ecf4;
-  --surface: #fff;
-  --shadow: 0 10px 28px rgba(36, 92, 146, 0.08);
-  --radius-card: 21px;
-  --radius-tile: 18px;
-  --radius-panel: 16px;
+
+  /* Puntakit Design System V2 brand tokens (source of truth: PUNTAKIT_DESIGN_SYSTEM_V2.md) */
+  --color-primary: #315c2b;
+  --color-primary-focus: #3f7337;
+  --color-primary-on-dark: #7faf72;
+  --color-ink: #1d1d1f;
+  --color-body: #1d1d1f;
+  --color-body-muted: #6f6f73;
+  --color-canvas: #ffffff;
+  --color-canvas-soft: #f5f5f7;
+  --color-surface: #fafafc;
+  --color-dark-surface: #272729;
+  --color-dark-surface-2: #2a2a2c;
+  --color-dark-surface-3: #252527;
+  --color-black: #000000;
+  --color-divider: #f0f0f0;
+  --color-hairline: #e0e0e0;
+  --color-on-dark: #ffffff;
+  --color-success: #1e8e5a;
+  --color-warning: #c77819;
+  --color-error: #c23b4d;
+  --color-info: #2f6fcc;
+
+  /* Radius grammar */
+  --radius-none: 0px;
+  --radius-xs: 5px;
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 18px;
+  --radius-pill: 9999px;
+  --radius-circle: 50%;
+
+  /* shadcn semantic tokens, mapped to the brand tokens above so Button/Card/Input/Skeleton
+     primitives (bg-primary, bg-card, border-input, bg-accent, ...) render correctly. */
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --card: var(--color-canvas);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-canvas);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-on-dark);
+  --secondary: var(--color-canvas-soft);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-canvas-soft);
+  --muted-foreground: var(--color-body-muted);
+  --accent: var(--color-canvas-soft);
+  --accent-foreground: var(--color-ink);
+  --destructive: var(--color-error);
+  --border: var(--color-hairline);
+  --input: var(--color-hairline);
+  --ring: var(--color-primary-focus);
+
+  /* legacy aliases kept so existing shared primitives (buttons, forms, tables, cards,
+     chips, modals) cascade onto the V2 palette without a full rewrite of every rule */
+  --navy: var(--color-dark-surface);
+  --blue: var(--color-primary);
+  --ink: var(--color-ink);
+  --muted: var(--color-body-muted);
+  --line: var(--color-divider);
+  --surface: var(--color-canvas);
+  --shadow: none;
+  --radius-card: var(--radius-lg);
+  --radius-tile: var(--radius-md);
+  --radius-panel: var(--radius-md);
   --chart-1: #548bd9;
   --chart-2: #44b889;
   --chart-3: #f1a73b;
   --chart-4: #df5b79;
   --chart-5: #7e5ad6;
   --chart-6: #45a8a4;
-  --growth-green: #27ae72;
+  --growth-green: var(--color-primary);
   --activity-orange: #f3a23a;
   --care-purple: #7950d8;
   --relationship-pink: #e85d78;
 }
-* {
-  box-sizing: border-box;
+
+@theme inline {
+  --font-sans: "Prompt", system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
-body {
-  margin: 0;
-  min-width: 320px;
-  background: #f4f8fc;
+
+/* V2 type scale (PUNTAKIT_DESIGN_SYSTEM_V2.md §3). In the components layer so utilities can compose. */
+@layer components {
+  .type-hero { font-size: 56px; font-weight: 600; line-height: 1.07; }
+  .type-display-lg { font-size: 40px; font-weight: 600; line-height: 1.1; }
+  .type-display-md { font-size: 34px; font-weight: 600; line-height: 1.15; }
+  .type-lead { font-size: 28px; font-weight: 400; line-height: 1.35; }
+  .type-body { font-size: 17px; font-weight: 400; line-height: 1.47; }
+  .type-body-strong { font-size: 17px; font-weight: 600; line-height: 1.47; }
+  .type-caption { font-size: 14px; font-weight: 400; line-height: 1.45; }
+  .type-caption-strong { font-size: 14px; font-weight: 600; line-height: 1.45; }
+  .type-fine { font-size: 12px; font-weight: 400; line-height: 1.4; }
 }
-button,
-input {
-  font: inherit;
+
+/* Leaflet's own zoom control buttons default to 26px (30px in its "touch" variant),
+   under the V2 44px touch-target minimum. Attribution text is left at its
+   conventional small size — that's required copyright text, not an app control. */
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 44px !important;
 }
-button {
-  border: 0;
+/* Base element rules live in the base layer so Tailwind utilities on shared
+   primitives (text size, weight, borders) are not overridden by unlayered CSS. */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--color-canvas-soft);
+  }
+  button,
+  input {
+    font: inherit;
+  }
+  button {
+    border: 0;
+  }
 }
 .app-shell {
   display: flex;
@@ -331,29 +435,27 @@ button {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1.2px;
-  color: #f1a73b;
+  color: var(--color-warning);
 }
 .blue-eyebrow {
-  color: #6c8bb1;
+  color: var(--color-body-muted);
 }
 .primary-action,
 .blue-button {
-  background: #2f6fcc;
-  color: white;
-  border-radius: 12px;
-  padding: 10px 14px;
+  background: var(--color-primary);
+  color: var(--color-on-dark);
+  border-radius: var(--radius-pill);
+  padding: 10px 18px;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 7px 18px rgba(47, 111, 204, 0.2);
   transition: 0.2s;
 }
 .primary-action:hover,
 .blue-button:hover {
-  transform: translateY(-2px);
-  background: #235cb0;
+  background: var(--color-primary-focus);
 }
 .dashboard-grid {
   display: grid;
@@ -1390,14 +1492,14 @@ button {
   flex-wrap: wrap;
 }
 .member-search {
-  height: 42px;
-  border: 1px solid #e2ebf4;
-  border-radius: 13px;
+  height: 44px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 0 12px;
-  color: #8091a4;
+  padding: 0 16px;
+  color: var(--color-body-muted);
   flex: 1;
   min-width: 220px;
 }
@@ -1423,12 +1525,12 @@ button {
   margin-left: 7px;
 }
 .member-toolbar select {
-  height: 40px;
+  height: 44px;
   padding: 0 9px;
-  border: 1px solid #e2ebf4;
-  border-radius: 11px;
-  background: #f9fbfd;
-  color: #60758c;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--color-canvas-soft);
+  color: var(--color-body-muted);
   font-size: 11px;
   outline: none;
 }
@@ -1442,7 +1544,7 @@ button {
 }
 .active-filter-row button {
   background: none;
-  color: #2f6fcc;
+  color: var(--color-primary);
   font-size: 11px;
 }
 .member-table-wrap {
@@ -1635,7 +1737,7 @@ button {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 46, 81, 0.38);
+  background: rgba(29, 29, 31, 0.38);
   backdrop-filter: blur(4px);
   z-index: 50;
   display: grid;
@@ -1644,10 +1746,10 @@ button {
   animation: fadein 0.18s ease;
 }
 .modal-card {
-  background: white;
+  background: var(--color-canvas);
   border-radius: var(--radius-card);
   width: min(480px, 100%);
-  box-shadow: 0 20px 60px rgba(15, 46, 81, 0.22);
+  box-shadow: 0 20px 48px rgba(29, 29, 31, 0.18);
   padding: 22px;
   animation: modalin 0.22s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -1663,11 +1765,11 @@ button {
   color: var(--ink);
 }
 .modal-heading button {
-  width: 31px;
-  height: 31px;
-  border-radius: 10px;
-  background: #f1f5f8;
-  color: #71859a;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--color-canvas-soft);
+  color: var(--color-body-muted);
   display: grid;
   place-items: center;
 }
@@ -1680,26 +1782,30 @@ button {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  color: #6e8094;
+  color: var(--color-body-muted);
   font-size: 11px;
   font-weight: 600;
 }
 .form-grid input,
 .form-grid select,
 .form-grid textarea {
-  border: 1px solid #e0e9f2;
-  border-radius: 11px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
   padding: 10px 11px;
+  min-height: 44px;
   outline: none;
   color: var(--ink);
   font-size: 12px;
-  background: #fbfdff;
+  background: var(--color-canvas);
+}
+.form-grid textarea {
+  min-height: 0;
 }
 .form-grid input:focus,
 .form-grid select:focus,
 .form-grid textarea:focus {
-  border-color: #6ea5e5;
-  box-shadow: 0 0 0 3px rgba(47, 111, 204, 0.1);
+  border-color: var(--color-primary-focus);
+  box-shadow: 0 0 0 2px rgba(63, 115, 55, 0.18);
 }
 .full-field {
   grid-column: span 2;
@@ -1714,9 +1820,9 @@ button {
   margin-top: 20px;
 }
 .cancel-button {
-  background: #f1f5f8;
-  color: #6c8197;
-  border-radius: 11px;
+  background: var(--color-canvas-soft);
+  color: var(--color-body-muted);
+  border-radius: var(--radius-sm);
   padding: 9px 14px;
   font-size: 11px;
 }
@@ -1925,8 +2031,8 @@ button {
 }
 .danger-button {
   background: #fde8ea;
-  color: #c23b4d;
-  border-radius: 11px;
+  color: var(--color-error);
+  border-radius: var(--radius-sm);
   padding: 9px 14px;
   font-size: 11px;
   font-weight: 600;
@@ -1938,15 +2044,15 @@ button {
   opacity: 0.6;
 }
 .field-error {
-  color: #c23b4d;
+  color: var(--color-error);
   font-size: 10px;
   margin-top: -2px;
 }
 .spinner {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  border: 3px solid #e2ebf4;
+  border-radius: var(--radius-circle);
+  border: 3px solid var(--color-hairline);
   border-top-color: var(--blue);
   animation: spin 0.7s linear infinite;
 }
@@ -1990,15 +2096,15 @@ button {
 }
 .retry-button {
   margin-top: 14px;
-  background: #eef4fb;
-  color: #2f6fcc;
-  border-radius: 10px;
+  background: var(--color-canvas-soft);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
   padding: 8px 16px;
   font-size: 11px;
   font-weight: 600;
 }
 .retry-button:hover {
-  background: #dfeaf7;
+  background: #e5e9e4;
 }
 .login-shell {
   min-height: 100vh;
@@ -2006,15 +2112,12 @@ button {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background:
-    radial-gradient(circle at 20% 10%, #e8f0fb, transparent 55%),
-    radial-gradient(circle at 85% 90%, #eef4fb, transparent 50%),
-    var(--surface-bg, #f4f8fc);
+  background: var(--color-canvas-soft);
 }
 .login-card {
   width: min(380px, 100%);
   background: var(--surface);
-  border: 1px solid rgba(224, 235, 245, 0.8);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow);
   padding: 32px 28px;
@@ -2055,7 +2158,7 @@ button {
 }
 .entity-card {
   background: var(--surface);
-  border: 1px solid rgba(224, 235, 245, 0.8);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-panel);
   padding: 16px;
   display: flex;
@@ -2076,7 +2179,7 @@ button {
 }
 .entity-card .entity-meta {
   font-size: 11px;
-  color: #8091a4;
+  color: var(--color-body-muted);
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
@@ -2103,19 +2206,18 @@ button {
   gap: 16px;
   padding: 22px 24px;
   margin-bottom: 18px;
-  background: linear-gradient(120deg, #fff 0%, #f4f9ff 100%);
+  background: var(--color-canvas-soft);
 }
 .profile-avatar {
   width: 74px;
   height: 74px;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg, #2f78d0, #173b70);
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-on-dark);
   font-size: 30px;
   font-weight: 800;
-  box-shadow: 0 10px 24px rgba(47, 111, 204, 0.22);
 }
 .profile-identity {
   min-width: 0;
@@ -2144,11 +2246,11 @@ button {
 .profile-hero-mark {
   width: 58px;
   height: 58px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   display: grid;
   place-items: center;
-  color: #2f78d0;
-  background: #e5f1ff;
+  color: var(--color-primary);
+  background: var(--color-canvas);
 }
 .profile-grid {
   display: grid;
@@ -2451,31 +2553,42 @@ button {
   padding: 1.5rem;
 }
 
-/* Refreshed discovery hero and cross-page motion surfaces. */
-.discovery-hero {
-  position: relative;
-  min-height: 310px;
-  isolation: isolate;
-  background: #e8f4ff;
-  border: 1px solid #d8e9f8;
-  box-shadow: 0 12px 32px rgba(36, 92, 146, 0.08);
+/* Home dark mode: V2 dark surfaces, scoped to Home so other pages keep their current dark styling. */
+.dark .home-editorial {
+  --color-canvas: #2a2a2c;
+  --color-canvas-soft: #252527;
+  --color-ink: #ffffff;
+  --color-body: #ffffff;
+  --color-body-muted: rgba(255, 255, 255, 0.64);
+  --color-hairline: rgba(255, 255, 255, 0.12);
+  --color-divider: rgba(255, 255, 255, 0.08);
+  --color-primary: #7faf72;
+  --color-primary-focus: #7faf72;
+  --card: #2a2a2c;
+  --card-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.12);
+  --muted: #252527;
+  --muted-foreground: rgba(255, 255, 255, 0.64);
+  --accent: #252527;
+  --accent-foreground: #ffffff;
+  --secondary: #252527;
+  --secondary-foreground: #ffffff;
+  --primary: #7faf72;
+  --primary-foreground: #1d1d1f;
+  --ring: #7faf72;
+  color: #ffffff;
 }
-.discovery-hero:after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.78) 0 8%, transparent 28%), radial-gradient(circle at 76% 92%, rgba(108, 175, 226, 0.2) 0 12%, transparent 36%);
+.dark .app-layout:has(.home-editorial) {
+  background-color: #1d1d1f;
 }
-.discovery-hero-art {
-  position: absolute;
-  z-index: 0;
-  inset: 0 0 0 52%;
-  background-image: linear-gradient(90deg, #e8f4ff 0%, rgba(232, 244, 255, 0.55) 25%, rgba(232, 244, 255, 0.04) 66%), url("/manus-storage/puntakit-hero_d9170436.png");
-  background-position: center right;
-  background-repeat: no-repeat;
-  background-size: cover;
-  opacity: 0.9;
+.dark .home-editorial input {
+  background-color: var(--color-canvas);
+  border-color: var(--color-hairline);
+  color: var(--color-ink);
+}
+.dark .home-editorial input::placeholder {
+  color: var(--color-body-muted);
 }
 .member-page-hero,
 .events-page-hero {
@@ -2504,10 +2617,6 @@ button {
   opacity: 1;
   transform: translateY(0);
 }
-@media (max-width: 640px) {
-  .discovery-hero { min-height: 390px; }
-  .discovery-hero-art { inset: auto 0 0; height: 145px; opacity: 0.45; background-position: center bottom; }
-}
 @media (prefers-reduced-motion: reduce) {
   [data-scroll-reveal] { opacity: 1; transform: none; transition: none; }
 }
@@ -2518,14 +2627,10 @@ button {
 .dark .topbar { background: #14243a; border-color: #263b57; }
 .dark .tailadmin-card,
 .dark .event-surface { background-color: #17283f; border-color: #2a4564; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18); }
-.dark .discovery-hero,
 .dark .member-page-hero,
 .dark .events-page-hero { background: #183554; border-color: #2d5277; }
-.dark .discovery-hero::after,
 .dark .member-page-hero::after,
 .dark .events-page-hero::after { background: rgba(84, 145, 201, 0.2); }
-.dark .discovery-hero-art { background-image: linear-gradient(90deg, #183554 0%, rgba(24, 53, 84, 0.65) 28%, rgba(24, 53, 84, 0.08) 72%), url("/manus-storage/puntakit-hero_d9170436.png"); opacity: 0.62; }
-.dark .discovery-hero h1,
 .dark .member-page-hero h1,
 .dark .events-page-hero h1,
 .dark .tailadmin-card h2,
@@ -2551,5 +2656,4 @@ button {
 .dark input::placeholder,
 .dark textarea::placeholder { color: #7890ad; }
 .dark .member-page-hero .bg-white\/80,
-.dark .events-page-hero .bg-white\/80,
-.dark .discovery-hero .bg-white\/80 { color: #cfe5ff; }
+.dark .events-page-hero .bg-white\/80 { color: #cfe5ff; }

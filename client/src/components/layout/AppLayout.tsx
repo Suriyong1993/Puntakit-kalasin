@@ -10,7 +10,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50/60 font-sans text-slate-900 antialiased">
+    <div className="app-layout flex h-screen overflow-hidden bg-slate-50/60 font-sans text-slate-900 antialiased">
       {/* Sidebar Navigation */}
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 

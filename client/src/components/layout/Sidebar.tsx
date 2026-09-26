@@ -9,6 +9,7 @@ import {
   Inbox as InboxIcon,
   ListTodo,
   Megaphone,
+  MapPin,
   Settings,
   Sparkles,
   UserCheck,
@@ -40,6 +41,7 @@ export const navGroups: NavGroup[] = [
       { label: "แอพสมาชิก (PWA)", path: "/app", icon: Sparkles, badge: "PWA" },
       { label: "สมาชิก", path: "/members", icon: Users },
       { label: "กลุ่มแคร์", path: "/groups", icon: UsersRound },
+      { label: "แผนที่กลุ่มแคร์", path: "/map", icon: MapPin },
       { label: "เช็คชื่อ/เข้าร่วม", path: "/attendance", icon: UserCheck },
       { label: "การติดตาม", path: "/follow-up", icon: ListTodo },
       { label: "กล่องข้อมูลนำเข้า", path: "/inbox", icon: InboxIcon },
@@ -85,7 +87,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-[#1C2434] text-slate-300 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-[var(--color-dark-surface)] text-slate-300 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
           open ? "translate-x-0 shadow-lg" : "-translate-x-full"
         }`}
         aria-label="เมนูหลัก"
@@ -104,7 +106,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Navigation Groups */}
         <div className="flex flex-col flex-1 px-4 py-4 space-y-6">
-          {navGroups.map((group) => (
+          {navGroups.map(group => (
             <div key={group.name}>
               <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
                 {group.name}
@@ -119,9 +121,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                         onClose();
                         navigate(path);
                       }}
-                      className={`group relative flex items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-200 text-left ${
+                      className={`group relative flex items-center justify-between rounded-[var(--radius-sm)] px-3.5 py-2.5 text-sm font-medium transition-all duration-200 text-left ${
                         isActive
-                          ? "bg-blue-600/20 text-blue-400 font-semibold shadow-xs border-l-4 border-blue-500 pl-2.5"
+                          ? "bg-[var(--color-primary-on-dark)]/15 text-[var(--color-primary-on-dark)] font-semibold border-l-4 border-[var(--color-primary-on-dark)] pl-2.5"
                           : "text-slate-300 hover:bg-slate-800/80 hover:text-white"
                       }`}
                     >
@@ -129,13 +131,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                         <Icon
                           size={ICON_SIZE.md}
                           className={`transition-colors ${
-                            isActive ? "text-blue-400" : "text-slate-400 group-hover:text-white"
+                            isActive
+                              ? "text-[var(--color-primary-on-dark)]"
+                              : "text-slate-400 group-hover:text-white"
                           }`}
                         />
                         <span>{label}</span>
                       </div>
                       {badge && (
-                        <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-blue-300">
+                        <span className="rounded-[var(--radius-xs)] bg-[var(--color-primary-on-dark)]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--color-primary-on-dark)]">
                           {badge}
                         </span>
                       )}
@@ -152,7 +156,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <div className="rounded-xl bg-slate-800/60 p-3.5 text-center border border-slate-700/50">
             <div className="flex items-center justify-center gap-1.5 text-amber-400 mb-1">
               <Sparkles size={ICON_SIZE.xs} />
-              <span className="text-[11px] font-semibold tracking-wide">PUNTAKIT KALASIN</span>
+              <span className="text-[11px] font-semibold tracking-wide">
+                PUNTAKIT KALASIN
+              </span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed font-light italic">
               "รักพระเจ้า • รักผู้คน • เปลี่ยนแปลงชุมชน"
